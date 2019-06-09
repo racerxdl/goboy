@@ -99,8 +99,63 @@ func gbLD{{.O1}}{{.O2}}nn(cpu *Core) {
 }
 `))
 
+var ldhliTemplate = template.Must(template.New("LDHLI").Parse(`
+// gbLDHLI{{.I}} Sets {{.I}} to Memory at H/L and increments HL.
+func gbLDHLI{{.I}}(cpu *Core) {
+    cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Registers.{{.I}})
+    cpu.Registers.L++
+    if cpu.Registers.L == 0 {
+        cpu.Registers.H++
+    }
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+`))
+
+var ldrIOnTemplate = template.Must(template.New("LDRIOn").Parse(`
+// gbLD{{.O}}IOn
+func gbLD{{.O}}IOn(cpu *Core) {
+    addr := cpu.Memory.ReadByte(cpu.Registers.PC)
+    cpu.Registers.{{.O}} = cpu.Memory.ReadByte(0xFF00 + uint16(addr))
+    cpu.Registers.PC++
+    
+    cpu.Registers.LastClockM = 3
+    cpu.Registers.LastClockT = 12
+}
+`))
+
 // endregion
 // region Builders
+
+func BuildLDrIOn() string {
+	//
+	buff := bytes.NewBuffer(nil)
+
+	for _, O := range cpu.AllRegisters {
+		ldrIOnTemplate.Execute(buff, struct {
+			O string
+		}{
+			O: O,
+		})
+	}
+
+	return buff.String()
+}
+
+func BuildLDHLI() string {
+	//
+	buff := bytes.NewBuffer(nil)
+
+	for _, I := range cpu.AllRegisters {
+		ldhliTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+	}
+
+	return buff.String()
+}
 
 func BuildLDRRnn() string {
 	buff := bytes.NewBuffer(nil)
@@ -265,15 +320,91 @@ func BuildLDrrmr() string {
 	return buff.String()
 }
 
-func BuildLDHLmn() string {
+func BuildLSSingles() string {
 	return `
 // LDHLmn Writes byte from Program Memory into Memory (H/L). Increments Program Counter
-func LDHLmn(cpu *Core) {
+func gbLDHLmn(cpu *Core) {
     cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Memory.ReadByte(cpu.Registers.PC))
     cpu.Registers.PC++
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
-}`
 }
+// LDSPnn Reads word from Program Counter and stores in SP
+func gbLDSPnn(cpu *Core) {
+    cpu.Registers.SP = cpu.Memory.ReadWord(cpu.Registers.PC)
+    cpu.Registers.PC += 2
+    cpu.Registers.LastClockM = 3
+    cpu.Registers.LastClockT = 12
+}
+// LDmmSP
+func gbLDmmSP(cpu *Core) {
+    addr := cpu.Memory.ReadWord(cpu.Registers.PC)
+    cpu.Memory.WriteWord(addr, cpu.Registers.SP)
+    cpu.Registers.PC += 2
+    cpu.Registers.LastClockM = 5
+    cpu.Registers.LastClockT = 20
+}
+// LDAIOC
+func gbLDAIOC(cpu *Core) {
+    cpu.Registers.A = cpu.Memory.ReadByte(0xFF00 + uint16(cpu.Registers.C))
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+
+// LDIOCA
+func gbLDIOCA(cpu *Core) {
+    cpu.Memory.WriteByte(0xFF00 + uint16(cpu.Registers.C), cpu.Registers.A)
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+
+// LDHLSPn
+func gbLDHLSPn(cpu *Core) {
+    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    cpu.Registers.PC++
+
+    /*
+            if (v > 127) {
+                v = -((~v + 1) & 0xFF);
+            }
+    */
+
+    // TODO: WARNING, this probably is broken
+
+    cpu.Registers.SetZero(false)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(int(cpu.Registers.SP & 0xF) + v > 0xF)
+    cpu.Registers.SetCarry(int(cpu.Registers.SP & 0xFF) + v > 0xFF)
+
+    v += int(cpu.Registers.SP)
+
+    cpu.Registers.H = uint8(uint(v) >> 8)
+    cpu.Registers.L = uint8(uint(v) & 0xFF)
+
+    cpu.Registers.LastClockM = 3
+    cpu.Registers.LastClockT = 12
+}
+
+// LDHLSPr
+func gbLDHLSPr(cpu *Core) {
+    cpu.Registers.SP = cpu.Registers.HL()
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+
+`
+}
+
+/*
+
+
+   private static void LDHLSPr(CPU cpu) {
+       var reg = cpu.reg;
+       reg.SP = reg.HL;
+
+       reg.lastClockM = 2;
+       reg.lastClockT = 8;
+   }
+*/
 
 // endregion
