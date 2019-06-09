@@ -35,6 +35,11 @@ func main() {
 	instructions += gendata.BuildLDrIOn()
 	instructions += "// endregion\n"
 	// endregion
+	// region Data Processing Instructions
+	instructions += "// region Data Processing Instructions\n"
+	instructions += gendata.BuildADD()
+	instructions += "// endregion \n"
+	// endregion
 
 	gendata.InstructionsFileTemplate.Execute(f, struct {
 		Timestamp    time.Time
