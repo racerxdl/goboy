@@ -23,6 +23,23 @@ func gbADDr{{.I}}(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 `))
+var addHLrrTemplate = template.Must(template.New("ADDHLrr").Parse(`
+// gbADDHL{{.I0}}{{.I1}} Adds ({{.I0}} << 8) + {{.I1}} to HL
+func gbADDHL{{.I0}}{{.I1}}(cpu *Core) {
+    {{.I0}}{{.I1}} := uint16(cpu.Registers.{{.I0}}) << 8 + uint16(cpu.Registers.{{.I1}})
+    sum := {{.I0}}{{.I1}} + cpu.Registers.HL()
+
+    cpu.Registers.SetCarry(sum > 65535)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry((({{.I0}}{{.I1}} & 0xFFF) + (cpu.Registers.HL() & 0xFFF)) > 0xFFF)
+            
+    cpu.Registers.H = uint8(sum >> 8)
+    cpu.Registers.L = uint8(sum & 0xFF)
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+`))
 
 // endregion
 // region Builders
@@ -37,6 +54,20 @@ func BuildADD() string {
 		}{
 			I: I,
 		})
+	}
+
+	for _, I0 := range cpu.AllRegisters {
+		for _, I1 := range cpu.AllRegisters {
+			if I0 != I1 {
+				addHLrrTemplate.Execute(buff, struct {
+					I0 string
+					I1 string
+				}{
+					I0: I0,
+					I1: I1,
+				})
+			}
+		}
 	}
 
 	return buff.String() + `
@@ -70,26 +101,41 @@ func gbADDn(cpu *Core) {
     cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
 }
-`
+
+// gbADDHLSP Adds SP to HL
+func gbADDHLSP(cpu *Core) {
+    sum := cpu.Registers.HL() + cpu.Registers.SP
+    cpu.Registers.SetCarry(sum > 65535)
+    //cpu.Registers.SetZero(sum & 0xFF == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(((cpu.Registers.SP & 0xFFF) + (cpu.Registers.HL() & 0xFFF)) > 0xFFF)
+
+    cpu.Registers.H = uint8(sum >> 8)
+    cpu.Registers.L = uint8(sum & 0xFF)
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
 }
 
-/*
-   private static void ADDn(CPU cpu) {
-       var reg = cpu.reg;
-       var z = (int) cpu.memory.ReadByte(reg.PC);
-       reg.PC++;
-       var sum = reg.A + z;
+// gbADDSPn Reads a signed byte from memory pointed by PC and adds to SP
+func gbADDSPn(cpu *Core) {
+    a := int(cpu.Memory.ReadByte(cpu.Registers.PC))
+    cpu.Registers.PC++
+    a = (a << 24) >> 24 // Convert unsigned byte to signed
 
-       reg.FlagCarry = sum > 255;
-       reg.FlagZero = (sum & 0xFF) == 0;
-       reg.FlagSub = false;
-       reg.FlagHalfCarry = ((reg.A & 0xF) + (z & 0xF)) > 0xF;
+    cpu.Registers.SetZero(false)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetCarry(int(cpu.Registers.SP & 0xFF) + (a & 0xFF) > 0xFF)
+    cpu.Registers.SetHalfCarry(int(cpu.Registers.SP & 0xF) + (a & 0xF) > 0xF)
 
-       reg.A = (byte) sum;
+    cpu.Registers.SP = uint16(int(cpu.Registers.SP) + a)
 
-       reg.lastClockM = 2;
-       reg.lastClockT = 8;
-   }
-*/
+
+    cpu.Registers.LastClockM = 4
+    cpu.Registers.LastClockT = 16
+}
+
+`
+}
 
 // endregion
