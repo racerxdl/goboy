@@ -7,6 +7,7 @@ import (
 )
 
 // region Templates
+// region ADD
 var addTemplate = template.Must(template.New("ADDr").Parse(`
 // gbADDr{{.I}} Adds {{.I}} to A
 func gbADDr{{.I}}(cpu *Core) {
@@ -64,6 +65,8 @@ func gbADC{{.I}}(cpu *Core) {
 }
 `))
 
+// endregion
+// region SUB
 var subTemplate = template.Must(template.New("SUBr").Parse(`
 // gbSUBr{{.I}} Subtracts {{.I}} to A
 func gbSUBr{{.I}}(cpu *Core) {
@@ -121,6 +124,22 @@ func gbSBC{{.I}}(cpu *Core) {
 }
 `))
 
+// endregion
+// region CP
+var cpTemplate = template.Must(template.New("CPr").Parse(`
+// gbCP{{.I}} Checks if {{.I}} == A
+func gbCP{{.I}}(cpu *Core) {
+    cpu.Registers.SetCarry(cpu.Registers.A < cpu.Registers.{{.I}})
+    cpu.Registers.SetZero(cpu.Registers.A == cpu.Registers.{{.I}})
+    cpu.Registers.SetSub(true)
+    cpu.Registers.SetHalfCarry((cpu.Registers.A & 0xF) < (cpu.Registers.{{.I}} & 0xF))
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+// endregion
 // endregion
 // region Builders
 
@@ -268,7 +287,6 @@ func gbADCn(cpu *Core) {
 }
 `
 }
-
 func BuildSUB() string {
 	//
 	buff := bytes.NewBuffer(nil)
@@ -393,6 +411,49 @@ func gbSBCn(cpu *Core) {
     cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
 }
+`
+}
+func BuildCP() string {
+	//
+	buff := bytes.NewBuffer(nil)
+
+	for _, I := range cpu.AllRegisters {
+		cpTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+	}
+
+	return buff.String() + `
+// gbADDHL Adds byte from [HL] to A
+// gbCPHL Compares byte from [HL] to A
+func gbCPHL(cpu *Core) {
+    b := cpu.Memory.ReadByte(cpu.Registers.HL())
+
+    cpu.Registers.SetCarry(cpu.Registers.A < b)
+    cpu.Registers.SetZero(cpu.Registers.A == b)
+    cpu.Registers.SetSub(true)
+    cpu.Registers.SetHalfCarry((cpu.Registers.A & 0xF) < (b & 0xF))
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+
+// gbCPn Compares byte from [PC] to A
+func gbCPn(cpu *cpu.Core) {
+    b := cpu.Memory.ReadByte(cpu.Registers.PC)
+    cpu.Registers.PC++
+
+    cpu.Registers.SetCarry(cpu.Registers.A < b)
+    cpu.Registers.SetZero(cpu.Registers.A == b)
+    cpu.Registers.SetSub(true)
+    cpu.Registers.SetHalfCarry((cpu.Registers.A & 0xF) < (b & 0xF))
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+
 `
 }
 
