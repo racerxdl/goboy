@@ -281,15 +281,13 @@ func BuildLDRR() string {
 
 	for _, I := range cpu.AllRegisters {
 		for _, O := range cpu.AllRegisters {
-			if I != O {
-				ldrrTemplate.Execute(buff, struct {
-					I string
-					O string
-				}{
-					I: I,
-					O: O,
-				})
-			}
+			ldrrTemplate.Execute(buff, struct {
+				I string
+				O string
+			}{
+				I: I,
+				O: O,
+			})
 		}
 	}
 

@@ -39,6 +39,9 @@ func main() {
     instructions += "// region Data Processing Instructions\n"
     instructions += gendata.BuildADD()
     instructions += gendata.BuildSUB()
+    instructions += gendata.BuildCP()
+    instructions += gendata.BuildOperators()
+    instructions += gendata.BuildIncDec()
     instructions += "// endregion \n"
     // endregion
 

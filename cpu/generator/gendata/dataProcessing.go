@@ -43,8 +43,8 @@ func gbADDHL{{.I0}}{{.I1}}(cpu *Core) {
 `))
 
 var adcrTemplate = template.Must(template.New("ADCr").Parse(`
-// gbADC{{.I}} Sets A to A + {{.I}} + FlagCarry
-func gbADC{{.I}}(cpu *Core) {
+// gbADCr{{.I}} Sets A to A + {{.I}} + FlagCarry
+func gbADCr{{.I}}(cpu *Core) {
     b := int(cpu.Registers.{{.I}})
     f := 0
     if cpu.Registers.GetCarry() {
@@ -102,8 +102,8 @@ func gbSUBHL{{.I0}}{{.I1}}(cpu *Core) {
 `))
 
 var sbcrTemplate = template.Must(template.New("SBCr").Parse(`
-// gbSBC{{.I}} Sets A to A - {{.I}} - FlagCarry
-func gbSBC{{.I}}(cpu *Core) {
+// gbSBCr{{.I}} Sets A to A - {{.I}} - FlagCarry
+func gbSBCr{{.I}}(cpu *Core) {
     b := int(cpu.Registers.{{.I}})
     f := 0
     if cpu.Registers.GetCarry() {
@@ -127,8 +127,8 @@ func gbSBC{{.I}}(cpu *Core) {
 // endregion
 // region CP
 var cpTemplate = template.Must(template.New("CPr").Parse(`
-// gbCP{{.I}} Checks if {{.I}} == A
-func gbCP{{.I}}(cpu *Core) {
+// gbCPr{{.I}} Checks if {{.I}} == A
+func gbCPr{{.I}}(cpu *Core) {
     cpu.Registers.SetCarry(cpu.Registers.A < cpu.Registers.{{.I}})
     cpu.Registers.SetZero(cpu.Registers.A == cpu.Registers.{{.I}})
     cpu.Registers.SetSub(true)
@@ -136,6 +136,115 @@ func gbCP{{.I}}(cpu *Core) {
 
     cpu.Registers.LastClockM = 1
     cpu.Registers.LastClockT = 4
+}
+`))
+
+// endregion
+// region Operators
+var andTemplate = template.Must(template.New("ANDr").Parse(`
+// gbANDr{{.I}} Sets A to A & {{.I}}
+func gbANDr{{.I}}(cpu *Core) {
+	cpu.Registers.A &= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(true)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var orTemplate = template.Must(template.New("ORr").Parse(`
+// gbORr{{.I}} Sets A to A | {{.I}}
+func gbORr{{.I}}(cpu *Core) {
+	cpu.Registers.A |= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(false)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var xorTemplate = template.Must(template.New("XORr").Parse(`
+// gbXORr{{.I}} Sets A to A | {{.I}}
+func gbXORr{{.I}}(cpu *Core) {
+	cpu.Registers.A ^= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(false)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+// endregion
+// region INC/DEC
+var incTemplate = template.Must(template.New("INCr").Parse(`
+// gbINCr{{.I}} Sets {{.I}} to {{.I}} + 1
+func gbINCr{{.I}}(cpu *Core) {
+	v := cpu.Registers.{{.I}}
+	cpu.Registers.{{.I}}++
+
+    // cpu.Registers.SetCarry(int(v) + 1 > 255) // Does not affect carry
+    cpu.Registers.SetZero(cpu.Registers.{{.I}} == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry((v & 0xF) + 1 > 0xF)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var decTemplate = template.Must(template.New("DECr").Parse(`
+// gbDECr{{.I}} Sets {{.I}} to {{.I}} + 1
+func gbDECr{{.I}}(cpu *Core) {
+	v := cpu.Registers.{{.I}}
+	cpu.Registers.{{.I}}--
+
+    // cpu.Registers.SetCarry(int(v) - 1 < 0) // Does not affect carry
+    cpu.Registers.SetZero(cpu.Registers.{{.I}} == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry((v & 0xF) == 0)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var incrrTemplate = template.Must(template.New("INCrr").Parse(`
+// gbINC{{.I0}}{{.I1}} Sets ( {{.I0}} << 8 + {{.I1}} ) to (  {{.I0}} << 8 + {{.I1}} ) + 1
+func gbINC{{.I0}}{{.I1}}(cpu *Core) {
+	cpu.Registers.{{.I0}}++
+
+	if cpu.Registers.{{.I0}} == 0 {
+		cpu.Registers.{{.I1}}++
+	}
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+`))
+
+var decrrTemplate = template.Must(template.New("DECrr").Parse(`
+// gbDEC{{.I0}}{{.I1}} Sets ( {{.I0}} << 8 + {{.I1}} ) to ( {{.I0}} << 8 + {{.I1}} ) - 1
+func gbDEC{{.I0}}{{.I1}}(cpu *Core) {
+	cpu.Registers.{{.I0}}--
+
+	if cpu.Registers.{{.I0}} == 0 {
+		cpu.Registers.{{.I1}}--
+	}
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
 }
 `))
 
@@ -455,52 +564,6 @@ func gbCPn(cpu *Core) {
 
 `
 }
-
-var andTemplate = template.Must(template.New("ANDr").Parse(`
-// gbAND{{.I}} Sets A to A & {{.I}}
-func gbAND{{.I}}(cpu *Core) {
-	cpu.Registers.A &= cpu.Registers.{{.I}}
-
-    cpu.Registers.SetCarry(false)
-    cpu.Registers.SetZero(cpu.Registers.A == 0)
-    cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(true)
-
-    cpu.Registers.LastClockM = 1
-    cpu.Registers.LastClockT = 4
-}
-`))
-
-var orTemplate = template.Must(template.New("ORr").Parse(`
-// gbOR{{.I}} Sets A to A | {{.I}}
-func gbOR{{.I}}(cpu *Core) {
-	cpu.Registers.A |= cpu.Registers.{{.I}}
-
-    cpu.Registers.SetCarry(false)
-    cpu.Registers.SetZero(cpu.Registers.A == 0)
-    cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(false)
-
-    cpu.Registers.LastClockM = 1
-    cpu.Registers.LastClockT = 4
-}
-`))
-
-var xorTemplate = template.Must(template.New("XORr").Parse(`
-// gbXOR{{.I}} Sets A to A | {{.I}}
-func gbXOR{{.I}}(cpu *Core) {
-	cpu.Registers.A ^= cpu.Registers.{{.I}}
-
-    cpu.Registers.SetCarry(false)
-    cpu.Registers.SetZero(cpu.Registers.A == 0)
-    cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(false)
-
-    cpu.Registers.LastClockM = 1
-    cpu.Registers.LastClockT = 4
-}
-`))
-
 func BuildOperators() string {
 	buff := bytes.NewBuffer(nil)
 
@@ -611,7 +674,7 @@ func gbORn(cpu *Core) {
 }
 
 // gbXORHL Sets A to A ^ [HL]
-func gbXORHL(cpu *cpu.Core) {
+func gbXORHL(cpu *Core) {
 	cpu.Registers.A ^= cpu.Memory.ReadByte(cpu.Registers.HL())
 
 	cpu.Registers.SetCarry(false)
@@ -624,7 +687,7 @@ func gbXORHL(cpu *cpu.Core) {
 }
 
 // gbXORn Sets A to A ^ [PC]
-func gbXORn(cpu *cpu.Core) {
+func gbXORn(cpu *Core) {
 	cpu.Registers.A ^= cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
 
@@ -638,8 +701,87 @@ func gbXORn(cpu *cpu.Core) {
 }
 `
 }
+func BuildIncDec() string {
+	buff := bytes.NewBuffer(nil)
 
-/*
- */
+	for _, I := range cpu.AllRegisters {
+		incTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+		decTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+	}
+
+	for _, I0 := range cpu.AllRegisters {
+		for _, I1 := range cpu.AllRegisters {
+			incrrTemplate.Execute(buff, struct {
+				I0 string
+				I1 string
+			}{
+				I0: I0,
+				I1: I1,
+			})
+			decrrTemplate.Execute(buff, struct {
+				I0 string
+				I1 string
+			}{
+				I0: I0,
+				I1: I1,
+			})
+		}
+	}
+
+	return buff.String() + `
+
+// gbINCHLm Sets [HL] to [HL] + 1
+func gbINCHLm(cpu *Core) {
+	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
+	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v+1))
+
+	cpu.Registers.SetCarry((v+1) > 255)
+	cpu.Registers.SetZero((v+1) & 0xFF == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry((v & 0xF) + 1 > 0xF)
+
+	cpu.Registers.LastClockM = 3
+	cpu.Registers.LastClockT = 12
+}
+
+// gbDECHLm Sets [HL] to [HL] - 1
+func gbDECHLm(cpu *Core) {
+	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
+	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v-1))
+
+	cpu.Registers.SetCarry((v-1) < 0)
+	cpu.Registers.SetZero((v-1) & 0xFF == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry((v & 0xF) == 0)
+
+	cpu.Registers.LastClockM = 3
+	cpu.Registers.LastClockT = 12
+}
+
+// gbDECSP Sets SP = SP - 1
+func gbDECSP(cpu *Core) {
+    cpu.Registers.SP--
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+// gbINCSP Sets SP = SP + 1
+func gbINCSP(cpu *Core) {
+    cpu.Registers.SP++
+
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
+}
+
+`
+}
 
 // endregion
