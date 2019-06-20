@@ -44,6 +44,9 @@ func main() {
     instructions += gendata.BuildIncDec()
     instructions += "// endregion \n"
     // endregion
+    // region Bit Manipulation
+    instructions += gendata.BuildBitManipulation()
+    // endregion
 
     gendata.InstructionsFileTemplate.Execute(f, struct {
         Timestamp    time.Time
