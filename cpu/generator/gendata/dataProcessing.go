@@ -426,7 +426,6 @@ func BuildCP() string {
 	}
 
 	return buff.String() + `
-// gbADDHL Adds byte from [HL] to A
 // gbCPHL Compares byte from [HL] to A
 func gbCPHL(cpu *Core) {
     b := cpu.Memory.ReadByte(cpu.Registers.HL())
@@ -441,7 +440,7 @@ func gbCPHL(cpu *Core) {
 }
 
 // gbCPn Compares byte from [PC] to A
-func gbCPn(cpu *cpu.Core) {
+func gbCPn(cpu *Core) {
     b := cpu.Memory.ReadByte(cpu.Registers.PC)
     cpu.Registers.PC++
 
@@ -456,5 +455,191 @@ func gbCPn(cpu *cpu.Core) {
 
 `
 }
+
+var andTemplate = template.Must(template.New("ANDr").Parse(`
+// gbAND{{.I}} Sets A to A & {{.I}}
+func gbAND{{.I}}(cpu *Core) {
+	cpu.Registers.A &= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(true)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var orTemplate = template.Must(template.New("ORr").Parse(`
+// gbOR{{.I}} Sets A to A | {{.I}}
+func gbOR{{.I}}(cpu *Core) {
+	cpu.Registers.A |= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(false)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+var xorTemplate = template.Must(template.New("XORr").Parse(`
+// gbXOR{{.I}} Sets A to A | {{.I}}
+func gbXOR{{.I}}(cpu *Core) {
+	cpu.Registers.A ^= cpu.Registers.{{.I}}
+
+    cpu.Registers.SetCarry(false)
+    cpu.Registers.SetZero(cpu.Registers.A == 0)
+    cpu.Registers.SetSub(false)
+    cpu.Registers.SetHalfCarry(false)
+
+    cpu.Registers.LastClockM = 1
+    cpu.Registers.LastClockT = 4
+}
+`))
+
+func BuildOperators() string {
+	buff := bytes.NewBuffer(nil)
+
+	for _, I := range cpu.AllRegisters {
+		andTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+		orTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+		xorTemplate.Execute(buff, struct {
+			I string
+		}{
+			I: I,
+		})
+	}
+
+	return buff.String() + `
+
+// gbDAA
+func gbDAA(cpu *Core) {
+	a := int(cpu.Registers.A)
+
+	if cpu.Registers.GetSub() {
+		if cpu.Registers.GetHalfCarry() {
+			a -= 0x6
+		} else {
+			a -= 0x60
+		}
+	} else {
+		if cpu.Registers.GetHalfCarry() || (a & 0xF) > 0x9 {
+			a += 0x6
+		} else {
+			a += 0x60
+		}
+	}
+
+	cpu.Registers.A = uint8(a)
+	
+
+	cpu.Registers.SetZero(a == 0)
+	cpu.Registers.SetHalfCarry(false)
+	
+	if a & 0x100 == 0x100 {
+		cpu.Registers.SetCarry(true)
+	}
+
+	cpu.Registers.LastClockM = 1
+	cpu.Registers.LastClockT = 4
+}
+
+// gbANDHL Sets A to A & [HL]
+func gbANDHL(cpu *Core) {
+	cpu.Registers.A &= cpu.Memory.ReadByte(cpu.Registers.HL())
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(true)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+
+// gbANDn Sets A to A & [PC]
+func gbANDn(cpu *Core) {
+	cpu.Registers.A &= cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Registers.PC++
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(true)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+
+// gbORHL Sets A to A | [HL]
+func gbORHL(cpu *Core) {
+	cpu.Registers.A |= cpu.Memory.ReadByte(cpu.Registers.HL())
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(false)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+
+// gbORn Sets A to A | [PC]
+func gbORn(cpu *Core) {
+	cpu.Registers.A |= cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Registers.PC++
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(false)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+
+// gbXORHL Sets A to A ^ [HL]
+func gbXORHL(cpu *cpu.Core) {
+	cpu.Registers.A ^= cpu.Memory.ReadByte(cpu.Registers.HL())
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(false)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+
+// gbXORn Sets A to A ^ [PC]
+func gbXORn(cpu *cpu.Core) {
+	cpu.Registers.A ^= cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Registers.PC++
+
+	cpu.Registers.SetCarry(false)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
+	cpu.Registers.SetSub(false)
+	cpu.Registers.SetHalfCarry(false)
+
+	cpu.Registers.LastClockM = 2
+	cpu.Registers.LastClockT = 8
+}
+`
+}
+
+/*
+ */
 
 // endregion
