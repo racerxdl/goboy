@@ -65,7 +65,7 @@ func gbLDmm{{.I}}(cpu *Core) {
 `))
 
 var ldrrrmTemplate = template.Must(template.New("LDrrrm").Parse(`
-// gbLD{{.H}}{{.L}}{{.O}}m  Reads from memory pointed by {{.H}} << 8 + {{.L}} and writes to {{.O}} 
+// gbLD{{.H}}{{.L}}{{.O}}m  Reads from memory pointed by {{.H}} << 8 + {{.L}} and writes to {{.O}}
 func gbLD{{.H}}{{.L}}{{.O}}m(cpu *Core) {
     hl := (uint16(cpu.Registers.{{.H}}) << 8) + uint16(cpu.Registers.{{.L}})
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(hl)
@@ -88,12 +88,12 @@ func gbLD{{.O}}mm(cpu *Core) {
 var ldrrnnTemplate = template.Must(template.New("LDrrnn").Parse(`
 // gbLD{{.O1}}{{.O2}}nn Reads from memory pointed by PC to {{.O2}} and PC+1 to {{.O1}}
 func gbLD{{.O1}}{{.O2}}nn(cpu *Core) {
-    
+
     cpu.Registers.{{.O2}} = cpu.Memory.ReadByte(cpu.Registers.PC)
     cpu.Registers.PC++
     cpu.Registers.{{.O1}} = cpu.Memory.ReadByte(cpu.Registers.PC)
     cpu.Registers.PC++
-    
+
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
 }
@@ -118,7 +118,7 @@ func gbLD{{.O}}IOn(cpu *Core) {
     addr := cpu.Memory.ReadByte(cpu.Registers.PC)
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(0xFF00 + uint16(addr))
     cpu.Registers.PC++
-    
+
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
 }
