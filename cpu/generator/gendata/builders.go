@@ -237,7 +237,7 @@ var GBInstructions = []GBInstruction{
    gbCALLNZnn,
    gbPUSHBC,
    gbADDn,
-   gbRST00,
+   func (cpu *Core) { gbRSTXX(cpu, 0x00) },
    gbRETZ,
    gbRET,
    gbJPZnn,
@@ -245,7 +245,7 @@ var GBInstructions = []GBInstruction{
    gbCALLZnn,
    gbCALLnn,
    gbADCn,
-   gbRST08,
+   func (cpu *Core) { gbRSTXX(cpu, 0x08) },
    // endregion
    // region 0xD0 Group
    gbRETNC,
@@ -255,7 +255,7 @@ var GBInstructions = []GBInstruction{
    gbCALLNCnn,
    gbPUSHDE,
    gbSUBn,
-   gbRST10,
+   func (cpu *Core) { gbRSTXX(cpu, 0x10) },
    gbRETC,
    gbRETI,
    gbJPCnn,
@@ -263,7 +263,7 @@ var GBInstructions = []GBInstruction{
    gbCALLCnn,
    gbNOPWARNxDD,
    gbSBCn,
-   gbRST18,
+   func (cpu *Core) { gbRSTXX(cpu, 0x18) },
    // endregion
    // region 0xE0 Group
    gbLDIOnA,
@@ -273,7 +273,7 @@ var GBInstructions = []GBInstruction{
    gbNOPWARNxE4,
    gbPUSHHL,
    gbANDn,
-   gbRST20,
+   func (cpu *Core) { gbRSTXX(cpu, 0x20) },
    gbADDSPn,
    gbJPHL,
    gbLDmmA,
@@ -281,7 +281,7 @@ var GBInstructions = []GBInstruction{
    gbNOPWARNxEC,
    gbNOPWARNxED,
    gbXORn,
-   gbRST28,
+   func (cpu *Core) { gbRSTXX(cpu, 0x28) },
    // endregion
    // region 0xF0 Group
    gbLDAIOn,
@@ -291,7 +291,7 @@ var GBInstructions = []GBInstruction{
    gbNOPWARNxF4,
    gbPUSHAF,
    gbORn,
-   gbRST30,
+   func (cpu *Core) { gbRSTXX(cpu, 0x30) },
    gbLDHLSPn,
    gbLDHLSPr,
    gbLDAmm,
@@ -299,7 +299,7 @@ var GBInstructions = []GBInstruction{
    gbNOPWARNxFC,
    gbNOPWARNxFD,
    gbCPn,
-   gbRST38,
+   func (cpu *Core) { gbRSTXX(cpu, 0x38) },
    // endregion
 }
 `))

@@ -108,32 +108,32 @@ func (c *Core) cycle() {
 		switch {
 		case (interruptsFired & IntVblank) > 0:
 			c.Registers.TriggerInterrupts &^= IntVblank
-			//CPUInstructions.RSTXX(this, Addresses.INT_VBLANK);  // V-Blank
-			//totalClockM += reg.lastClockM;
-			//totalClockT += reg.lastClockT;
+			gbRSTXX(c, AddrIntVblank) // V-Blank
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntLcdstat) > 0:
 			cpuLog.Debug("(INT) [LCDSTAT]")
 			c.Registers.TriggerInterrupts &^= IntLcdstat
-			//CPUInstructions.RSTXX(this, Addresses.INT_LCDSTAT); // LCD Stat
-			//totalClockM += reg.lastClockM;
-			//totalClockT += reg.lastClockT;
+			gbRSTXX(c, AddrIntLcdstat) // LCD Stat
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntTimer) > 0:
 			cpuLog.Debug("(INT) [TIMER]")
 			c.Registers.TriggerInterrupts &^= IntTimer
-			//CPUInstructions.RSTXX(this, Addresses.INT_TIMER);  // Timer
-			//totalClockM += reg.lastClockM;
-			//totalClockT += reg.lastClockT;
+			gbRSTXX(c, AddrIntTimer) // Timer
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntSerial) > 0:
 			cpuLog.Debug("(INT) [SERIAL]")
 			c.Registers.TriggerInterrupts &^= IntSerial
-			//CPUInstructions.RSTXX(this, Addresses.INT_SERIAL); // Serial
-			//totalClockM += reg.lastClockM;
-			//totalClockT += reg.lastClockT;
+			gbRSTXX(c, AddrIntSerial) // Serial
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntJoypad) > 0:
 			c.Registers.TriggerInterrupts &^= IntJoypad
-			//CPUInstructions.RSTXX(this, Addresses.INT_JOYPAD); // Joypad Interrupt
-			//totalClockM += reg.lastClockM;
-			//totalClockT += reg.lastClockT;
+			gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
 		default:
 			c.Registers.InterruptEnable = true
 		}

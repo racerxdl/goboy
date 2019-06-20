@@ -21,7 +21,7 @@ func gbRLA(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 
-func gnRLCA(cpu *Core) {
+func gbRLCA(cpu *Core) {
     c := (cpu.Registers.A >> 7) & 0x1
     cpu.Registers.A = cpu.Registers.A << 1 | c
 
@@ -34,7 +34,7 @@ func gnRLCA(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 
-func gnRRA(cpu *Core) {
+func gbRRA(cpu *Core) {
     c := cpu.Registers.A & 0x1
     f := byte(0)
     if cpu.Registers.GetCarry() {
@@ -52,7 +52,7 @@ func gnRRA(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 
-func gnRRCA(cpu *Core) {
+func gbRRCA(cpu *Core) {
     c := cpu.Registers.A & 0x1
 
     cpu.Registers.A = (cpu.Registers.A >> 1) | (c << 7)
@@ -66,7 +66,7 @@ func gnRRCA(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 
-func gnCPL(cpu *Core) {
+func gbCPL(cpu *Core) {
     cpu.Registers.A = ^cpu.Registers.A
 
     cpu.Registers.SetHalfCarry(true)
@@ -75,7 +75,7 @@ func gnCPL(cpu *Core) {
     cpu.Registers.LastClockM = 1
     cpu.Registers.LastClockT = 4
 }
-func gnCCF(cpu *Core) {
+func gbCCF(cpu *Core) {
     cpu.Registers.SetHalfCarry(false)
     cpu.Registers.SetCarry(!cpu.Registers.GetCarry())
     cpu.Registers.SetSub(false)
@@ -84,7 +84,7 @@ func gnCCF(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 
-func gnSCF(cpu *Core) {
+func gbSCF(cpu *Core) {
     cpu.Registers.SetHalfCarry(false)
     cpu.Registers.SetCarry(true)
     cpu.Registers.SetSub(false)

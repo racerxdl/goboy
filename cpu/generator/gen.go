@@ -47,6 +47,12 @@ func main() {
     // region Bit Manipulation
     instructions += gendata.BuildBitManipulation()
     // endregion
+    // region Interrupt calls
+    instructions += gendata.BuildInterruptCalls()
+    // endregion
+    // region StackManagement calls
+    instructions += gendata.BuildStackManagement()
+    // endregion
 
     gendata.InstructionsFileTemplate.Execute(f, struct {
         Timestamp    time.Time
