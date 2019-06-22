@@ -31,19 +31,16 @@ var gbBios = []byte{
 }
 
 type Memory struct {
-	videoRam []byte
-	workRam  []byte
-	highRam  []byte
-
+	videoRam    []byte
+	workRam     []byte
+	highRam     []byte
 	romData     []byte
 	catridgeRam []byte
-
 	videoBuffer *pixel.PictureData
 	currentBank uint16
 
 	inBIOS bool
-
-	cpu *Core
+	cpu    *Core
 }
 
 func MakeMemory(cpu *Core) *Memory {
@@ -64,7 +61,7 @@ func MakeMemory(cpu *Core) *Memory {
 func (m *Memory) Reset() {
 	img := image.NewRGBA(image.Rect(0, 0, 160, 144))
 	m.videoBuffer = pixel.PictureDataFromImage(img)
-	pixhelp.ClearPictureData(m.videoBuffer, color.White)
+	pixhelp.ClearPictureData(m.videoBuffer, color.Black)
 
 	m.currentBank = 0
 
@@ -133,7 +130,9 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 			case 0xFF0F:
 				m.cpu.Registers.TriggerInterrupts = val
 			}
-		case 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70:
+		case 0x10, 0x20, 0x30:
+			// TODO
+		case 0x40, 0x50, 0x60, 0x70:
 			m.cpu.GPU.WriteByte(addr, val)
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:

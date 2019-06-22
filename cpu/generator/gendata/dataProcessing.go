@@ -194,7 +194,7 @@ func gbINCr{{.I}}(cpu *Core) {
 	v := cpu.Registers.{{.I}}
 	cpu.Registers.{{.I}}++
 
-    // cpu.Registers.SetCarry(int(v) + 1 > 255) // Does not affect carry
+    //cpu.Registers.SetCarry(int(v) + 1 > 255)
     cpu.Registers.SetZero(cpu.Registers.{{.I}} == 0)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry((v & 0xF) + 1 > 0xF)
@@ -205,12 +205,12 @@ func gbINCr{{.I}}(cpu *Core) {
 `))
 
 var decTemplate = template.Must(template.New("DECr").Parse(`
-// gbDECr{{.I}} Sets {{.I}} to {{.I}} + 1
+// gbDECr{{.I}} Sets {{.I}} to {{.I}} - 1
 func gbDECr{{.I}}(cpu *Core) {
 	v := cpu.Registers.{{.I}}
 	cpu.Registers.{{.I}}--
 
-    // cpu.Registers.SetCarry(int(v) - 1 < 0) // Does not affect carry
+    //cpu.Registers.SetCarry(int(v) - 1 < 0)
     cpu.Registers.SetZero(cpu.Registers.{{.I}} == 0)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry((v & 0xF) == 0)
@@ -223,10 +223,10 @@ func gbDECr{{.I}}(cpu *Core) {
 var incrrTemplate = template.Must(template.New("INCrr").Parse(`
 // gbINC{{.I0}}{{.I1}} Sets ( {{.I0}} << 8 + {{.I1}} ) to (  {{.I0}} << 8 + {{.I1}} ) + 1
 func gbINC{{.I0}}{{.I1}}(cpu *Core) {
-	cpu.Registers.{{.I0}}++
+	cpu.Registers.{{.I1}}++
 
-	if cpu.Registers.{{.I0}} == 0 {
-		cpu.Registers.{{.I1}}++
+	if cpu.Registers.{{.I1}} == 0 {
+		cpu.Registers.{{.I0}}++
 	}
 
     cpu.Registers.LastClockM = 2
@@ -237,10 +237,10 @@ func gbINC{{.I0}}{{.I1}}(cpu *Core) {
 var decrrTemplate = template.Must(template.New("DECrr").Parse(`
 // gbDEC{{.I0}}{{.I1}} Sets ( {{.I0}} << 8 + {{.I1}} ) to ( {{.I0}} << 8 + {{.I1}} ) - 1
 func gbDEC{{.I0}}{{.I1}}(cpu *Core) {
-	cpu.Registers.{{.I0}}--
+	cpu.Registers.{{.I1}}--
 
-	if cpu.Registers.{{.I0}} == 0 {
-		cpu.Registers.{{.I1}}--
+	if cpu.Registers.{{.I1}} == 0 {
+		cpu.Registers.{{.I0}}--
 	}
 
     cpu.Registers.LastClockM = 2

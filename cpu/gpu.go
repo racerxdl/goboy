@@ -1,7 +1,9 @@
 package cpu
 
 import (
+	"github.com/faiface/pixel"
 	"github.com/racerxdl/goboy/pixhelp"
+	"image"
 	"image/color"
 	"sort"
 )
@@ -28,12 +30,16 @@ type GPU struct {
 	tileBuffer                   []color.RGBA
 	registers                    []byte
 	tileSet                      []gpuTile
-	vramBuffer                   []color.RGBA
+	vramBuffer                   *pixel.PictureData
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
 	bgPallete                    [4]color.RGBA
 	obj0Pallete                  [4]color.RGBA
 	obj1Pallete                  [4]color.RGBA
+}
+
+func (g *GPU) GetVRAM() *pixel.PictureData {
+	return g.vramBuffer
 }
 
 func (g *GPU) LycLy() bool {
@@ -90,10 +96,13 @@ func (g *GPU) Reset() {
 	for i := 0; i < 512; i++ {
 		g.tileSet[i] = makeGPUTile()
 	}
-	g.vramBuffer = make([]color.RGBA, 256*256)
-	for i := 0; i < 256*256; i++ {
-		g.vramBuffer[i] = pixhelp.ToRGBA(color.White)
-	}
+
+	g.vramBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
+	pixhelp.ClearPictureData(g.vramBuffer, color.Black)
+	//g.vramBuffer = make([]color.RGBA, 256*256)
+	//for i := 0; i < 256*256; i++ {
+	//	g.vramBuffer[i] = pixhelp.ToRGBA(color.Black)
+	//}
 	g.oam = make([]byte, 160)
 
 	g.switchLCD = true
@@ -236,7 +245,7 @@ func (g *GPU) WriteByte(addr uint16, val uint8) {
 
 		g.switchLCD = (val & 0x80) > 0
 	case 0xFF41:
-		g.lcdStat = (byte)(val & 0x78)
+		g.lcdStat = val & 0x78
 	case 0xFF42:
 		g.scrollY = int(val)
 	case 0xFF43:
@@ -518,7 +527,7 @@ func (g *GPU) renderScanline() {
 }
 
 func (g *GPU) updateVRAM() {
-	for i := range g.vramBuffer {
+	for i := range g.vramBuffer.Pix {
 		py := i / 256
 		px := i % 256
 		tileNum := (px / 8) + ((py / 8) * 32)
@@ -526,7 +535,7 @@ func (g *GPU) updateVRAM() {
 		tile := g.tileSet[v]
 		x := px % 8
 		y := py % 8
-		g.vramBuffer[i] = g.bgPallete[tile.TileData[y][x]]
+		g.vramBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
 	}
 }
 

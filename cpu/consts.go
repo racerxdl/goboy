@@ -14,7 +14,7 @@ const (
 	oamCycles             = 83 / 4
 	vRamCycles            = 175 / 4
 	CpuClock              = 4194304
-	CpuPeriodMs           = 1000 / CpuClock
+	CpuPeriodns           = (1000 * 1000) / CpuClock
 )
 
 // Addresses

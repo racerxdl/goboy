@@ -16,8 +16,8 @@ func gbLDrr{{.I}}{{.O}}(cpu *Core) {
 }
 `))
 
-var ldrHLmTemplate = template.Must(template.New("LDrHLmO").Parse(`
-// gbLDrHLm{{.O}} Loads to Register {{.O}} the value in memory pointed by HL
+var ldrHLmTemplate = template.Must(template.New("LDrHLm").Parse(`
+// gbLDrHLm{{.O}} Sets {{.O}} to [HL]
 func gbLDrHLm{{.O}}(cpu *Core) {
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(cpu.Registers.HL())
     cpu.Registers.LastClockM = 2
@@ -25,8 +25,8 @@ func gbLDrHLm{{.O}}(cpu *Core) {
 }
 `))
 
-var ldHLmrTemplate = template.Must(template.New("LDrHLmO").Parse(`
-// gbLDHLmr{{.I}} Writes register {{.I}} to memory pointed by HL
+var ldHLmrTemplate = template.Must(template.New("LDHLmr").Parse(`
+// gbLDHLmr{{.I}} Sets [HL] to {{.I}}
 func gbLDHLmr{{.I}}(cpu *Core) {
     cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Registers.{{.I}})
     cpu.Registers.LastClockM = 2
@@ -65,8 +65,8 @@ func gbLDmm{{.I}}(cpu *Core) {
 `))
 
 var ldrrrmTemplate = template.Must(template.New("LDrrrm").Parse(`
-// gbLD{{.H}}{{.L}}{{.O}}m  Reads from memory pointed by {{.H}} << 8 + {{.L}} and writes to {{.O}}
-func gbLD{{.H}}{{.L}}{{.O}}m(cpu *Core) {
+// gbLD{{.O}}{{.H}}{{.L}}m  Sets {{.O}} to [{{.H}} << 8 + {{.L}}]
+func gbLD{{.O}}{{.H}}{{.L}}m(cpu *Core) {
     hl := (uint16(cpu.Registers.{{.H}}) << 8) + uint16(cpu.Registers.{{.L}})
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(hl)
     cpu.Registers.LastClockM = 4

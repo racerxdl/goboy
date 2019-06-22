@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"fmt"
 	"github.com/quan-to/slog"
 	"sync"
 	"time"
@@ -28,11 +29,19 @@ type Core struct {
 	l sync.Mutex
 }
 
+type DebugData struct {
+	PC, SP, A, B, C, D, E, F, H, L, HL       string
+	PCX, SPX                                 string
+	GPUSCROLLX, GPUSCROLLY, GPUWINX, GPUWINY string
+	GPUMODECLOCKS, GPULINE                   string
+}
+
 func MakeCore() *Core {
 	c := &Core{
 		Registers: MakeRegisters(),
 		running:   false,
 		stopped:   false,
+		paused:    true,
 	}
 	c.Memory = MakeMemory(c)
 	c.GPU = MakeGPU(c)
@@ -66,9 +75,6 @@ func (c *Core) loop() {
 	for c.running {
 		if !c.paused {
 			delta := time.Since(c.lastUpdate)
-			if delta.Nanoseconds() < CpuPeriodMs*1000 {
-				continue
-			}
 			c.lastCycleTime = delta.Nanoseconds()
 			c.cycle()
 			c.lastUpdate = time.Now()
@@ -77,6 +83,31 @@ func (c *Core) loop() {
 		}
 	}
 	cpuLog.Info("CPU Loop Stopped")
+}
+
+func (c *Core) GetDebugData() DebugData {
+	return DebugData{
+		PCX: fmt.Sprintf("%04x", c.Registers.PC),
+		SPX: fmt.Sprintf("%04x", c.Registers.SP),
+		PC:  fmt.Sprintf("%6d", c.Registers.PC),
+		SP:  fmt.Sprintf("%6d", c.Registers.SP),
+		A:   fmt.Sprintf("%02x", c.Registers.A),
+		B:   fmt.Sprintf("%02x", c.Registers.B),
+		C:   fmt.Sprintf("%02x", c.Registers.C),
+		D:   fmt.Sprintf("%02x", c.Registers.D),
+		E:   fmt.Sprintf("%02x", c.Registers.E),
+		H:   fmt.Sprintf("%02x", c.Registers.H),
+		L:   fmt.Sprintf("%02x", c.Registers.L),
+		HL:  fmt.Sprintf("%04x", c.Registers.HL()),
+		F:   fmt.Sprintf("%08b", c.Registers.F),
+
+		GPUSCROLLX:    fmt.Sprintf("%d", c.GPU.scrollX),
+		GPUSCROLLY:    fmt.Sprintf("%d", c.GPU.scrollY),
+		GPUWINX:       fmt.Sprintf("%d", c.GPU.winX),
+		GPUWINY:       fmt.Sprintf("%d", c.GPU.winX),
+		GPUMODECLOCKS: fmt.Sprintf("%d", c.GPU.modeClocks),
+		GPULINE:       fmt.Sprintf("%d", c.GPU.line),
+	}
 }
 
 func (c *Core) cycle() {
@@ -151,6 +182,9 @@ func (c *Core) cycle() {
 	}
 
 	c.l.Unlock()
+
+	cycleDuration := time.Second * time.Duration(int64(totalClockM)) / CpuClock
+	time.Sleep(cycleDuration)
 }
 
 func (c *Core) Reset() {
@@ -162,5 +196,17 @@ func (c *Core) Reset() {
 	c.Memory.Reset()
 	c.GPU.Reset()
 	c.Timer.Reset()
+	c.l.Unlock()
+}
+
+func (c *Core) Pause() {
+	c.l.Lock()
+	c.paused = true
+	c.l.Unlock()
+}
+
+func (c *Core) Continue() {
+	c.l.Lock()
+	c.paused = false
 	c.l.Unlock()
 }
