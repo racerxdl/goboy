@@ -1,0 +1,336 @@
+// Name|Instruction|Cycles|ZSHC|Template[arguments]
+// 00
+NOP|NOP|4|----|NOP[]|1
+LDBCnn|LD BC, d16|12|----|LD__nn["B", "C"]|3
+LDBCmA|LD [BC], A|8|----|LD__m_["B", "C", "A"]|1
+INCBC|INC BC|8|----|INC["B", "C"]|1
+
+INCr_b|INC B|4|Z0H-|INCr["B"]|1
+DECr_b|DEC B|4|Z1H-|DECr["B"]|1
+LDrn_b|LD B, d8|8|----|LDrn_["B"]|2
+RLCA|RLCA|4|000C|RLCA[]|1
+
+LDmmSP|LD [a16], SP|20|----|LDmmSP[]|3
+ADDHLBC|ADD HL, BC|8|-0HC|ADDHL["B", "C"]|1
+LDABCm|LD A, [BC]|8|----|LD___m["A", "B", "C"]|1
+DECBC|DEC BC|8|----|DEC["B", "C"]|1
+
+INCr_c|INC C|4|Z0H-|INCr["C"]|1
+DECr_c|DEC C|4|Z1H-|DECr["C"]|1
+LDrn_c|LD C, d8|8|----|LDrn_["C"]|2
+RRCA|RRCA|4|000C|RRCA[]|1
+
+// 10
+STOP|STOP|4|----|STOP[]|1
+LDDEnn|LD DE, d16|12|----|LD__nn["D", "E"]|3
+LDDEmA|LD [DE], A|8|----|LD__m_["D", "E", "A"]|1
+INCDE|INC DE|8|----|INC["D", "E"]|1
+
+INCr_d|INC D|4|Z0H-|INCr["D"]|1
+DECr_d|DEC D|4|Z1H-|DECr["D"]|1
+LDrn_d|LD D, d8|8|----|LDrn_["D"]|2
+RLA|RLA|4|000C|RLA[]|1
+
+JRn|JR r8|12|----|JRn[]|2
+ADDHLDE|ADD HL, DE|8|-0HC|ADDHL["D", "E"]|1
+LDADEm|LD A, [DE]|8|----|LD___m["A", "D", "E"]|1
+DECDE|DEC DE|8|----|DEC["D", "E"]|1
+
+INCr_e|INC E|4|Z0H-|INCr["E"]|1
+DECr_e|DEC E|4|Z1H-|DECr["E"]|1
+LDrn_e|LD E, d8|8|----|LDrn_["E"]|2
+RRA|RRA|4|000C|RRA[]|1
+
+// 20
+JRNZn|JR NZ, r8|12/8|----|JRNZn[]|2
+LDHLnn|LD HL, d16|12|----|LD__nn["H", "L"]|1
+LDHLIA|LD [HL+], A|8|----|LDHLIA[]|1
+INCHL|INC HL|8|----|INC["H", "L"]|1
+
+INCr_h|INC H|4|Z0H-|INCr["H"]|1
+DECr_h|DEC H|4|Z1H-|DECr["H"]|1
+LDrn_h|LD H, d8|8|----|LDrn_["H"]|2
+DAA|DAA|4|Z-0C|DAA[]|1
+
+JRZn|JR Z, r8|12/8|----|JRZn[]|2
+ADDHLHL|ADD HL, HL|8|-0HC|ADDHL["H", "L"]|1
+LDAHLI|LD A, [HL+]|8|----|LDAHLI[]|1
+DECHL|DEC HL|8|----|DEC["H", "L"]|1
+
+INCr_l|INC L|4|Z0H-|INCr["L"]|1
+DECr_l|DEC L|4|Z1H-|DECr["L"]|1
+LDrn_l|LD L, d8|8|----|LDrn_["L"]|2
+CPL|CPL|4|-11-|CPL[]|1
+
+// 30
+JRNCn|JR NC, r8|12/8|----|JRNCn[]|2
+LDSPnn|LD SP, d16|12|----|LDSPnn[]|1
+LDHLDA|LD [HL-], A|8|----|LDHLDA[]|1
+INCSP|INC SP|8|----|INCSP[]|1
+
+INCHLm|INC [HL]|12|Z0H-|INCHLm[]|1
+DECHLm|DEC [HL]|12|Z1H-|DECHLm[]|1
+LDHLmn|LD [HL], d8|12|----|LDHLmn[]|2
+SCF|SCF|4|-001|SCF[]|1
+
+JRCn|JR C, r8|12/8|----|JRCn[]|2
+ADDHLSP|ADD HL, SP|8|-0HC|ADDHLSP[]|1
+LDAHLD|LD A, [HL-]|8|----|LDAHLD[]|1
+DECSP|DEC SP|8|----|DECSP[]|1
+
+INCr_a|INC A|4|Z0H-|INCr["A"]|1
+DECr_a|DEC A|4|Z1H-|DECr["A"]|1
+LDrn_a|LD A, d8|8|----|LDrn_["A"]|2
+CCF|CCF|4|-00C|CCF[]|1
+
+// 40
+LDrr_bb|LD B, B|4|----|LDrr["B", "B"]|1
+LDrr_bc|LD B, C|4|----|LDrr["B", "C"]|1
+LDrr_bd|LD B, D|4|----|LDrr["B", "D"]|1
+LDrr_be|LD B, E|4|----|LDrr["B", "E"]|1
+
+LDrr_bh|LD B, H|4|----|LDrr["B", "H"]|1
+LDrr_bl|LD B, L|4|----|LDrr["B", "L"]|1
+LDrHLm_b|LD B, [HL]|8|----|LDrHLm_["B"]|1
+LDrr_ba|LD B, A|4|----|LDrr["B", "A"]|1
+
+LDrr_cb|LD C, B|4|----|LDrr["C", "B"]|1
+LDrr_cc|LD C, C|4|----|LDrr["C", "C"]|1
+LDrr_cd|LD C, D|4|----|LDrr["C", "D"]|1
+LDrr_ce|LD C, E|4|----|LDrr["C", "E"]|1
+
+LDrr_ch|LD C, H|4|----|LDrr["C", "H"]|1
+LDrr_cl|LD C, L|4|----|LDrr["C", "L"]|1
+LDrHLm_c|LD C, [HL]|8|----|LDrHLm_["C"]|1
+LDrr_ca|LD C, A|4|----|LDrr["C", "A"]|1
+
+// 50
+LDrr_db|LD D, B|4|----|LDrr["D", "B"]|1
+LDrr_dc|LD D, C|4|----|LDrr["D", "C"]|1
+LDrr_dd|LD D, D|4|----|LDrr["D", "D"]|1
+LDrr_de|LD D, E|4|----|LDrr["D", "E"]|1
+
+LDrr_dh|LD D, H|4|----|LDrr["D", "H"]|1
+LDrr_dl|LD D, L|4|----|LDrr["D", "L"]|1
+LDrHLm_d|LD D, [HL]|8|----|LDrHLm_["D"]|1
+LDrr_da|LD D, A|4|----|LDrr["D", "A"]|1
+
+LDrr_eb|LD E, B|4|----|LDrr["E", "B"]|1
+LDrr_ec|LD E, C|4|----|LDrr["E", "C"]|1
+LDrr_ed|LD E, D|4|----|LDrr["E", "D"]|1
+LDrr_ee|LD E, E|4|----|LDrr["E", "E"]|1
+
+LDrr_eh|LD E, H|4|----|LDrr["E", "H"]|1
+LDrr_el|LD E, L|4|----|LDrr["E", "L"]|1
+LDrHLm_e|LD E, [HL]|8|----|LDrHLm_["E"]|1
+LDrr_ea|LD E, A|4|----|LDrr["E", "A"]|1
+
+// 60
+LDrr_hb|LD H, B|4|----|LDrr["H", "B"]|1
+LDrr_hc|LD H, C|4|----|LDrr["H", "C"]|1
+LDrr_hd|LD H, D|4|----|LDrr["H", "D"]|1
+LDrr_he|LD H, E|4|----|LDrr["H", "E"]|1
+
+LDrr_hh|LD H, H|4|----|LDrr["H", "H"]|1
+LDrr_hl|LD H, L|4|----|LDrr["H", "L"]|1
+LDrHLm_h|LD H, [HL]|8|----|LDrHLm_["H"]|1
+LDrr_ha|LD H, A|4|----|LDrr["H", "A"]|1
+
+LDrr_lb|LD L, B|4|----|LDrr["L", "B"]|1
+LDrr_lc|LD L, C|4|----|LDrr["L", "C"]|1
+LDrr_ld|LD L, D|4|----|LDrr["L", "D"]|1
+LDrr_le|LD L, E|4|----|LDrr["L", "E"]|1
+
+LDrr_lh|LD L, H|4|----|LDrr["L", "H"]|1
+LDrr_ll|LD L, L|4|----|LDrr["L", "L"]|1
+LDrHLm_l|LD L, [HL]|8|----|LDrHLm_["L"]|1
+LDrr_la|LD L, A|4|----|LDrr["L", "A"]|1
+
+// 70
+LDHLmr_b|LD [HL], B|8|----|LDHLmr_["B"]|1
+LDHLmr_c|LD [HL], C|8|----|LDHLmr_["C"]|1
+LDHLmr_d|LD [HL], D|8|----|LDHLmr_["D"]|1
+LDHLmr_e|LD [HL], E|8|----|LDHLmr_["E"]|1
+
+LDHLmr_h|LD [HL], H|8|----|LDHLmr_["H"]|1
+LDHLmr_l|LD [HL], L|8|----|LDHLmr_["L"]|1
+HALT|HALT|4|----|HALT[]|1
+LDHLmr_a|LD [HL], A|8|----|LDHLmr_["A"]|1
+
+LDrr_ab|LD A, B|4|----|LDrr["A", "B"]|1
+LDrr_ac|LD A, C|4|----|LDrr["A", "C"]|1
+LDrr_ad|LD A, D|4|----|LDrr["A", "D"]|1
+LDrr_ae|LD A, E|4|----|LDrr["A", "E"]|1
+
+LDrr_ah|LD A, H|4|----|LDrr["A", "H"]|1
+LDrr_al|LD A, L|4|----|LDrr["A", "L"]|1
+LDrHLm_a|LD A, [HL]|8|----|LDrHLm_["A"]|1
+LDrr_aa|LD A, A|4|----|LDrr["A", "A"]|1
+
+// 80
+ADDr_b|ADD A, B|4|Z0HC|ADDr["B"]|1
+ADDr_c|ADD A, C|4|Z0HC|ADDr["C"]|1
+ADDr_d|ADD A, D|4|Z0HC|ADDr["D"]|1
+ADDr_e|ADD A, E|4|Z0HC|ADDr["E"]|1
+
+ADDr_h|ADD A, H|4|Z0HC|ADDr["H"]|1
+ADDr_l|ADD A, L|4|Z0HC|ADDr["L"]|1
+ADDHL|ADD A, [HL]|8|Z0HC|ADDHL[]|1
+ADDr_a|ADD A, A|4|Z0HC|ADDr["A"]|1
+
+ADCr_b|ADC A, B|4|Z0HC|ADCr["B"]|1
+ADCr_c|ADC A, C|4|Z0HC|ADCr["C"]|1
+ADCr_d|ADC A, D|4|Z0HC|ADCr["D"]|1
+ADCr_e|ADC A, E|4|Z0HC|ADCr["E"]|1
+
+ADCr_h|ADC A, H|4|Z0HC|ADCr["H"]|1
+ADCr_l|ADC A, L|4|Z0HC|ADCr["L"]|1
+ADCHL|ADC A, [HL]|8|Z0HC|ADCHL[]|1
+ADCr_a|ADC A, A|4|Z0HC|ADCr["A"]|1
+
+// 90
+SUBr_b|SUB A, B|4|Z1HC|SUBr["B"]|1
+SUBr_c|SUB A, C|4|Z1HC|SUBr["C"]|1
+SUBr_d|SUB A, D|4|Z1HC|SUBr["D"]|1
+SUBr_e|SUB A, E|4|Z1HC|SUBr["E"]|1
+
+SUBr_h|SUB A, H|4|Z1HC|SUBr["H"]|1
+SUBr_l|SUB A, L|4|Z1HC|SUBr["L"]|1
+SUBHL|SUB A, [HL]|8|Z1HC|SUBHL[]|1
+SUBr_a|SUB A, A|4|Z1HC|SUBr["A"]|1
+
+SBCr_b|SBC A, B|4|Z1HC|SBCr["B"]|1
+SBCr_c|SBC A, C|4|Z1HC|SBCr["C"]|1
+SBCr_d|SBC A, D|4|Z1HC|SBCr["D"]|1
+SBCr_e|SBC A, E|4|Z1HC|SBCr["E"]|1
+
+SBCr_h|SBC A, H|4|Z1HC|SBCr["H"]|1
+SBCr_l|SBC A, L|4|Z1HC|SBCr["L"]|1
+SBCHL|SBC A, [HL]|8|Z1HC|SBCHL[]|1
+SBCr_a|SBC A, A|4|Z1HC|SBCr["A"]|1
+
+// A0
+ANDr_b|AND A, B|4|Z010|ANDr["B"]|1
+ANDr_c|AND A, C|4|Z010|ANDr["C"]|1
+ANDr_d|AND A, D|4|Z010|ANDr["D"]|1
+ANDr_e|AND A, E|4|Z010|ANDr["E"]|1
+
+ANDr_h|AND A, H|4|Z010|ANDr["H"]|1
+ANDr_l|AND A, L|4|Z010|ANDr["L"]|1
+ANDHL|AND A, [HL]|8|Z010|ANDHL[]|1
+ANDr_a|AND A, A|4|Z010|ANDr["A"]|1
+
+XORr_b|XOR A, B|4|Z000|XORr["B"]|1
+XORr_c|XOR A, C|4|Z000|XORr["C"]|1
+XORr_d|XOR A, D|4|Z000|XORr["D"]|1
+XORr_e|XOR A, E|4|Z000|XORr["E"]|1
+
+XORr_h|XOR A, H|4|Z000|XORr["H"]|1
+XORr_l|XOR A, L|4|Z000|XORr["L"]|1
+XORHL|XOR A, [HL]|8|Z000|XORHL[]|1
+XORr_a|XOR A, A|4|Z000|XORr["A"]|1
+
+// B0
+ORr_b|OR A, B|4|Z000|ORr["B"]|1
+ORr_c|OR A, C|4|Z000|ORr["C"]|1
+ORr_d|OR A, D|4|Z000|ORr["D"]|1
+ORr_e|OR A, E|4|Z000|ORr["E"]|1
+
+ORr_h|OR A, H|4|Z000|ORr["H"]|1
+ORr_l|OR A, L|4|Z000|ORr["L"]|1
+ORHL|OR A, [HL]|4|Z000|ORHL[]|1
+ORr_a|OR A, A|4|Z000|ORr["A"]|1
+
+CPr_b|CP A, B|4|Z1HC|CPr["B"]|1
+CPr_c|CP A, C|4|Z1HC|CPr["C"]|1
+CPr_d|CP A, D|4|Z1HC|CPr["D"]|1
+CPr_e|CP A, E|4|Z1HC|CPr["E"]|1
+
+CPr_h|CP A, H|4|Z1HC|CPr["H"]|1
+CPr_l|CP A, L|4|Z1HC|CPr["L"]|1
+CPHL|CP A, [HL]|4|Z1HC|CPHL[]|1
+CPr_a|CP A, A|4|Z1HC|CPr["A"]|1
+
+// C0
+RETNZ|RET NZ|20/8|----|RETNZ[]|1
+POPBC|POP BC|12|----|POP["B", "C"]|1
+JPNZnn|JP NZ, a16|16/12|----|JPNZnn[]|3
+JPnn|JP a16|16|----|JPnn[]|3
+
+CALLNZnn|CALL NZ, a16|24/12|----|CALLNZnn[]|3
+PUSHBC|PUSH BC|16|----|PUSH["B", "C"]|1
+ADDn|ADD A, d8|8|Z0HC|ADDn[]|2
+RST00|RST 00H|16|----|RSTXX[0x00]|1
+
+RETZ|RET Z|20/8|----|RETZ[]|1
+RET|RET|16|----|RET[]|1
+JPZnn|JP Z, a16|16/12|----|JPZnn[]|3
+MAPcb|PREFIX CB|4|----|CBCall[]|2
+
+CALLZnn|CALL Z, a16|24/12|----|CALLZnn[]|3
+CALLnn|CALL a16|24|----|CALLnn[]|3
+ADCn|ADC A, d8|8|Z0HC|ADCn[]|2
+RST08|RST 08H|16|----|RSTXX[0x08]|1
+
+// D0
+RETNC|RET NC|20/8|----|RETNC[]|1
+POPDE|POP DE|12|----|POP["D", "E"]|1
+JPNCnn|JP NC, a16|16/12|----|JPNCnn[]|3
+XX|UNDEFINED|0|----|NOPWARN[0xD3]|1
+
+CALLNCnn|CALL NC, a16|24/12|----|CALLNCnn[]|3
+PUSHDE|PUSH DE|16|----|PUSH["D", "E"]|1
+SUBn|SUB A, d8|8|Z1HC|SUBn[]|2
+RST10|RST 10H|16|----|RSTXX[0x10]|1
+
+RETC|RET C|20/8|----|RETC[]|1
+RETI|RETI|16|----|RETI[]|1
+JPCnn|JP C, a16|16/12|----|JPCnn[]|3
+XX|UNDEFINED|0|----|NOPWARN[0xDB]|1
+
+CALLCnn|CALL C, a16|24/12|----|CALLCnn[]|3
+XX|UNDEFINED|0|----|NOPWARN[0xDD]|1
+SBCn|SBC A, d8|8|Z1HC|SBCn[]|2
+RST18|RST 18H|16|----|RSTXX[0x18]|1
+
+// E0
+LDIOnA|LD [$FF00 + a8], A|12|----|LDIOnA[]|1
+POPHL|POP HL|12|----|POP["H", "L"]|1
+LDIOCA|LD [$FF00 + C], A|8|----|LDIOCA[]|1
+XX|UNDEFINED|0|----|NOPWARN[0xE3]|1
+
+XX|UNDEFINED|0|----|NOPWARN[0xE4]|1
+PUSHHL|PUSH HL|16|----|PUSH["H", "L"]|1
+ANDn|AND A, d8|8|Z010|ANDn[]|2
+RST20|RST 20H|16|----|RSTXX[0x20]|1
+
+ADDSPn|ADD SP, r8|16|00HC|ADDSPn[]|2
+JPHL|JP [HL]|4|----|JPHL[]|1
+LDmmA|LD [a16], A|16|----|LDmm_["A"]|3
+XX|UNDEFINED|0|----|NOPWARN[0xEB]|1
+
+XX|UNDEFINED|0|----|NOPWARN[0xEC]|1
+XX|UNDEFINED|0|----|NOPWARN[0xED]|1
+XORn|XOR A, d8|8|Z000|XORn[]|2
+RST28|RST 28H|16|----|RSTXX[0x28]|1
+
+// F0
+LDAIOn|LD A, [$FF00 + a8]|12|----|LDAIOn[]|1
+POPAF|POP AF|12|ZNHC|POP["A", "F"]|1
+LDAIOC|LD A, [$FF00 + C]|8|----|LDAIOC[]|1
+DI|DI|4|----|DI[]|1
+
+XX|UNDEFINED|0|----|NOPWARN[0xF4]|1
+PUSHAF|PUSH AF|16|----|PUSH["A", "F"]|1
+ORn|OR A, d8|8|Z000|ORn[]|2
+RST30|RST 30H|16|----|RSTXX[0x30]|1
+
+LDHLSPn|LD HL, SP + r8|12|00HC|LDHLSPn[]|2
+LDSPHLr|LD HL, SP|8|----|LDHLSPr[]|1
+LDAmm|LD A, [a16]|16|----|LD_mm["A"]|3
+EI|EI|4|----|EI[]|1
+
+XX|UNDEFINED|0|----|NOPWARN[0xFC]|1
+XX|UNDEFINED|0|----|NOPWARN[0xFD]|1
+CPn|CP A, d8|8|Z1HC|CPn[]|2
+RST38|RST 38H|16|----|RSTXX[0x38]|1

@@ -1,0 +1,336 @@
+// Name|Instruction|Cycles|ZSHC|Template[arguments]
+// CB00
+|RLCr_b|RLC B|8|Z00C|RLCr["B"]
+|RLCr_c|RLC C|8|Z00C|RLCr["C"]
+|RLCr_d|RLC D|8|Z00C|RLCr["D"]
+|RLCr_e|RLC E|8|Z00C|RLCr["E"]
+
+|RLCr_h|RLC H|8|Z00C|RLCr["H"]
+|RLCr_l|RLC L|8|Z00C|RLCr["L"]
+|RLCHL|RLC [HL]|16|Z00C|RLCHL[]
+|RLCr_a|RLC A|8|Z00C|RLCr["A"]
+
+|RRCr_b|RRC B|8|Z00C|RRCr["B"]
+|RRCr_c|RRC C|8|Z00C|RRCr["C"]
+|RRCr_d|RRC D|8|Z00C|RRCr["D"]
+|RRCr_e|RRC E|8|Z00C|RRCr["E"]
+
+|RRCr_h|RRC H|8|Z00C|RRCr["H"]
+|RRCr_l|RRC L|8|Z00C|RRCr["L"]
+|RRCHL|RRC [HL]|16|Z00C|RRCHL[]
+|RRCr_a|RRC A|8|Z00C|RRCr["A"]
+
+// CB10
+|RLr_b|RL B|8|Z00C|RLr["B"]
+|RLr_c|RL C|8|Z00C|RLr["C"]
+|RLr_d|RL D|8|Z00C|RLr["D"]
+|RLr_e|RL E|8|Z00C|RLr["E"]
+
+|RLr_h|RL H|8|Z00C|RLr["H"]
+|RLr_l|RL L|8|Z00C|RLr["L"]
+|RLHL|RL [HL]|16|Z00C|RLHL[]
+|RLr_a|RL X|8|Z00C|RLr["A"]
+
+|RRr_b|RR B|8|Z00C|RRr["B"]
+|RRr_c|RR C|8|Z00C|RRr["C"]
+|RRr_d|RR D|8|Z00C|RRr["D"]
+|RRr_e|RR E|8|Z00C|RRr["E"]
+
+|RRr_h|RR H|8|Z00C|RRr["H"]
+|RRr_l|RR L|8|Z00C|RRr["L"]
+|RRHL|RR [HL]|16|Z00C|RRHL[]
+|RRr_a|RR A|8|Z00C|RRr["A"]
+
+// CB20
+|SLAr_b|SLA B|8|Z00C|SLAr["B"]
+|SLAr_c|SLA C|8|Z00C|SLAr["C"]
+|SLAr_d|SLA D|8|Z00C|SLAr["D"]
+|SLAr_e|SLA E|8|Z00C|SLAr["E"]
+
+|SLAr_h|SLA H|8|Z00C|SLAr["H"]
+|SLAr_l|SLA L|8|Z00C|SLAr["L"]
+|SLAHL|SLA [HL]|16|Z00C|SLAHL[]
+|SLAr_a|SLA A|8|Z00C|SLAr["A"]
+
+|SRAr_b|SRA B|8|Z000|SRAr["B"]
+|SRAr_c|SRA C|8|Z000|SRAr["C"]
+|SRAr_d|SRA D|8|Z000|SRAr["D"]
+|SRAr_e|SRA E|8|Z000|SRAr["E"]
+
+|SRAr_h|SRA H|8|Z000|SRAr["H"]
+|SRAr_l|SRA L|8|Z000|SRAr["L"]
+|SRAHL|SRA [HL]|16|Z000|SRAHL[]
+|SRAr_a|SRA A|8|Z000|SRAr["A"]
+
+// CB30
+|SWAPr_b|SWAP B|8|Z000|SWAPr["B"]
+|SWAPr_c|SWAP C|8|Z000|SWAPr["C"]
+|SWAPr_d|SWAP D|8|Z000|SWAPr["D"]
+|SWAPr_e|SWAP E|8|Z000|SWAPr["E"]
+
+|SWAPr_h|SWAP H|8|Z000|SWAPr["H"]
+|SWAPr_l|SWAP L|8|Z000|SWAPr["L"]
+|SWAPHL|SWAP [HL]|16|Z000|SWAPHL[]
+|SWAPr_a|SWAP A|8|Z000|SWAPr["A"]
+
+|SRLr_b|SRL B|8|Z00C|SRLr["B"]
+|SRLr_c|SRL C|8|Z00C|SRLr["C"]
+|SRLr_d|SRL D|8|Z00C|SRLr["D"]
+|SRLr_e|SRL E|8|Z00C|SRLr["E"]
+
+|SRLr_h|SRL H|8|Z00C|SRLr["H"]
+|SRLr_l|SRL L|8|Z00C|SRLr["L"]
+|SRLHL|SRL [HL]|16|Z00C|SRLHL[]
+|SRLr_a|SRL A|8|Z00C|SRLr["A"]
+
+// CB40
+|BIT0b|BIT 0, B|8|Z01-|BIT[0, "B"]
+|BIT0c|BIT 0, C|8|Z01-|BIT[0, "C"]
+|BIT0d|BIT 0, D|8|Z01-|BIT[0, "D"]
+|BIT0e|BIT 0, E|8|Z01-|BIT[0, "E"]
+
+|BIT0h|BIT 0, H|8|Z01-|BIT[0, "H"]
+|BIT0l|BIT 0, L|8|Z01-|BIT[0, "L"]
+|BIT0m|BIT 0, [HL]|16|Z01-|BITm[0]
+|BIT0a|BIT 0, A|8|Z01-|BIT[0, "A"]
+
+|BIT1b|BIT 1, B|8|Z01-|BIT[1, "B"]
+|BIT1c|BIT 1, C|8|Z01-|BIT[1, "C"]
+|BIT1d|BIT 1, D|8|Z01-|BIT[1, "D"]
+|BIT1e|BIT 1, E|8|Z01-|BIT[1, "E"]
+
+|BIT1h|BIT 1, H|8|Z01-|BIT[1, "H"]
+|BIT1l|BIT 1, L|8|Z01-|BIT[1, "L"]
+|BIT1m|BIT 1, [HL]|16|Z01-|BITm[1]
+|BIT1a|BIT 1, A|8|Z01-|BIT[1, "A"]
+
+// CB50
+|BIT2b|BIT 2, B|8|Z01-|BIT[2, "B"]
+|BIT2c|BIT 2, C|8|Z01-|BIT[2, "C"]
+|BIT2d|BIT 2, D|8|Z01-|BIT[2, "D"]
+|BIT2e|BIT 2, E|8|Z01-|BIT[2, "E"]
+
+|BIT2h|BIT 2, H|8|Z01-|BIT[2, "H"]
+|BIT2l|BIT 2, L|8|Z01-|BIT[2, "L"]
+|BIT2m|BIT 2, [HL]|16|Z01-|BITm[2]
+|BIT2a|BIT 2, A|8|Z01-|BIT[2, "A"]
+
+|BIT3b|BIT 3, B|8|Z01-|BIT[3, "B"]
+|BIT3c|BIT 3, C|8|Z01-|BIT[3, "C"]
+|BIT3d|BIT 3, D|8|Z01-|BIT[3, "D"]
+|BIT3e|BIT 3, E|8|Z01-|BIT[3, "E"]
+
+|BIT3h|BIT 3, H|8|Z01-|BIT[3, "H"]
+|BIT3l|BIT 3, L|8|Z01-|BIT[3, "L"]
+|BIT3m|BIT 3, [HL]|16|Z01-|BITm[3]
+|BIT3a|BIT 3, A|8|Z01-|BIT[3, "A"]
+
+// CB60
+|BIT4b|BIT 4, B|8|Z01-|BIT[4, "B"]
+|BIT4c|BIT 4, C|8|Z01-|BIT[4, "C"]
+|BIT4d|BIT 4, D|8|Z01-|BIT[4, "D"]
+|BIT4e|BIT 4, E|8|Z01-|BIT[4, "E"]
+
+|BIT4h|BIT 4, H|8|Z01-|BIT[4, "H"]
+|BIT4l|BIT 4, L|8|Z01-|BIT[4, "L"]
+|BIT4m|BIT 4, [HL]|16|Z01-|BITm[4]
+|BIT4a|BIT 4, A|8|Z01-|BIT[4, "A"]
+
+|BIT5b|BIT 5, B|8|Z01-|BIT[5, "B"]
+|BIT5c|BIT 5, C|8|Z01-|BIT[5, "C"]
+|BIT5d|BIT 5, D|8|Z01-|BIT[5, "D"]
+|BIT5e|BIT 5, E|8|Z01-|BIT[5, "E"]
+
+|BIT5h|BIT 5, H|8|Z01-|BIT[5, "H"]
+|BIT5l|BIT 5, L|8|Z01-|BIT[5, "L"]
+|BIT5m|BIT 5, [HL]|16|Z01-|BITm[5]
+|BIT5a|BIT 5, A|8|Z01-|BIT[5, "A"]
+
+// CB70
+|BIT6b|BIT 6, B|8|Z01-|BIT[6, "B"]
+|BIT6c|BIT 6, C|8|Z01-|BIT[6, "C"]
+|BIT6d|BIT 6, D|8|Z01-|BIT[6, "D"]
+|BIT6e|BIT 6, E|8|Z01-|BIT[6, "E"]
+
+|BIT6h|BIT 6, H|8|Z01-|BIT[6, "H"]
+|BIT6l|BIT 6, L|8|Z01-|BIT[6, "L"]
+|BIT6m|BIT 6, [HL]|16|Z01-|BITm[6]
+|BIT6a|BIT 6, A|8|Z01-|BIT[6, "A"]
+
+|BIT7b|BIT 7, B|8|Z01-|BIT[7, "B"]
+|BIT7c|BIT 7, C|8|Z01-|BIT[7, "C"]
+|BIT7d|BIT 7, D|8|Z01-|BIT[7, "D"]
+|BIT7e|BIT 7, E|8|Z01-|BIT[7, "E"]
+
+|BIT7h|BIT 7, H|8|Z01-|BIT[7, "H"]
+|BIT7l|BIT 7, L|8|Z01-|BIT[7, "L"]
+|BIT7m|BIT 7, [HL]|16|Z01-|BITm[7]
+|BIT7a|BIT 7, A|8|Z01-|BIT[7, "A"]
+
+// CB80
+|RES0b|RES 0, B|8|----|RES[0, "B"]
+|RES0c|RES 0, C|8|----|RES[0, "C"]
+|RES0d|RES 0, D|8|----|RES[0, "D"]
+|RES0e|RES 0, E|8|----|RES[0, "E"]
+
+|RES0h|RES 0, H|8|----|RES[0, "H"]
+|RES0l|RES 0, L|8|----|RES[0, "L"]
+|RES0m|RES 0, [HL]|16|----|RESHL[0]
+|RES0a|RES 0, A|8|----|RES[0, "A"]
+
+|RES1b|RES 1, B|8|----|RES[1, "B"]
+|RES1c|RES 1, C|8|----|RES[1, "C"]
+|RES1d|RES 1, D|8|----|RES[1, "D"]
+|RES1e|RES 1, E|8|----|RES[1, "E"]
+
+|RES1h|RES 1, H|8|----|RES[1, "H"]
+|RES1l|RES 1, L|8|----|RES[1, "L"]
+|RES1m|RES 1, [HL]|16|----|RESHL[1]
+|RES1a|RES 1, A|8|----|RES[1, "A"]
+
+// CB90
+|RES2b|RES 2, B|8|----|RES[2, "B"]
+|RES2c|RES 2, C|8|----|RES[2, "C"]
+|RES2d|RES 2, D|8|----|RES[2, "D"]
+|RES2e|RES 2, E|8|----|RES[2, "E"]
+
+|RES2h|RES 2, H|8|----|RES[2, "H"]
+|RES2l|RES 2, L|8|----|RES[2, "L"]
+|RES2m|RES 2, [HL]|16|----|RESHL[2]
+|RES2a|RES 2, A|8|----|RES[2, "A"]
+
+|RES3b|RES 3, B|8|----|RES[3, "B"]
+|RES3c|RES 3, C|8|----|RES[3, "C"]
+|RES3d|RES 3, D|8|----|RES[3, "D"]
+|RES3e|RES 3, E|8|----|RES[3, "E"]
+
+|RES3h|RES 3, H|8|----|RES[3, "H"]
+|RES3l|RES 3, L|8|----|RES[3, "L"]
+|RES3m|RES 3, [HL]|16|----|RESHL[3]
+|RES3a|RES 3, A|8|----|RES[3, "A"]
+
+// CBA0
+|RES4b|RES 4, B|8|----|RES[4, "B"]
+|RES4c|RES 4, C|8|----|RES[4, "C"]
+|RES4d|RES 4, D|8|----|RES[4, "D"]
+|RES4e|RES 4, E|8|----|RES[4, "E"]
+
+|RES4h|RES 4, H|8|----|RES[4, "H"]
+|RES4l|RES 4, L|8|----|RES[4, "L"]
+|RES4m|RES 4, [HL]|16|----|RESHL[4]
+|RES4a|RES 4, A|8|----|RES[4, "A"]
+
+|RES5b|RES 5, B|8|----|RES[6, "B"]
+|RES5c|RES 5, C|8|----|RES[6, "C"]
+|RES5d|RES 5, D|8|----|RES[6, "D"]
+|RES5e|RES 5, E|8|----|RES[6, "E"]
+
+|RES5h|RES 5, H|8|----|RES[6, "H"]
+|RES5l|RES 5, L|8|----|RES[6, "L"]
+|RES5m|RES 5, [HL]|16|----|RESHL[6]
+|RES5a|RES 5, A|8|----|RES[6, "A"]
+
+// CBB0
+|RES6b|RES 6, B|8|----|RES[6, "B"]
+|RES6c|RES 6, C|8|----|RES[6, "C"]
+|RES6d|RES 6, D|8|----|RES[6, "D"]
+|RES6e|RES 6, E|8|----|RES[6, "E"]
+
+|RES6h|RES 6, H|8|----|RES[6, "H"]
+|RES6l|RES 6, L|8|----|RES[6, "L"]
+|RES6m|RES 6, [HL]|16|----|RESHL[6]
+|RES6a|RES 6, A|8|----|RES[6, "A"]
+
+|RES7b|RES 7, B|8|----|RES[7, "B"]
+|RES7c|RES 7, C|8|----|RES[7, "C"]
+|RES7d|RES 7, D|8|----|RES[7, "D"]
+|RES7e|RES 7, E|8|----|RES[7, "E"]
+
+|RES7h|RES 7, H|8|----|RES[7, "H"]
+|RES7l|RES 7, L|8|----|RES[7, "L"]
+|RES7m|RES 7, [HL]|16|----|RESHL[7]
+|RES7a|RES 7, A|8|----|RES[7, "A"]
+
+// CBC0
+|SET0b|SET 0, B|8|----|SET[0, "B"]
+|SET0c|SET 0, C|8|----|SET[0, "C"]
+|SET0d|SET 0, D|8|----|SET[0, "D"]
+|SET0e|SET 0, E|8|----|SET[0, "E"]
+
+|SET0h|SET 0, H|8|----|SET[0, "H"]
+|SET0l|SET 0, L|8|----|SET[0, "L"]
+|SET0m|SET 0, [HL]|16|----|SETHL[0]
+|SET0a|SET 0, A|8|----|SET[0, "A"]
+
+|SET1b|SET 1, B|8|----|SET[1, "B"]
+|SET1c|SET 1, C|8|----|SET[1, "C"]
+|SET1d|SET 1, D|8|----|SET[1, "D"]
+|SET1e|SET 1, E|8|----|SET[1, "E"]
+
+|SET1h|SET 1, H|8|----|SET[1, "H"]
+|SET1l|SET 1, L|8|----|SET[1, "L"]
+|SET1m|SET 1, [HL]|16|----|SETHL[1]
+|SET1a|SET 1, A|8|----|SET[1, "A"]
+
+// CBD0
+|SET2b|SET 2, B|8|----|SET[2, "B"]
+|SET2c|SET 2, C|8|----|SET[2, "C"]
+|SET2d|SET 2, D|8|----|SET[2, "D"]
+|SET2e|SET 2, E|8|----|SET[2, "E"]
+
+|SET2h|SET 2, H|8|----|SET[2, "H"]
+|SET2l|SET 2, L|8|----|SET[2, "L"]
+|SET2m|SET 2, [HL]|16|----|SETHL[2]
+|SET2a|SET 2, A|8|----|SET[2, "A"]
+
+|SET3b|SET 3, B|8|----|SET[3, "B"]
+|SET3c|SET 3, C|8|----|SET[3, "C"]
+|SET3d|SET 3, D|8|----|SET[3, "D"]
+|SET3e|SET 3, E|8|----|SET[3, "E"]
+
+|SET3h|SET 3, H|8|----|SET[3, "H"]
+|SET3l|SET 3, L|8|----|SET[3, "L"]
+|SET3m|SET 3, [HL]|16|----|SETHL[3]
+|SET3a|SET 3, A|8|----|SET[3, "A"]
+
+// CBE0
+|SET4b|SET 4, B|8|----|SET[4, "B"]
+|SET4c|SET 4, C|8|----|SET[4, "C"]
+|SET4d|SET 4, D|8|----|SET[4, "D"]
+|SET4e|SET 4, E|8|----|SET[4, "E"]
+
+|SET4h|SET 4, H|8|----|SET[4, "H"]
+|SET4l|SET 4, L|8|----|SET[4, "L"]
+|SET4m|SET 4, [HL]|16|----|SETHL[4]
+|SET4a|SET 4, A|8|----|SET[4, "A"]
+
+|SET5b|SET 5, B|8|----|SET[5, "B"]
+|SET5c|SET 5, C|8|----|SET[5, "C"]
+|SET5d|SET 5, D|8|----|SET[5, "D"]
+|SET5e|SET 5, E|8|----|SET[5, "E"]
+
+|SET5h|SET 5, H|8|----|SET[5, "H"]
+|SET5l|SET 5, L|8|----|SET[5, "L"]
+|SET5m|SET 5, [HL]|16|----|SETHL[5]
+|SET5a|SET 5, A|8|----|SET[5, "A"]
+
+// CBF0
+|SET6b|SET 6, B|8|----|SET[6, "B"]
+|SET6c|SET 6, C|8|----|SET[6, "C"]
+|SET6d|SET 6, D|8|----|SET[6, "D"]
+|SET6e|SET 6, E|8|----|SET[6, "E"]
+
+|SET6h|SET 6, H|8|----|SET[6, "H"]
+|SET6l|SET 6, L|8|----|SET[6, "L"]
+|SET6m|SET 6, [HL]|16|----|SETHL[6]
+|SET6a|SET 6, A|8|----|SET[6, "A"]
+
+|SET7b|SET 7, B|8|----|SET[7, "B"]
+|SET7c|SET 7, C|8|----|SET[7, "C"]
+|SET7d|SET 7, D|8|----|SET[7, "D"]
+|SET7e|SET 7, E|8|----|SET[7, "E"]
+
+|SET7h|SET 7, H|8|----|SET[7, "H"]
+|SET7l|SET 7, L|8|----|SET[7, "L"]
+|SET7m|SET 7, [HL]|16|----|SETHL[7]
+|SET7a|SET 7, A|8|----|SET[7, "A"]
