@@ -2,7 +2,6 @@ package gendata
 
 import (
 	"bytes"
-	"github.com/racerxdl/goboy/cpu"
 	"text/template"
 )
 
@@ -256,7 +255,7 @@ func BuildADD() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		addTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -269,8 +268,8 @@ func BuildADD() string {
 		})
 	}
 
-	for _, I0 := range cpu.AllRegisters {
-		for _, I1 := range cpu.AllRegisters {
+	for _, I0 := range AllRegisters {
+		for _, I1 := range AllRegisters {
 			if I0 != I1 {
 				addHLrrTemplate.Execute(buff, struct {
 					I0 string
@@ -400,7 +399,7 @@ func BuildSUB() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		subTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -413,8 +412,8 @@ func BuildSUB() string {
 		})
 	}
 
-	for _, I0 := range cpu.AllRegisters {
-		for _, I1 := range cpu.AllRegisters {
+	for _, I0 := range AllRegisters {
+		for _, I1 := range AllRegisters {
 			if I0 != I1 {
 				subHLrrTemplate.Execute(buff, struct {
 					I0 string
@@ -526,7 +525,7 @@ func BuildCP() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		cpTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -567,7 +566,7 @@ func gbCPn(cpu *Core) {
 func BuildOperators() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		andTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -704,7 +703,7 @@ func gbXORn(cpu *Core) {
 func BuildIncDec() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		incTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -717,8 +716,8 @@ func BuildIncDec() string {
 		})
 	}
 
-	for _, I0 := range cpu.AllRegisters {
-		for _, I1 := range cpu.AllRegisters {
+	for _, I0 := range AllRegisters {
+		for _, I1 := range AllRegisters {
 			incrrTemplate.Execute(buff, struct {
 				I0 string
 				I1 string

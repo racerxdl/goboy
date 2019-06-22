@@ -2,7 +2,6 @@ package gendata
 
 import (
 	"bytes"
-	"github.com/racerxdl/goboy/cpu"
 	"text/template"
 )
 
@@ -234,7 +233,7 @@ func cbSETHL{{.N}}(cpu *Core) {
 func BuildCB() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		rlrTemplate.Execute(buff, struct {
 			I string
 		}{

@@ -4,6 +4,10 @@ import (
 	"text/template"
 )
 
+var AllRegisters = []string{
+	"A", "B", "C", "D", "E", "H", "L",
+}
+
 var CBInstructionsFileTemplate = template.Must(template.New("CBIns").Parse(`package cpu
 
 func gbCBCall(cpu *Core) {

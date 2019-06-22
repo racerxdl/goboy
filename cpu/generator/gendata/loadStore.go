@@ -2,7 +2,6 @@ package gendata
 
 import (
 	"bytes"
-	"github.com/racerxdl/goboy/cpu"
 	"text/template"
 )
 
@@ -143,7 +142,7 @@ func BuildLDrIOn() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range cpu.AllRegisters {
+	for _, O := range AllRegisters {
 		ldrIOnTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -163,7 +162,7 @@ func BuildLDHLI() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		ldhliTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -177,8 +176,8 @@ func BuildLDHLI() string {
 func BuildLDRRnn() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, O1 := range cpu.AllRegisters {
-		for _, O2 := range cpu.AllRegisters {
+	for _, O1 := range AllRegisters {
+		for _, O2 := range AllRegisters {
 			if O1 != O2 {
 				ldrrnnTemplate.Execute(buff, struct {
 					O1 string
@@ -198,7 +197,7 @@ func BuildLDrmm() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range cpu.AllRegisters {
+	for _, O := range AllRegisters {
 		ldrmmTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -212,10 +211,10 @@ func BuildLDrmm() string {
 func BuildLDrrrm() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range cpu.AllRegisters {
-		for _, H := range cpu.AllRegisters {
-			for _, L := range cpu.AllRegisters {
-				if H != L {
+	for _, O := range AllRegisters {
+		for _, H := range AllRegisters {
+			for _, L := range AllRegisters {
+				if H != L && H != O && L != O {
 					ldrrrmTemplate.Execute(buff, struct {
 						O string
 						H string
@@ -237,7 +236,7 @@ func BuildLDmm() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		ldmmTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -252,7 +251,7 @@ func BuildLDHLmr() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
 		ldHLmrTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -267,7 +266,7 @@ func BuildLDrHLm() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range cpu.AllRegisters {
+	for _, O := range AllRegisters {
 		ldrHLmTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -282,7 +281,7 @@ func BuildLDrn() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range cpu.AllRegisters {
+	for _, O := range AllRegisters {
 		ldrnTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -296,8 +295,8 @@ func BuildLDrn() string {
 func BuildLDRR() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
-		for _, O := range cpu.AllRegisters {
+	for _, I := range AllRegisters {
+		for _, O := range AllRegisters {
 			ldrrTemplate.Execute(buff, struct {
 				I string
 				O string
@@ -314,10 +313,10 @@ func BuildLDRR() string {
 func BuildLDrrmr() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range cpu.AllRegisters {
-		for _, H := range cpu.AllRegisters {
-			for _, L := range cpu.AllRegisters {
-				if H != L {
+	for _, I := range AllRegisters {
+		for _, H := range AllRegisters {
+			for _, L := range AllRegisters {
+				if H != L && H != I && L != I {
 					ldrrmrTemplate.Execute(buff, struct {
 						I string
 						H string

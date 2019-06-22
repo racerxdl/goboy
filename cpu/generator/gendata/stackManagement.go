@@ -2,29 +2,34 @@ package gendata
 
 import (
 	"bytes"
-	"github.com/racerxdl/goboy/cpu"
 	"text/template"
 )
 
 func BuildStackManagement() string {
 	b := bytes.NewBuffer(nil)
 
-	for _, I0 := range cpu.AllRegisters {
-		for _, I1 := range cpu.AllRegisters {
-			pushTemplate.Execute(b, struct {
-				I0 string
-				I1 string
-			}{
-				I0: I0,
-				I1: I1,
-			})
-			popTemplate.Execute(b, struct {
-				I0 string
-				I1 string
-			}{
-				I0: I0,
-				I1: I1,
-			})
+	AllRegisters := []string{
+		"A", "B", "C", "D", "E", "H", "L", "F",
+	}
+
+	for _, I0 := range AllRegisters {
+		for _, I1 := range AllRegisters {
+			if I0 != I1 {
+				pushTemplate.Execute(b, struct {
+					I0 string
+					I1 string
+				}{
+					I0: I0,
+					I1: I1,
+				})
+				popTemplate.Execute(b, struct {
+					I0 string
+					I1 string
+				}{
+					I0: I0,
+					I1: I1,
+				})
+			}
 		}
 	}
 
