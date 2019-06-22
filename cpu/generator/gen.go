@@ -15,7 +15,6 @@ func main() {
     if err != nil {
         log.Fatalf(err.Error())
     }
-    defer f.Close()
 
     instructions := ""
 
@@ -64,4 +63,22 @@ func main() {
         Timestamp:    time.Now(),
         Instructions: instructions,
     })
+    f.Close()
+
+    // CB Instructions
+    instructions = gendata.BuildCB()
+
+    f, err = os.Create("cbinstructions.go")
+    if err != nil {
+        log.Fatalf(err.Error())
+    }
+
+    gendata.CBInstructionsFileTemplate.Execute(f, struct{
+        Timestamp    time.Time
+        Instructions string
+    }{
+        Timestamp:    time.Now(),
+        Instructions: instructions,
+    })
+    f.Close()
 }
