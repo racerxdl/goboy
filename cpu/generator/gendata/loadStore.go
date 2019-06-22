@@ -100,7 +100,7 @@ func gbLD{{.O1}}{{.O2}}nn(cpu *Core) {
 `))
 
 var ldhliTemplate = template.Must(template.New("LDHLI").Parse(`
-// gbLDHLI{{.I}} Sets {{.I}} to Memory at H/L and increments HL.
+// gbLDHLI{{.I}} Sets {{.I}} to [HL] and increments HL.
 func gbLDHLI{{.I}}(cpu *Core) {
     cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Registers.{{.I}})
     cpu.Registers.L++
@@ -124,6 +124,18 @@ func gbLD{{.O}}IOn(cpu *Core) {
 }
 `))
 
+var ldIOnrTemplate = template.Must(template.New("LDIOnR").Parse(`
+// gbLDIOn{{.O}}
+func gbLDIOn{{.O}}(cpu *Core) {
+    addr := cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Memory.WriteByte(0xFF00 + uint16(addr), cpu.Registers.{{.O}})
+    cpu.Registers.PC++
+
+    cpu.Registers.LastClockM = 3
+    cpu.Registers.LastClockT = 12
+}
+`))
+
 // endregion
 // region Builders
 
@@ -133,6 +145,11 @@ func BuildLDrIOn() string {
 
 	for _, O := range cpu.AllRegisters {
 		ldrIOnTemplate.Execute(buff, struct {
+			O string
+		}{
+			O: O,
+		})
+		ldIOnrTemplate.Execute(buff, struct {
 			O string
 		}{
 			O: O,
@@ -362,9 +379,9 @@ func gbLDHLSPn(cpu *Core) {
     cpu.Registers.PC++
 
     /*
-            if (v > 127) {
-                v = -((~v + 1) & 0xFF);
-            }
+    if v > 127 {
+        v = -((^v + 1) & 0xFF)
+    }
     */
 
     // TODO: WARNING, this probably is broken
@@ -390,19 +407,42 @@ func gbLDHLSPr(cpu *Core) {
     cpu.Registers.LastClockT = 8
 }
 
-`
+// gbLDHLDA Sets A to [HL] and decrements HL.
+func gbLDHLDA(cpu *Core) {
+  cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Registers.A)
+  cpu.Registers.L--
+  if cpu.Registers.L == 255 {
+    cpu.Registers.H--
+  }
+
+  cpu.Registers.LastClockM = 2
+  cpu.Registers.LastClockT = 8
 }
 
-/*
+// gbLDAHLI Reads byte from [HL] into A and increments H/L
+func gbLDAHLI(cpu *Core) {
+  cpu.Registers.A = cpu.Memory.ReadByte(cpu.Registers.HL())
+  cpu.Registers.L++
+  if cpu.Registers.L == 0 {
+    cpu.Registers.H++
+  }
 
+  cpu.Registers.LastClockM = 2
+  cpu.Registers.LastClockT = 8
+}
 
-   private static void LDHLSPr(CPU cpu) {
-       var reg = cpu.reg;
-       reg.SP = reg.HL;
+// gbLDAHLD Reads byte from [HL] into A and decrements H/L
+func gbLDAHLD(cpu *Core) {
+  cpu.Registers.A = cpu.Memory.ReadByte(cpu.Registers.HL())
+  cpu.Registers.L--
+  if cpu.Registers.L == 255 {
+    cpu.Registers.H++
+  }
 
-       reg.lastClockM = 2;
-       reg.lastClockT = 8;
-   }
-*/
+  cpu.Registers.LastClockM = 2
+  cpu.Registers.LastClockT = 8
+}
+`
+}
 
 // endregion

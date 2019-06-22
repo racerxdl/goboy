@@ -53,6 +53,9 @@ func main() {
     // region StackManagement calls
     instructions += gendata.BuildStackManagement()
     // endregion
+    // region Flow Control
+    instructions += gendata.BuildFlowControl()
+    // endregion
 
     gendata.InstructionsFileTemplate.Execute(f, struct {
         Timestamp    time.Time
