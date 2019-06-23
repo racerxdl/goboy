@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"github.com/quan-to/slog"
+	"strings"
 	"sync"
 	"time"
 )
@@ -25,12 +26,14 @@ type Core struct {
 	clockT, clockM int
 	halted         bool
 	stopped        bool
+	step           bool
 
 	l sync.Mutex
 }
 
 type DebugData struct {
 	PC, SP, A, B, C, D, E, F, H, L, HL       string
+	AB, BB, CB, DB, EB, FB, LB, HB           string
 	PCX, SPX                                 string
 	GPUSCROLLX, GPUSCROLLY, GPUWINX, GPUWINY string
 	GPUMODECLOCKS, GPULINE                   string
@@ -78,6 +81,10 @@ func (c *Core) loop() {
 			c.lastCycleTime = delta.Nanoseconds()
 			c.cycle()
 			c.lastUpdate = time.Now()
+			if c.step {
+				c.step = false
+				c.paused = true
+			}
 		} else {
 			time.Sleep(10 * time.Millisecond)
 		}
@@ -85,29 +92,54 @@ func (c *Core) loop() {
 	cpuLog.Info("CPU Loop Stopped")
 }
 
+func (c *Core) GetCurrentPage() (uint16, []byte) {
+	a := (c.Registers.PC / 64) * 64
+	buff := make([]byte, 64)
+	for i := 0; i < 64; i++ {
+		buff[i] = c.Memory.ReadByteNoSideEffect(a + uint16(i))
+	}
+
+	return a, buff
+}
+
 func (c *Core) GetDebugData() DebugData {
 	return DebugData{
-		PCX: fmt.Sprintf("%04x", c.Registers.PC),
-		SPX: fmt.Sprintf("%04x", c.Registers.SP),
-		PC:  fmt.Sprintf("%6d", c.Registers.PC),
-		SP:  fmt.Sprintf("%6d", c.Registers.SP),
-		A:   fmt.Sprintf("%02x", c.Registers.A),
-		B:   fmt.Sprintf("%02x", c.Registers.B),
-		C:   fmt.Sprintf("%02x", c.Registers.C),
-		D:   fmt.Sprintf("%02x", c.Registers.D),
-		E:   fmt.Sprintf("%02x", c.Registers.E),
-		H:   fmt.Sprintf("%02x", c.Registers.H),
-		L:   fmt.Sprintf("%02x", c.Registers.L),
-		HL:  fmt.Sprintf("%04x", c.Registers.HL()),
-		F:   fmt.Sprintf("%08b", c.Registers.F),
+		PCX: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.PC)),
+		SPX: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.SP)),
+		PC:  fmt.Sprintf("%05d", c.Registers.PC),
+		SP:  fmt.Sprintf("%05d", c.Registers.SP),
 
-		GPUSCROLLX:    fmt.Sprintf("%d", c.GPU.scrollX),
-		GPUSCROLLY:    fmt.Sprintf("%d", c.GPU.scrollY),
-		GPUWINX:       fmt.Sprintf("%d", c.GPU.winX),
-		GPUWINY:       fmt.Sprintf("%d", c.GPU.winX),
-		GPUMODECLOCKS: fmt.Sprintf("%d", c.GPU.modeClocks),
-		GPULINE:       fmt.Sprintf("%d", c.GPU.line),
+		A: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.A)),
+		B: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.B)),
+		C: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.C)),
+		D: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.D)),
+		E: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.E)),
+		H: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.H)),
+		L: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.L)),
+		F: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.F)),
+
+		AB: fmt.Sprintf("%08b", c.Registers.A),
+		BB: fmt.Sprintf("%08b", c.Registers.B),
+		CB: fmt.Sprintf("%08b", c.Registers.C),
+		DB: fmt.Sprintf("%08b", c.Registers.D),
+		EB: fmt.Sprintf("%08b", c.Registers.E),
+		HB: fmt.Sprintf("%08b", c.Registers.H),
+		LB: fmt.Sprintf("%08b", c.Registers.L),
+		FB: fmt.Sprintf("%08b", c.Registers.F),
+
+		HL: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.HL())),
+
+		GPUSCROLLX:    fmt.Sprintf("%4d", c.GPU.scrollX),
+		GPUSCROLLY:    fmt.Sprintf("%4d", c.GPU.scrollY),
+		GPUWINX:       fmt.Sprintf("%4d", c.GPU.winX),
+		GPUWINY:       fmt.Sprintf("%4d", c.GPU.winX),
+		GPUMODECLOCKS: fmt.Sprintf("%4d", c.GPU.modeClocks),
+		GPULINE:       fmt.Sprintf("%4d", c.GPU.line),
 	}
+}
+
+func (c *Core) IsPaused() bool {
+	return c.paused
 }
 
 func (c *Core) cycle() {
@@ -207,6 +239,13 @@ func (c *Core) Pause() {
 
 func (c *Core) Continue() {
 	c.l.Lock()
+	c.paused = false
+	c.l.Unlock()
+}
+
+func (c *Core) Step() {
+	c.l.Lock()
+	c.step = true
 	c.paused = false
 	c.l.Unlock()
 }

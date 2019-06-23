@@ -43,7 +43,7 @@ RRA|RRA|4|000C|RRA[]|1
 
 // 20
 JRNZn|JR NZ, r8|12/8|----|JRNZn[]|2
-LDHLnn|LD HL, d16|12|----|LD__nn["H", "L"]|1
+LDHLnn|LD HL, d16|12|----|LD__nn["H", "L"]|3
 LDHLIA|LD [HL+], A|8|----|LDHLIA[]|1
 INCHL|INC HL|8|----|INC["H", "L"]|1
 
@@ -64,8 +64,8 @@ CPL|CPL|4|-11-|CPL[]|1
 
 // 30
 JRNCn|JR NC, r8|12/8|----|JRNCn[]|2
-LDSPnn|LD SP, d16|12|----|LDSPnn[]|1
-LDHLDA|LD [HL-], A|8|----|LDHLDA[]|1
+LDSPnn|LD SP, d16|12|----|LDSPnn[]|3
+LDHLDA|LD [HL--], A|8|----|LDHLDA[]|1
 INCSP|INC SP|8|----|INCSP[]|1
 
 INCHLm|INC [HL]|12|Z0H-|INCHLm[]|1
@@ -294,7 +294,7 @@ SBCn|SBC A, d8|8|Z1HC|SBCn[]|2
 RST18|RST 18H|16|----|RSTXX[0x18]|1
 
 // E0
-LDIOnA|LD [$FF00 + a8], A|12|----|LDIOnA[]|1
+LDIOnA|LD [$FF00 + a8], A|12|----|LDIOnA[]|2
 POPHL|POP HL|12|----|POP["H", "L"]|1
 LDIOCA|LD [$FF00 + C], A|8|----|LDIOCA[]|1
 XX|UNDEFINED|0|----|NOPWARN[0xE3]|1
@@ -315,7 +315,7 @@ XORn|XOR A, d8|8|Z000|XORn[]|2
 RST28|RST 28H|16|----|RSTXX[0x28]|1
 
 // F0
-LDAIOn|LD A, [$FF00 + a8]|12|----|LDAIOn[]|1
+LDAIOn|LD A, [$FF00 + a8]|12|----|LDAIOn[]|2
 POPAF|POP AF|12|ZNHC|POP["A", "F"]|1
 LDAIOC|LD A, [$FF00 + C]|8|----|LDAIOC[]|1
 DI|DI|4|----|DI[]|1

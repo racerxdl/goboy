@@ -27,7 +27,7 @@ type GPU struct {
 	bgMapBase                    uint16
 	winMapBase                   uint16
 	oam                          []byte
-	tileBuffer                   []color.RGBA
+	tileBuffer                   *pixel.PictureData
 	registers                    []byte
 	tileSet                      []gpuTile
 	vramBuffer                   *pixel.PictureData
@@ -40,6 +40,10 @@ type GPU struct {
 
 func (g *GPU) GetVRAM() *pixel.PictureData {
 	return g.vramBuffer
+}
+
+func (g *GPU) GetTileBuffer() *pixel.PictureData {
+	return g.tileBuffer
 }
 
 func (g *GPU) LycLy() bool {
@@ -61,16 +65,16 @@ func (g *GPU) HBlankMode() bool {
 func MakeGPU(cpu *Core) *GPU {
 	gpu := &GPU{
 		cpu:        cpu,
-		tileBuffer: make([]color.RGBA, 144*288),
+		tileBuffer: pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
 	}
 
-	for i := 0; i < len(gpu.tileBuffer); i++ {
-		var x = i % 144
-		var y = i / 144
+	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
+		var x = i % gpu.tileBuffer.Stride
+		var y = i / gpu.tileBuffer.Stride
 		if (x%9 == 8) || (y%9 == 8) {
-			gpu.tileBuffer[i] = pixhelp.ToRGBA(color.Transparent)
+			gpu.tileBuffer.Pix[i] = pixhelp.ToRGBA(color.Transparent)
 		} else {
-			gpu.tileBuffer[i] = pixhelp.ToRGBA(color.White)
+			gpu.tileBuffer.Pix[i] = pixhelp.ToRGBA(color.White)
 		}
 	}
 
@@ -99,10 +103,6 @@ func (g *GPU) Reset() {
 
 	g.vramBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
 	pixhelp.ClearPictureData(g.vramBuffer, color.Black)
-	//g.vramBuffer = make([]color.RGBA, 256*256)
-	//for i := 0; i < 256*256; i++ {
-	//	g.vramBuffer[i] = pixhelp.ToRGBA(color.Black)
-	//}
 	g.oam = make([]byte, 160)
 
 	g.switchLCD = true
@@ -371,9 +371,9 @@ func (g *GPU) refreshTileData(tileNum int) {
 				for x := 0; x < 8; x++ {
 					px := (i%16)*9 + x
 					py := (i/16)*9 + y
-					p := py*144 + px
+					p := py*g.tileBuffer.Stride + px
 
-					g.tileBuffer[p] = g.bgPallete[v.TileData[y][x]]
+					g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
 				}
 			}
 		}
@@ -389,9 +389,9 @@ func (g *GPU) refreshTileData(tileNum int) {
 			for x := 0; x < 8; x++ {
 				var px = (i%16)*9 + x
 				var py = (i/16)*9 + y
-				var p = py*144 + px
+				var p = py*g.tileBuffer.Stride + px
 
-				g.tileBuffer[p] = g.bgPallete[v.TileData[y][x]]
+				g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
 			}
 		}
 	}

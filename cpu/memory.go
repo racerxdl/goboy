@@ -143,6 +143,14 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 }
 
 func (m *Memory) ReadByte(addr uint16) byte {
+	return m.readByte(addr, false)
+}
+
+func (m *Memory) ReadByteNoSideEffect(addr uint16) byte {
+	return m.readByte(addr, true)
+}
+
+func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 	switch {
 	case addr <= 0x3FFF:
 		if m.inBIOS {
@@ -150,7 +158,7 @@ func (m *Memory) ReadByte(addr uint16) byte {
 				return gbBios[addr]
 			}
 
-			if addr == 0x100 {
+			if addr == 0x100 && !noSideEffects {
 				memLog.Debug("Jumping out from BIOS")
 				m.inBIOS = false
 			}
