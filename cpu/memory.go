@@ -112,11 +112,14 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 	case addr >= 0x4000 && addr <= 0x7FFF: // Catridge Bank N
 	case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
 		m.videoRam[addr-0x8000] = val
-		// UpdateTiles
+		m.cpu.GPU.updateTile(addr, val)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		m.catridgeRam[addr-0xA000] = val
 	case addr >= 0xC000 && addr <= 0xEFFF: // Work Ram
 		m.workRam[addr&0x1FFF] = val
+	case addr >= 0xFE00 && addr <= 0xFE9F:
+		m.cpu.GPU.UpdateOAM(addr, val)
+		m.cpu.GPU.oam[addr-0xFE00] = val
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable ... yet ...
 	case addr >= 0xFF00 && addr <= 0xFF7F: // I/O Ports
 		baseAddr := addr - 0xFF00
@@ -124,7 +127,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		case 0x00:
 			switch addr {
 			case 0xFF00:
-				//cpu.GbKeys.Write(val);
+				m.cpu.Keys.Write(val)
 			case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
 				m.cpu.Timer.Write(addr, val)
 			case 0xFF0F:
@@ -173,14 +176,14 @@ func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 	case addr >= 0xC000 && addr <= 0xEFFF:
 		return m.workRam[addr&0x1FFF]
 	case addr >= 0xFE00 && addr <= 0xFE9F:
-		// TODO: cpu.gpu.oam[addr - 0xFE00];
+		return m.cpu.GPU.oam[addr-0xFE00]
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable, ... yet ...
 	case addr >= 0xFF00 && addr <= 0xFF7F:
 		switch addr & 0x00F0 {
 		case 0x00:
 			switch addr {
 			case 0xFF00:
-				//return cpu.GbKeys.Read();
+				return m.cpu.Keys.Read()
 			case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
 				return m.cpu.Timer.Read(addr)
 			case 0xFF0F:

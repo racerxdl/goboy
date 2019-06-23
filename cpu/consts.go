@@ -3,6 +3,7 @@ package cpu
 import (
 	"golang.org/x/image/colornames"
 	"image/color"
+	"time"
 )
 
 // Timings
@@ -13,8 +14,10 @@ const (
 	verticalBlankCycles   = 4560 / 4
 	oamCycles             = 83 / 4
 	vRamCycles            = 175 / 4
-	CpuClock              = 4194304
-	CpuPeriodns           = (1000 * 1000) / CpuClock
+	Clock                 = 4194304
+	ColorModeClock        = Clock * 2
+	Period                = time.Second / Clock
+	ColorModePeriod       = time.Second / ColorModeClock
 )
 
 // Addresses

@@ -198,9 +198,9 @@ func (g *GPU) ReadByte(addr uint16) byte {
 
 		return res
 	case 0xFF42:
-		return uint8(g.scrollX)
-	case 0xFF43:
 		return uint8(g.scrollY)
+	case 0xFF43:
+		return uint8(g.scrollX)
 	case 0xFF44:
 		return g.line
 	case 0xFF45:
@@ -264,13 +264,13 @@ func (g *GPU) WriteByte(addr uint16, val uint8) {
 			var b = (uint(val) >> (i * 2)) & 3
 			switch b {
 			case 0:
-				g.bgPallete[i] = color.RGBA{255, 255, 255, 255}
+				g.bgPallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
 			case 1:
-				g.bgPallete[i] = color.RGBA{192, 192, 192, 255}
+				g.bgPallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
 			case 2:
-				g.bgPallete[i] = color.RGBA{96, 96, 96, 255}
+				g.bgPallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
 			case 3:
-				g.bgPallete[i] = color.RGBA{0, 0, 0, 255}
+				g.bgPallete[i] = color.RGBA{A: 255}
 			}
 		}
 
@@ -280,13 +280,13 @@ func (g *GPU) WriteByte(addr uint16, val uint8) {
 			var b = (uint(val) >> (i * 2)) & 3
 			switch b {
 			case 0:
-				g.obj0Pallete[i] = color.RGBA{255, 255, 255, 255}
+				g.obj0Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
 			case 1:
-				g.obj0Pallete[i] = color.RGBA{192, 192, 192, 255}
+				g.obj0Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
 			case 2:
-				g.obj0Pallete[i] = color.RGBA{96, 96, 96, 255}
+				g.obj0Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
 			case 3:
-				g.obj0Pallete[i] = color.RGBA{0, 0, 0, 255}
+				g.obj0Pallete[i] = color.RGBA{A: 255}
 			}
 		}
 	case 0xFF49:
@@ -294,13 +294,13 @@ func (g *GPU) WriteByte(addr uint16, val uint8) {
 			var b = (uint(val) >> (i * 2)) & 3
 			switch b {
 			case 0:
-				g.obj1Pallete[i] = color.RGBA{255, 255, 255, 255}
+				g.obj1Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
 			case 1:
-				g.obj1Pallete[i] = color.RGBA{192, 192, 192, 255}
+				g.obj1Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
 			case 2:
-				g.obj1Pallete[i] = color.RGBA{96, 96, 96, 255}
+				g.obj1Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
 			case 3:
-				g.obj1Pallete[i] = color.RGBA{0, 0, 0, 255}
+				g.obj1Pallete[i] = color.RGBA{A: 255}
 			}
 		}
 	case 0xFF4A:
@@ -344,9 +344,10 @@ func (g *GPU) UpdateOAM(addr uint16, val uint8) {
 }
 
 func (g *GPU) sortOAM() {
-	sort.SliceStable(g.objs, func(i, j int) bool {
-		a := g.objs[i]
-		b := g.objs[j]
+	copy(g.prioObjs, g.objs)
+	sort.SliceStable(g.prioObjs, func(i, j int) bool {
+		a := g.prioObjs[i]
+		b := g.prioObjs[j]
 
 		if a.X < b.X {
 			return true
@@ -358,6 +359,7 @@ func (g *GPU) sortOAM() {
 
 		return false
 	})
+
 }
 
 func (g *GPU) refreshTileData(tileNum int) {

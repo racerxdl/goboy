@@ -321,6 +321,7 @@ func gbNOPWARN(cpu *Core, opcode int) {
     cpuLog.Warn("Opcode not implemented: 0x%02x at 0x%04x", opcode, cpu.Registers.PC-1)
     cpu.Registers.LastClockM = 0
     cpu.Registers.LastClockT = 0
+	cpu.paused = true
 }
 
 func gbHALT(cpu *Core) {

@@ -301,6 +301,7 @@ func gbADDHL(cpu *Core) {
 // gbADDn Adds byte from [PC] to A
 func gbADDn(cpu *Core) {
     z := cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Registers.PC++
     sum := uint16(cpu.Registers.A) + uint16(z)
 
     cpu.Registers.SetCarry(sum > 255)
@@ -374,12 +375,12 @@ func gbADCHL(cpu *Core) {
 func gbADCn(cpu *Core) {
     a := int(cpu.Registers.A)
     b := int(cpu.Memory.ReadByte(cpu.Registers.PC))
+    cpu.Registers.PC++
 
     f := 0
     if cpu.Registers.GetCarry() {
         f = 1
     }
-    cpu.Registers.PC++
 
     sum := a + b + f
 
@@ -445,6 +446,7 @@ func gbSUBHL(cpu *Core) {
 // gbSUBn Subtracts byte from [PC] to A
 func gbSUBn(cpu *Core) {
     z := cpu.Memory.ReadByte(cpu.Registers.PC)
+	cpu.Registers.PC++
     sum := int16(cpu.Registers.A) - int16(z)
 
     cpu.Registers.SetCarry(sum < 0)
@@ -500,12 +502,12 @@ func gbSBCHL(cpu *Core) {
 func gbSBCn(cpu *Core) {
     a := int(cpu.Registers.A)
     b := int(cpu.Memory.ReadByte(cpu.Registers.PC))
+    cpu.Registers.PC++
 
     f := 0
     if cpu.Registers.GetCarry() {
         f = 1
     }
-    cpu.Registers.PC++
 
     sum := a - b - f
 

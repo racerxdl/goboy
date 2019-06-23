@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"github.com/quan-to/slog"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -18,6 +19,7 @@ type Core struct {
 	Memory    *Memory
 	GPU       *GPU
 	Timer     *Timer
+	Keys      *GBKeys
 
 	running        bool
 	paused         bool
@@ -49,6 +51,7 @@ func MakeCore() *Core {
 	c.Memory = MakeMemory(c)
 	c.GPU = MakeGPU(c)
 	c.Timer = MakeTimer(c)
+	c.Keys = MakeGBKeys(c)
 	c.Reset()
 	return c
 }
@@ -215,8 +218,13 @@ func (c *Core) cycle() {
 
 	c.l.Unlock()
 
-	cycleDuration := time.Second * time.Duration(int64(totalClockM)) / CpuClock
-	time.Sleep(cycleDuration)
+	cycleDuration := time.Duration(int64(totalClockM)) * Period
+	x := time.Now()
+
+	// Sleep is not precise enough, so we will do a busy loop
+	for time.Since(x) < cycleDuration {
+		runtime.Gosched()
+	}
 }
 
 func (c *Core) Reset() {

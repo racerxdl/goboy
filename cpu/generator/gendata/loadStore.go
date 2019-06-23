@@ -44,7 +44,7 @@ func gbLDrn{{.O}}(cpu *Core) {
 `))
 
 var ldrrmrTemplate = template.Must(template.New("LDrrmr").Parse(`
-// gbLD{{.H}}{{.L}}m{{.I}} Writes value of register {{.I}} to memory Pointed by {{.H}} << 8 + {{.L}}
+// gbLD{{.H}}{{.L}}m{{.I}} Writes value of register {{.I}} to [{{.H}} << 8 + {{.L}}]
 func gbLD{{.H}}{{.L}}m{{.I}}(cpu *Core) {
     hl := (uint16(cpu.Registers.{{.H}}) << 8) + uint16(cpu.Registers.{{.L}})
     cpu.Memory.WriteByte(hl, cpu.Registers.{{.I}})
@@ -56,7 +56,7 @@ func gbLD{{.H}}{{.L}}m{{.I}}(cpu *Core) {
 var ldmmTemplate = template.Must(template.New("LDmm").Parse(`
 // gbLDmm{{.I}} Writes register {{.I}} to memory pointed by PC
 func gbLDmm{{.I}}(cpu *Core) {
-    cpu.Memory.WriteByte(cpu.Registers.PC, cpu.Registers.{{.I}})
+    cpu.Memory.WriteByte(cpu.Memory.ReadWord(cpu.Registers.PC), cpu.Registers.{{.I}})
     cpu.Registers.PC += 2
     cpu.Registers.LastClockM = 4
     cpu.Registers.LastClockT = 16
@@ -85,7 +85,7 @@ func gbLD{{.O}}mm(cpu *Core) {
 `))
 
 var ldrrnnTemplate = template.Must(template.New("LDrrnn").Parse(`
-// gbLD{{.O1}}{{.O2}}nn Reads from memory pointed by PC to {{.O2}} and PC+1 to {{.O1}}
+// gbLD{{.O1}}{{.O2}}nn Reads [PC] to {{.O2}} and [PC+1] to {{.O1}}
 func gbLD{{.O1}}{{.O2}}nn(cpu *Core) {
 
     cpu.Registers.{{.O2}} = cpu.Memory.ReadByte(cpu.Registers.PC)
@@ -115,8 +115,8 @@ var ldrIOnTemplate = template.Must(template.New("LDRIOn").Parse(`
 // gbLD{{.O}}IOn
 func gbLD{{.O}}IOn(cpu *Core) {
     addr := cpu.Memory.ReadByte(cpu.Registers.PC)
-    cpu.Registers.{{.O}} = cpu.Memory.ReadByte(0xFF00 + uint16(addr))
     cpu.Registers.PC++
+    cpu.Registers.{{.O}} = cpu.Memory.ReadByte(0xFF00 + uint16(addr))
 
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
@@ -127,8 +127,8 @@ var ldIOnrTemplate = template.Must(template.New("LDIOnR").Parse(`
 // gbLDIOn{{.O}}
 func gbLDIOn{{.O}}(cpu *Core) {
     addr := cpu.Memory.ReadByte(cpu.Registers.PC)
-	cpu.Memory.WriteByte(0xFF00 + uint16(addr), cpu.Registers.{{.O}})
     cpu.Registers.PC++
+	cpu.Memory.WriteByte(0xFF00 + uint16(addr), cpu.Registers.{{.O}})
 
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
