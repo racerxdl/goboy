@@ -13,7 +13,7 @@
 
                 RegBefore := cpu.Registers.Clone()
                 GBInstructions[0x{{.OpCodeX}}](cpu)
-                // RegAfter := cpu.Registers.Clone()
+                RegAfter := cpu.Registers.Clone()
 
                 
                 if (RegBefore.A) != (cpu.Memory.ReadByte(0xFF80)) {

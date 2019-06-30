@@ -18,9 +18,24 @@ func TestNOP(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		//RegBefore := cpu.Registers.Clone()
-		//GBInstructions[0x00](cpu)
-		//RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0x00](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -59,6 +74,21 @@ func TestLDBCnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -90,6 +120,21 @@ func TestLDBCmA(t *testing.T) {
 		if (RegBefore.A) != (RegAfter.A) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -124,6 +169,21 @@ func TestINCBC(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.B)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -156,6 +216,15 @@ func TestINCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -187,6 +256,15 @@ func TestDECrB(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -226,6 +304,21 @@ func TestLDrnB(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -254,6 +347,18 @@ func TestRLCA(t *testing.T) {
 		if (c > 0) != (RegAfter.GetCarry()) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -286,6 +391,21 @@ func TestLDmmSP(t *testing.T) {
 		if (RegBefore.PC + 2) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -320,6 +440,15 @@ func TestADDHLBC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -343,13 +472,28 @@ func TestLDABCm(t *testing.T) {
 		var val = uint8(rand.Intn(0xFF))
 		cpu.Memory.WriteByte(hl, val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x0A](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -384,6 +528,21 @@ func TestDECBC(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.B)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -416,6 +575,15 @@ func TestINCrC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -447,6 +615,15 @@ func TestDECrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -486,6 +663,21 @@ func TestLDrnC(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -515,6 +707,18 @@ func TestRRCA(t *testing.T) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -530,13 +734,28 @@ func TestStop(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		//RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x10](cpu)
-		//RegAfter := cpu.Registers.Clone()
+		RegAfter := cpu.Registers.Clone()
 
 		if cpu.stopped != true {
 			t.Errorf("Expected cpu to be stopped")
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -575,6 +794,21 @@ func TestLDDEnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -606,6 +840,21 @@ func TestLDDEmA(t *testing.T) {
 		if (RegBefore.A) != (RegAfter.A) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -640,6 +889,21 @@ func TestINCDE(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.D)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -672,6 +936,15 @@ func TestINCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -703,6 +976,15 @@ func TestDECrD(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -742,6 +1024,21 @@ func TestLDrnD(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -776,6 +1073,18 @@ func TestRLA(t *testing.T) {
 			t.Errorf("Expected c to be %v but got %v", c, RegAfter.GetCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -806,6 +1115,21 @@ func TestJRn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC)+signedV+1)&0xFFFF, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -826,6 +1150,21 @@ func TestJRn(t *testing.T) {
 		if (uint16(int(RegBefore.PC)+signedV+1) & 0xFFFF) != (RegAfter.PC) {
 			t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC)+signedV+1)&0xFFFF, RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -860,6 +1199,15 @@ func TestADDHLDE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -883,13 +1231,28 @@ func TestLDADEm(t *testing.T) {
 		var val = uint8(rand.Intn(0xFF))
 		cpu.Memory.WriteByte(hl, val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x1A](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -924,6 +1287,21 @@ func TestDECDE(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.D)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -956,6 +1334,15 @@ func TestINCrE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -987,6 +1374,15 @@ func TestDECrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1026,6 +1422,21 @@ func TestLDrnE(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1060,6 +1471,18 @@ func TestRRA(t *testing.T) {
 		if (c > 0) != (RegAfter.GetCarry()) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -1111,6 +1534,21 @@ func TestJRNZn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -1152,6 +1590,21 @@ func TestJRNZn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1189,6 +1642,21 @@ func TestLDHLnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1218,6 +1686,21 @@ func TestLDHLIA(t *testing.T) {
 		if (RegBefore.HL() + 1) != (RegAfter.HL()) {
 			t.Errorf("Expected RegBefore.HL() + 1 to be %v but got %v", RegBefore.HL()+1, RegAfter.HL())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1252,6 +1735,21 @@ func TestINCHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.H)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1284,6 +1782,15 @@ func TestINCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1315,6 +1822,15 @@ func TestDECrH(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1353,6 +1869,21 @@ func TestLDrnH(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1401,6 +1932,15 @@ func TestDAA(t *testing.T) {
 		if uint8(a&0xFF) != (RegAfter.A) {
 			t.Errorf("Expected a & 0xFF to be %v but got %v", a&0xFF, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -1452,6 +1992,21 @@ func TestJRZn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -1493,6 +2048,21 @@ func TestJRZn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1525,6 +2095,15 @@ func TestADDHLHL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -1560,6 +2139,21 @@ func TestLDAHLI(t *testing.T) {
 			t.Errorf("Expected RegBefore.HL + 1 to be %v but got %v", RegBefore.HL()+1, RegAfter.HL())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1593,6 +2187,21 @@ func TestDECHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.H)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1625,6 +2234,15 @@ func TestINCrL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1656,6 +2274,15 @@ func TestDECrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1695,6 +2322,21 @@ func TestLDrnL(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1719,6 +2361,21 @@ func TestCPL(t *testing.T) {
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1770,6 +2427,21 @@ func TestJRNCn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -1811,6 +2483,21 @@ func TestJRNCn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1843,6 +2530,21 @@ func TestLDSPnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1873,6 +2575,21 @@ func TestLDHLDA(t *testing.T) {
 			t.Errorf("Expected RegBefore.HL - 1 to be %v but got %v", RegBefore.HL()-1, RegAfter.HL())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1897,6 +2614,21 @@ func TestINCSP(t *testing.T) {
 		if (val) != (RegAfter.SP) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.SP)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -1941,6 +2673,15 @@ func TestINCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -1984,6 +2725,15 @@ func TestDECHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2023,6 +2773,21 @@ func TestLDHLmn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2038,9 +2803,24 @@ func TestSCF(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		//RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x37](cpu)
-		//RegAfter := cpu.Registers.Clone()
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if !RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be one")
+		}
+		// endregion
 
 	}
 }
@@ -2090,6 +2870,21 @@ func TestJRCn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -2131,6 +2926,21 @@ func TestJRCn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2162,6 +2972,15 @@ func TestADDHLSP(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -2197,6 +3016,21 @@ func TestLDAHLD(t *testing.T) {
 			t.Errorf("Expected RegBefore.HL - 1 to be %v but got %v", RegBefore.HL()-1, RegAfter.HL())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2221,6 +3055,21 @@ func TestDECSP(t *testing.T) {
 		if (val) != (RegAfter.SP) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.SP)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2254,6 +3103,15 @@ func TestINCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2285,6 +3143,15 @@ func TestDECrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2324,6 +3191,21 @@ func TestLDrnA(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2346,6 +3228,18 @@ func TestCCF(t *testing.T) {
 		if (!RegBefore.GetCarry()) != (RegAfter.GetCarry()) {
 			t.Errorf("Expected !RegBefore.GetCarry() to be %v but got %v", !RegBefore.GetCarry(), RegAfter.GetCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -2371,6 +3265,21 @@ func TestLDrrBB(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.B)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2394,6 +3303,21 @@ func TestLDrrBC(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.C)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2419,6 +3343,21 @@ func TestLDrrBD(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.D)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2442,6 +3381,21 @@ func TestLDrrBE(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.E)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2467,6 +3421,21 @@ func TestLDrrBH(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.H)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2491,6 +3460,21 @@ func TestLDrrBL(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2514,13 +3498,28 @@ func TestLDrHLmB(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x46](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.B) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.B)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2546,6 +3545,21 @@ func TestLDrrBA(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2569,6 +3583,21 @@ func TestLDrrCB(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.B)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2594,6 +3623,21 @@ func TestLDrrCC(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.C)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2617,6 +3661,21 @@ func TestLDrrCD(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.D)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2642,6 +3701,21 @@ func TestLDrrCE(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.E)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2665,6 +3739,21 @@ func TestLDrrCH(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.H) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.H)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2690,6 +3779,21 @@ func TestLDrrCL(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2713,13 +3817,28 @@ func TestLDrHLmC(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x4E](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.C) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.C)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2745,6 +3864,21 @@ func TestLDrrCA(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2768,6 +3902,21 @@ func TestLDrrDB(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.B)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2793,6 +3942,21 @@ func TestLDrrDC(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.C)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2816,6 +3980,21 @@ func TestLDrrDD(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.D)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2841,6 +4020,21 @@ func TestLDrrDE(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.E)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2864,6 +4058,21 @@ func TestLDrrDH(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.H) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.H)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2889,6 +4098,21 @@ func TestLDrrDL(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2912,13 +4136,28 @@ func TestLDrHLmD(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x56](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.D) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.D)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2944,6 +4183,21 @@ func TestLDrrDA(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -2967,6 +4221,21 @@ func TestLDrrEB(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.B)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -2992,6 +4261,21 @@ func TestLDrrEC(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.C)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3015,6 +4299,21 @@ func TestLDrrED(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.D)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3040,6 +4339,21 @@ func TestLDrrEE(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.E)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3063,6 +4377,21 @@ func TestLDrrEH(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.H) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.H)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3088,6 +4417,21 @@ func TestLDrrEL(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3111,13 +4455,28 @@ func TestLDrHLmE(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x5E](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.E) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.E)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3143,6 +4502,21 @@ func TestLDrrEA(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3166,6 +4540,21 @@ func TestLDrrHB(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.B)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3191,6 +4580,21 @@ func TestLDrrHC(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.C)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3214,6 +4618,21 @@ func TestLDrrHD(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.D)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3239,6 +4658,21 @@ func TestLDrrHE(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.E)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3262,6 +4696,21 @@ func TestLDrrHH(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.H) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.H)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3287,6 +4736,21 @@ func TestLDrrHL(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3310,13 +4774,28 @@ func TestLDrHLmH(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x66](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.H) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.H)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3342,6 +4821,21 @@ func TestLDrrHA(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3365,6 +4859,21 @@ func TestLDrrLB(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.B)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3390,6 +4899,21 @@ func TestLDrrLC(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.C)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3413,6 +4937,21 @@ func TestLDrrLD(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.D)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3438,6 +4977,21 @@ func TestLDrrLE(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.E)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3461,6 +5015,21 @@ func TestLDrrLH(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.H) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.H)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3486,6 +5055,21 @@ func TestLDrrLL(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3509,13 +5093,28 @@ func TestLDrHLmL(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x6E](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.L) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.L)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3541,6 +5140,21 @@ func TestLDrrLA(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.A)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3560,13 +5174,28 @@ func TestLDHLmrB(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x70](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.B) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.B)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3587,13 +5216,28 @@ func TestLDHLmrC(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x71](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.C) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.C)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3614,13 +5258,28 @@ func TestLDHLmrD(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x72](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.D) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.D)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3641,13 +5300,28 @@ func TestLDHLmrE(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x73](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.E) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.E)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3668,13 +5342,28 @@ func TestLDHLmrH(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x74](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.H) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.H)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3695,13 +5384,28 @@ func TestLDHLmrL(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x75](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.L) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.L)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3718,13 +5422,28 @@ func TestHALT(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		//RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x76](cpu)
-		//RegAfter := cpu.Registers.Clone()
+		RegAfter := cpu.Registers.Clone()
 
 		if !cpu.halted {
 			t.Errorf("Expected cpu to be halted")
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3745,13 +5464,28 @@ func TestLDHLmrA(t *testing.T) {
 		cpu.Registers.H = 0xA0
 		cpu.Registers.L = uint8(rand.Intn(0xFF))
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x77](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.A) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3777,6 +5511,21 @@ func TestLDrrAB(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.B)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3800,6 +5549,21 @@ func TestLDrrAC(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.C)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3825,6 +5589,21 @@ func TestLDrrAD(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.D)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3848,6 +5627,21 @@ func TestLDrrAE(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.E)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3873,6 +5667,21 @@ func TestLDrrAH(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.H)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3897,6 +5706,21 @@ func TestLDrrAL(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.L)
 		} // endregion
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -3920,13 +5744,28 @@ func TestLDrHLmA(t *testing.T) {
 
 		cpu.Memory.WriteByte(cpu.Registers.HL(), val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x7E](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3951,6 +5790,21 @@ func TestLDrrAA(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.A)
 		} // endregion
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -3994,6 +5848,12 @@ func TestADDrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4035,6 +5895,12 @@ func TestADDrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4078,6 +5944,12 @@ func TestADDrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4119,6 +5991,12 @@ func TestADDrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4162,6 +6040,12 @@ func TestADDrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4203,6 +6087,12 @@ func TestADDrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4251,6 +6141,12 @@ func TestADDHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4292,6 +6188,12 @@ func TestADDrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4346,6 +6248,12 @@ func TestADCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4398,6 +6306,12 @@ func TestADCrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4452,6 +6366,12 @@ func TestADCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4504,6 +6424,12 @@ func TestADCrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4558,6 +6484,12 @@ func TestADCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4610,6 +6542,12 @@ func TestADCrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -4664,6 +6602,12 @@ func TestADCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4717,6 +6661,12 @@ func TestADCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -4760,6 +6710,12 @@ func TestSUBrB(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -4805,6 +6761,12 @@ func TestSUBrC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -4848,6 +6810,12 @@ func TestSUBrD(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -4893,6 +6861,12 @@ func TestSUBrE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -4937,6 +6911,12 @@ func TestSUBrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -4980,6 +6960,12 @@ func TestSUBrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -5028,6 +7014,12 @@ func TestSUBHL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5071,6 +7063,12 @@ func TestSUBrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -5122,6 +7120,12 @@ func TestSBCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5171,6 +7175,12 @@ func TestSBCrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -5222,6 +7232,12 @@ func TestSBCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5271,6 +7287,12 @@ func TestSBCrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -5322,6 +7344,12 @@ func TestSBCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5371,6 +7399,12 @@ func TestSBCrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -5425,6 +7459,12 @@ func TestSBCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5475,6 +7515,12 @@ func TestSBCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -5502,6 +7548,18 @@ func TestANDrB(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5531,6 +7589,18 @@ func TestANDrC(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5558,6 +7628,18 @@ func TestANDrD(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5587,6 +7669,18 @@ func TestANDrE(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5615,6 +7709,18 @@ func TestANDrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5642,6 +7748,18 @@ func TestANDrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5678,6 +7796,18 @@ func TestANDHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5705,6 +7835,18 @@ func TestANDrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5734,6 +7876,18 @@ func TestXORrB(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5761,6 +7915,18 @@ func TestXORrC(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5790,6 +7956,18 @@ func TestXORrD(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5817,6 +7995,18 @@ func TestXORrE(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5846,6 +8036,18 @@ func TestXORrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5873,6 +8075,18 @@ func TestXORrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5909,6 +8123,18 @@ func TestXORHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5936,6 +8162,18 @@ func TestXORrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -5965,6 +8203,18 @@ func TestORrB(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -5992,6 +8242,18 @@ func TestORrC(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -6021,6 +8283,18 @@ func TestORrD(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -6048,6 +8322,18 @@ func TestORrE(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -6077,6 +8363,18 @@ func TestORrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -6104,6 +8402,18 @@ func TestORrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -6140,6 +8450,18 @@ func TestORHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -6167,6 +8489,18 @@ func TestORrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -6200,6 +8534,12 @@ func TestCPrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -6231,6 +8571,12 @@ func TestCPrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -6264,6 +8610,12 @@ func TestCPrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -6295,6 +8647,12 @@ func TestCPrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -6328,6 +8686,12 @@ func TestCPrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -6359,6 +8723,12 @@ func TestCPrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -6399,6 +8769,12 @@ func TestCPHL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -6430,6 +8806,12 @@ func TestCPrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -6483,6 +8865,21 @@ func TestRETNZ(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -6521,6 +8918,21 @@ func TestPOPBC(t *testing.T) {
 		if (valB) != (RegAfter.C) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.C)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -6569,6 +8981,21 @@ func TestJPNZnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -6590,13 +9017,28 @@ func TestJPnn(t *testing.T) {
 
 		cpu.Memory.WriteWord(cpu.Registers.PC, valA)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xC3](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (valA) != (RegAfter.PC) {
 			t.Errorf("Expected valA to be %v but got %v", valA, RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -6653,6 +9095,21 @@ func TestCALLNZnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -6686,6 +9143,21 @@ func TestPUSHBC(t *testing.T) {
 		if (RegBefore.C) != (valB) {
 			t.Errorf("Expected RegBefore.C to be %v but got %v", RegBefore.C, valB)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -6734,6 +9206,12 @@ func TestADDn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -6787,6 +9265,21 @@ func TestRETZ(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -6818,6 +9311,21 @@ func TestRET(t *testing.T) {
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -6867,6 +9375,21 @@ func TestJPZnn(t *testing.T) {
 				t.Errorf("Expected RegAfter.LastClockM to be %v but got %v", RegAfter.LastClockM, 12/4)
 			}
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -6923,6 +9446,21 @@ func TestCALLZnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -6954,6 +9492,21 @@ func TestCALLnn(t *testing.T) {
 		if (RegBefore.SP - 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP - 2 to be %v but got %v", RegBefore.SP-2, RegAfter.SP)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7009,6 +9562,12 @@ func TestADCn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -7061,6 +9620,21 @@ func TestRETNC(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7099,6 +9673,21 @@ func TestPOPDE(t *testing.T) {
 		if (valB) != (RegAfter.E) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.E)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7149,6 +9738,21 @@ func TestJPNCnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7164,9 +9768,24 @@ func TestNOPWARN_D3(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xD3](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xD3](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7223,6 +9842,21 @@ func TestCALLNCnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7256,6 +9890,21 @@ func TestPUSHDE(t *testing.T) {
 		if (RegBefore.E) != (valB) {
 			t.Errorf("Expected RegBefore.E to be %v but got %v", RegBefore.E, valB)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7303,6 +9952,12 @@ func TestSUBn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }
@@ -7356,6 +10011,21 @@ func TestRETC(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7391,6 +10061,21 @@ func TestRETI(t *testing.T) {
 		if !RegAfter.InterruptEnable {
 			t.Errorf("Expected RegAfter.InterruptEnable to be true got false")
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7441,6 +10126,21 @@ func TestJPCnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7456,9 +10156,24 @@ func TestNOPWARN_DB(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xDB](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xDB](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7515,6 +10230,21 @@ func TestCALLCnn(t *testing.T) {
 			}
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7530,9 +10260,24 @@ func TestNOPWARN_DD(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xDD](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xDD](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7587,6 +10332,12 @@ func TestSBCn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
+
 	}
 }
 
@@ -7617,6 +10368,21 @@ func TestLDIOnA(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7657,6 +10423,21 @@ func TestPOPHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.L)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7676,11 +10457,26 @@ func TestLDIOCA(t *testing.T) {
 
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xE2](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegAfter := cpu.Registers.Clone()
 
 		if (RegBefore.A) != (cpu.Memory.ReadByte(0xFF80)) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, cpu.Memory.ReadByte(0xFF80))
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7697,9 +10493,24 @@ func TestNOPWARN_E3(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xE3](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xE3](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7716,9 +10527,24 @@ func TestNOPWARN_E4(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xE4](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xE4](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7753,6 +10579,21 @@ func TestPUSHHL(t *testing.T) {
 		if (RegBefore.L) != (valB) {
 			t.Errorf("Expected RegBefore.L to be %v but got %v", RegBefore.L, valB)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7789,6 +10630,18 @@ func TestANDn(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if !RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be one")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -7835,6 +10688,15 @@ func TestADDSPn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -7871,6 +10733,15 @@ func TestADDSPn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -7896,6 +10767,21 @@ func TestJPHL(t *testing.T) {
 		if (RegBefore.HL()) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.HL to be %v but got %v", RegBefore.HL(), RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7930,6 +10816,21 @@ func TestLDmmA(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -7945,9 +10846,24 @@ func TestNOPWARN_EB(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xEB](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xEB](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7964,9 +10880,24 @@ func TestNOPWARN_EC(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xEC](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xEC](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -7983,9 +10914,24 @@ func TestNOPWARN_ED(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xED](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xED](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8023,6 +10969,18 @@ func TestXORn(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -8056,6 +11014,21 @@ func TestLDAIOn(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8096,6 +11069,9 @@ func TestPOPAF(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.F)
 		}
 
+		// region Test Flags
+		// endregion
+
 	}
 }
 
@@ -8116,13 +11092,28 @@ func TestLDAIOC(t *testing.T) {
 
 		cpu.Memory.WriteByte(0xFF80, val)
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xF2](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8139,13 +11130,28 @@ func TestDI(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xF3](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if RegAfter.InterruptEnable {
 			t.Errorf("Expected Interrupt Enable to be disabled")
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8162,9 +11168,24 @@ func TestNOPWARN_F4(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xF4](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xF4](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8199,6 +11220,21 @@ func TestPUSHAF(t *testing.T) {
 		if (RegBefore.F) != (valB) {
 			t.Errorf("Expected RegBefore.F to be %v but got %v", RegBefore.F, valB)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8235,6 +11271,18 @@ func TestORn(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Flags
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		if RegAfter.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to be zero")
+		}
+		if RegAfter.GetCarry() {
+			t.Errorf("Expected Flag Carry to be zero")
+		}
+		// endregion
 
 	}
 }
@@ -8278,6 +11326,15 @@ func TestLDHLSPn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP)&0xFF)+(signedV&0xFF) > 0xFF, RegAfter.GetCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 	for i := 0; i < RunCycles; i++ {
 		cpu.Reset()
@@ -8311,6 +11368,15 @@ func TestLDHLSPn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP)&0xFF)+(signedV&0xFF) > 0xFF, RegAfter.GetCarry())
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() {
+			t.Errorf("Expected Flag Zero to be zero")
+		}
+		if RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be zero")
+		}
+		// endregion
+
 	}
 }
 
@@ -8333,6 +11399,21 @@ func TestLDHLSPr(t *testing.T) {
 		if (RegBefore.HL()) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.HL to be %v but got %v", RegBefore.HL(), RegAfter.SP)
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8369,6 +11450,21 @@ func TestLDAmm(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
+
 	}
 }
 
@@ -8384,13 +11480,28 @@ func TestEI(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xFB](cpu)
 		RegAfter := cpu.Registers.Clone()
 
 		if !RegAfter.InterruptEnable {
 			t.Errorf("Expected Interrupt Enable to be enabled")
 		}
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8407,9 +11518,24 @@ func TestNOPWARN_FC(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xFC](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xFC](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8426,9 +11552,24 @@ func TestNOPWARN_FD(t *testing.T) {
 		cpu.Registers.Randomize()
 		cpu.Memory.Randomize()
 
-		// RegBefore := cpu.Registers.Clone()
-		// GBInstructions[0xFD](cpu)
-		// RegAfter := cpu.Registers.Clone()
+		RegBefore := cpu.Registers.Clone()
+		GBInstructions[0xFD](cpu)
+		RegAfter := cpu.Registers.Clone()
+
+		// region Test Flags
+		if RegAfter.GetZero() != RegBefore.GetZero() {
+			t.Errorf("Expected Flag Zero to not change")
+		}
+		if RegAfter.GetSub() != RegBefore.GetSub() {
+			t.Errorf("Expected Flag Sub to not change")
+		}
+		if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
+			t.Errorf("Expected Flag Half Carry to not change")
+		}
+		if RegAfter.GetCarry() != RegBefore.GetCarry() {
+			t.Errorf("Expected Flag Carry to not change")
+		}
+		// endregion
 
 	}
 }
@@ -8471,6 +11612,12 @@ func TestCPn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Flags
+		if !RegAfter.GetSub() {
+			t.Errorf("Expected Flag Sub to be one")
+		}
+		// endregion
 
 	}
 }

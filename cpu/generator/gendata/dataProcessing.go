@@ -211,7 +211,7 @@ func gbDECr{{.I}}(cpu *Core) {
 
     //cpu.Registers.SetCarry(int(v) - 1 < 0)
     cpu.Registers.SetZero(cpu.Registers.{{.I}} == 0)
-    cpu.Registers.SetSub(false)
+    cpu.Registers.SetSub(true)
     cpu.Registers.SetHalfCarry((v & 0xF) == 0)
 
     cpu.Registers.LastClockM = 1
@@ -511,7 +511,7 @@ func gbSBCn(cpu *Core) {
 
     cpu.Registers.SetZero(sum == 0)
     cpu.Registers.SetCarry(sum < 0)
-    cpu.Registers.SetSub(false)
+    cpu.Registers.SetSub(true)
     cpu.Registers.SetHalfCarry(int(a & 0xF) < (b & 0xF) + f)
 
     cpu.Registers.A = uint8(sum)
@@ -742,7 +742,6 @@ func gbINCHLm(cpu *Core) {
 	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
 	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v+1))
 
-	cpu.Registers.SetCarry((v+1) > 255)
 	cpu.Registers.SetZero((v+1) & 0xFF == 0)
 	cpu.Registers.SetSub(false)
 	cpu.Registers.SetHalfCarry((v & 0xF) + 1 > 0xF)
@@ -756,9 +755,8 @@ func gbDECHLm(cpu *Core) {
 	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
 	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v-1))
 
-	cpu.Registers.SetCarry((v-1) < 0)
 	cpu.Registers.SetZero((v-1) & 0xFF == 0)
-	cpu.Registers.SetSub(false)
+	cpu.Registers.SetSub(true)
 	cpu.Registers.SetHalfCarry((v & 0xF) == 0)
 
 	cpu.Registers.LastClockM = 3

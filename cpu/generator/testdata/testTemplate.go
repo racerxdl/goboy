@@ -9,9 +9,9 @@ func TestOpcode{{.OPCODE}}(t *testing.T) {
     cpu.Registers.Randomize()
     cpu.Memory.Randomize()
 
-    regBefore := cpu.Registers.Clone()
+    RegBefore := cpu.Registers.Clone()
     GBInstructions[0x{{.OPCODE}}](cpu)
-    regAfter := cpu.Registers.Clone()
+    RegAfter := cpu.Registers.Clone()
 
     {{.CHECKS}}
 }`))
@@ -23,20 +23,20 @@ func TestCBOpcode{{.OPCODE}}(t *testing.T) {
     cpu.Registers.Randomize()
     cpu.Memory.Randomize()
 
-    regBefore := cpu.Registers.Clone()
+    RegBefore := cpu.Registers.Clone()
     CBInstructions[0x{{.OPCODE}}](cpu)
-    regAfter := cpu.Registers.Clone()
+    RegAfter := cpu.Registers.Clone()
 
     {{.CHECKS}}
 }`))
 
 var cycleTestTemplate = template.Must(template.New("Cycle Test Template").Parse(`
     // region Test Cycles
-    if regAfter.LastClockT != {{.LASTCLOCKT}} {
-        t.Errorf("Expected LastClockT to be %d but got %d", {{.LASTCLOCKT}}, regAfter.LastClockT)
+    if RegAfter.LastClockT != {{.LASTCLOCKT}} {
+        t.Errorf("Expected LastClockT to be %d but got %d", {{.LASTCLOCKT}}, RegAfter.LastClockT)
     }
-    if regAfter.LastClockM != {{.LASTCLOCKM}} {
-        t.Errorf("Expected LastClockM to be %d but got %d", {{.LASTCLOCKM}}, regAfter.LastClockM)
+    if RegAfter.LastClockM != {{.LASTCLOCKM}} {
+        t.Errorf("Expected LastClockM to be %d but got %d", {{.LASTCLOCKM}}, RegAfter.LastClockM)
     }
     // endregion
 `))
@@ -49,17 +49,17 @@ func GenFlagTest(zshc string) string {
     switch zshc[0] {
     case '-': // Does not change
         test += `
-    if regAfter.GetZero() != regBefore.GetZero() {
+    if RegAfter.GetZero() != RegBefore.GetZero() {
         t.Errorf("Expected Flag Zero to not change")
     }`
     case '0': // Always exit as 0
         test += `
-    if regAfter.GetZero()  {
+    if RegAfter.GetZero()  {
         t.Errorf("Expected Flag Zero to be zero")
     }`
     case '1': // Always exit as 1
         test += `
-    if !regAfter.GetZero(){
+    if !RegAfter.GetZero(){
         t.Errorf("Expected Flag Zero to be one")
     }`
     }
@@ -68,17 +68,17 @@ func GenFlagTest(zshc string) string {
     switch zshc[1] {
     case '-': // Does not change
         test += `
-    if regAfter.GetSub() != regBefore.GetSub() {
+    if RegAfter.GetSub() != RegBefore.GetSub() {
         t.Errorf("Expected Flag Sub to not change")
     }`
     case '0': // Always exit as 0
         test += `
-    if regAfter.GetSub()  {
+    if RegAfter.GetSub()  {
         t.Errorf("Expected Flag Sub to be zero")
     }`
     case '1': // Always exit as 1
         test += `
-    if !regAfter.GetSub(){
+    if !RegAfter.GetSub(){
         t.Errorf("Expected Flag Sub to be one")
     }`
     }
@@ -87,17 +87,17 @@ func GenFlagTest(zshc string) string {
     switch zshc[2] {
     case '-': // Does not change
         test += `
-    if regAfter.GetHalfCarry() != regBefore.GetHalfCarry() {
+    if RegAfter.GetHalfCarry() != RegBefore.GetHalfCarry() {
         t.Errorf("Expected Flag Half Carry to not change")
     }`
     case '0': // Always exit as 0
         test += `
-    if regAfter.GetHalfCarry()  {
+    if RegAfter.GetHalfCarry()  {
         t.Errorf("Expected Flag Half Carry to be zero")
     }`
     case '1': // Always exit as 1
         test += `
-    if !regAfter.GetHalfCarry(){
+    if !RegAfter.GetHalfCarry(){
         t.Errorf("Expected Flag Half Carry to be one")
     }`
     }
@@ -106,17 +106,17 @@ func GenFlagTest(zshc string) string {
     switch zshc[3] {
     case '-': // Does not change
         test += `
-    if regAfter.GetCarry() != regBefore.GetCarry() {
+    if RegAfter.GetCarry() != RegBefore.GetCarry() {
         t.Errorf("Expected Flag Carry to not change")
     }`
     case '0': // Always exit as 0
         test += `
-    if regAfter.GetCarry()  {
+    if RegAfter.GetCarry()  {
         t.Errorf("Expected Flag Carry to be zero")
     }`
     case '1': // Always exit as 1
         test += `
-    if !regAfter.GetCarry(){
+    if !RegAfter.GetCarry(){
         t.Errorf("Expected Flag Carry to be one")
     }`
     }

@@ -15,7 +15,7 @@
 
                 cpu.Memory.WriteWord(cpu.Registers.PC, valA)
 
-                // RegBefore := cpu.Registers.Clone()
+                RegBefore := cpu.Registers.Clone()
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 

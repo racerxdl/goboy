@@ -14,7 +14,7 @@
 
                 cpu.Memory.WriteByte(0xFF80, val)
 
-                // RegBefore := cpu.Registers.Clone()
+                RegBefore := cpu.Registers.Clone()
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 

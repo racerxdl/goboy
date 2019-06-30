@@ -13,7 +13,7 @@
                 cpu.Registers.H = 0xA0
                 cpu.Registers.L = uint8( rand.Intn(0xFF))
 
-                // RegBefore := cpu.Registers.Clone()
+                RegBefore := cpu.Registers.Clone()
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 

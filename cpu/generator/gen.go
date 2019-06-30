@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/racerxdl/goboy/cpu/generator"
 	"github.com/racerxdl/goboy/cpu/generator/gendata"
+	"github.com/racerxdl/goboy/cpu/generator/testdata"
 	"go/format"
 	"io/ioutil"
 	"log"
@@ -163,6 +164,8 @@ const RunCycles = 10
 			arg2 = v.TemplateArgs[2]
 		}
 
+		flags := testdata.GenFlagTest(v.ZSHC)
+
 		d := struct {
 			OpCodeX     string
 			OpCode      string
@@ -181,6 +184,7 @@ const RunCycles = 10
 			Arg0:        arg0,
 			Arg1:        arg1,
 			Arg2:        arg2,
+			Flags:       flags,
 		}
 
 		err = tpl.Execute(f, d)

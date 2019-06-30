@@ -17,7 +17,7 @@
                 var val = uint8( rand.Intn(0xFF))
                 cpu.Memory.WriteByte(hl, val)
 
-                // RegBefore := cpu.Registers.Clone()
+                RegBefore := cpu.Registers.Clone()
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 
