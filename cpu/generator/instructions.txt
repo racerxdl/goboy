@@ -3,7 +3,7 @@
 NOP|NOP|4|----|NOP[]|1
 LDBCnn|LD BC, d16|12|----|LD__nn["B", "C"]|3
 LDBCmA|LD [BC], A|8|----|LD__m_["B", "C", "A"]|1
-INCBC|INC BC|8|----|INC["B", "C"]|1
+INCBC|INC BC|8|----|INCrr["B", "C"]|1
 
 INCr_b|INC B|4|Z0H-|INCr["B"]|1
 DECr_b|DEC B|4|Z1H-|DECr["B"]|1
@@ -11,9 +11,9 @@ LDrn_b|LD B, d8|8|----|LDrn_["B"]|2
 RLCA|RLCA|4|000C|RLCA[]|1
 
 LDmmSP|LD [a16], SP|20|----|LDmmSP[]|3
-ADDHLBC|ADD HL, BC|8|-0HC|ADDHL["B", "C"]|1
+ADDHLBC|ADD HL, BC|8|-0HC|ADDHLrr["B", "C"]|1
 LDABCm|LD A, [BC]|8|----|LD___m["A", "B", "C"]|1
-DECBC|DEC BC|8|----|DEC["B", "C"]|1
+DECBC|DEC BC|8|----|DECrr["B", "C"]|1
 
 INCr_c|INC C|4|Z0H-|INCr["C"]|1
 DECr_c|DEC C|4|Z1H-|DECr["C"]|1
@@ -24,7 +24,7 @@ RRCA|RRCA|4|000C|RRCA[]|1
 STOP|STOP|4|----|STOP[]|1
 LDDEnn|LD DE, d16|12|----|LD__nn["D", "E"]|3
 LDDEmA|LD [DE], A|8|----|LD__m_["D", "E", "A"]|1
-INCDE|INC DE|8|----|INC["D", "E"]|1
+INCDE|INC DE|8|----|INCrr["D", "E"]|1
 
 INCr_d|INC D|4|Z0H-|INCr["D"]|1
 DECr_d|DEC D|4|Z1H-|DECr["D"]|1
@@ -32,9 +32,9 @@ LDrn_d|LD D, d8|8|----|LDrn_["D"]|2
 RLA|RLA|4|000C|RLA[]|1
 
 JRn|JR r8|12|----|JRn[]|2
-ADDHLDE|ADD HL, DE|8|-0HC|ADDHL["D", "E"]|1
+ADDHLDE|ADD HL, DE|8|-0HC|ADDHLrr["D", "E"]|1
 LDADEm|LD A, [DE]|8|----|LD___m["A", "D", "E"]|1
-DECDE|DEC DE|8|----|DEC["D", "E"]|1
+DECDE|DEC DE|8|----|DECrr["D", "E"]|1
 
 INCr_e|INC E|4|Z0H-|INCr["E"]|1
 DECr_e|DEC E|4|Z1H-|DECr["E"]|1
@@ -45,7 +45,7 @@ RRA|RRA|4|000C|RRA[]|1
 JRNZn|JR NZ, r8|12/8|----|JRNZn[]|2
 LDHLnn|LD HL, d16|12|----|LD__nn["H", "L"]|3
 LDHLIA|LD [HL+], A|8|----|LDHLIA[]|1
-INCHL|INC HL|8|----|INC["H", "L"]|1
+INCHL|INC HL|8|----|INCrr["H", "L"]|1
 
 INCr_h|INC H|4|Z0H-|INCr["H"]|1
 DECr_h|DEC H|4|Z1H-|DECr["H"]|1
@@ -53,9 +53,9 @@ LDrn_h|LD H, d8|8|----|LDrn_["H"]|2
 DAA|DAA|4|Z-0C|DAA[]|1
 
 JRZn|JR Z, r8|12/8|----|JRZn[]|2
-ADDHLHL|ADD HL, HL|8|-0HC|ADDHL["H", "L"]|1
+ADDHLHL|ADD HL, HL|8|-0HC|ADDHLrr["H", "L"]|1
 LDAHLI|LD A, [HL+]|8|----|LDAHLI[]|1
-DECHL|DEC HL|8|----|DEC["H", "L"]|1
+DECHL|DEC HL|8|----|DECrr["H", "L"]|1
 
 INCr_l|INC L|4|Z0H-|INCr["L"]|1
 DECr_l|DEC L|4|Z1H-|DECr["L"]|1
@@ -175,7 +175,7 @@ ADDr_e|ADD A, E|4|Z0HC|ADDr["E"]|1
 
 ADDr_h|ADD A, H|4|Z0HC|ADDr["H"]|1
 ADDr_l|ADD A, L|4|Z0HC|ADDr["L"]|1
-ADDHL|ADD A, [HL]|8|Z0HC|ADDHL[]|1
+ADDHL|ADD A, [HL]|8|Z0HC|ADDHLm[]|1
 ADDr_a|ADD A, A|4|Z0HC|ADDr["A"]|1
 
 ADCr_b|ADC A, B|4|Z0HC|ADCr["B"]|1

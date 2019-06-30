@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"github.com/racerxdl/goboy/cpu/generator/models"
+	"go/format"
 	"os"
 	"text/template"
 	"time"
@@ -26,7 +27,7 @@ var instructionTemplate = template.Must(template.New("Instruction Template").Par
         Opcode:        {{.Opcode}},
         Name:          "{{.Name}}",
         Instruction:   "{{.Instruction}}",
-        Cycles:        {{.Cycles}},
+        Cycles:        []int{ {{range .Cycles}} {{.}}, {{end}} },
         ZSHC:          "{{.ZSHC}}",
         NumberOfBytes: {{.NumberOfBytes}},
         Zero:          "{{.Zero}}",
@@ -42,7 +43,7 @@ var cbInstructionTemplate = template.Must(template.New("CB Instruction Template"
         Opcode:        {{.Opcode}},
         Name:          "{{.Name}}",
         Instruction:   "{{.Instruction}}",
-        Cycles:        {{.Cycles}},
+        Cycles:        []int{ {{range .Cycles}} {{.}}, {{end}} },
         ZSHC:          "{{.ZSHC}}",
         Zero:          "{{.Zero}}",
         Sub:           "{{.Sub}}",
@@ -84,7 +85,9 @@ func main() {
 
 	builtcb := b.String()
 
-	instTpl.Execute(f, struct {
+	o := bytes.NewBuffer(nil)
+
+	instTpl.Execute(o, struct {
 		INSTS     string
 		CBINSTS   string
 		Timestamp time.Time
@@ -93,6 +96,15 @@ func main() {
 		CBINSTS:   builtcb,
 		Timestamp: time.Now(),
 	})
+
+	// Format the Code
+	data, err := format.Source(o.Bytes())
+
+	if err != nil {
+		panic(err)
+	}
+
+	f.Write(data)
 
 	f.Close()
 }

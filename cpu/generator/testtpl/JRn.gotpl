@@ -1,0 +1,54 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestJRn(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.PC = uint16( ((0xA1 << 8) + rand.Intn(0xF0)))
+
+                var signedV = rand.Intn(0xFF) - 128
+                var v = uint8(signedV)
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, v)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (uint16(int(RegBefore.PC) + signedV + 1) & 0xFFFF) != (RegAfter.PC) {
+                    t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC) + signedV + 1) & 0xFFFF, RegAfter.PC)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.PC = uint16( ((0xA1 << 8) + rand.Intn(0xF0)))
+
+                var signedV = rand.Intn(127)
+                var v = uint8( signedV)
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, v)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (uint16(int(RegBefore.PC) + signedV + 1) & 0xFFFF) != (RegAfter.PC) {
+                    t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC) + signedV + 1) & 0xFFFF, RegAfter.PC)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

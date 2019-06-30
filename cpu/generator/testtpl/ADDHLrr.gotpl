@@ -1,0 +1,34 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestADDHL{{.Arg0}}{{.Arg1}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var ab = uint16(RegBefore.{{.Arg0}}) << 8 + uint16(RegBefore.{{.Arg1}})
+                var sum = RegBefore.HL() + ab
+                var halfCarry = (RegBefore.HL() & 0xFFF) + (ab & 0xFFF) > 0xFFF
+
+                
+                if (sum & 0xFFFF) != (RegAfter.HL()) {
+                    t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum & 0xFFFF, RegAfter.HL())
+                }                
+                if (sum > 65535) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected sum > 65535 to be %v but got %v", sum > 65535, RegAfter.GetCarry())
+                }                
+                if (halfCarry) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

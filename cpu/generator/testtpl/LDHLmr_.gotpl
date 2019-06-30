@@ -1,0 +1,28 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDHLmr{{.Arg0}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.H = 0xA0
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                // RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.{{.Arg0}}) {
+                    t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.{{.Arg0}})
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

@@ -3,9 +3,15 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
+	"github.com/racerxdl/goboy/cpu/generator"
 	"github.com/racerxdl/goboy/cpu/generator/gendata"
+	"go/format"
+	"io/ioutil"
 	"log"
 	"os"
+	"text/template"
 	"time"
 )
 
@@ -14,10 +20,12 @@ import (
 //go:generate go run geninstructionset.go
 
 func main() {
-	f, err := os.Create("instructions.go")
+	z, err := os.Create("instructions.go")
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
+
+	f := bytes.NewBuffer(nil)
 
 	instructions := ""
 
@@ -74,12 +82,20 @@ func main() {
 		Timestamp:    time.Now(),
 		Instructions: instructions,
 	})
-	f.Close()
+
+	data, err := format.Source(f.Bytes())
+
+	if err != nil {
+		panic(err)
+	}
+
+	z.Write(data)
+	z.Close()
 
 	// CB Instructions
 	instructions = gendata.BuildCB()
-
-	f, err = os.Create("cbinstructions.go")
+	f.Reset()
+	z, err = os.Create("cbinstructions.go")
 	if err != nil {
 		log.Fatalf(err.Error())
 	}
@@ -91,5 +107,99 @@ func main() {
 		Timestamp:    time.Now(),
 		Instructions: instructions,
 	})
-	f.Close()
+
+	data, err = format.Source(f.Bytes())
+
+	if err != nil {
+		panic(err)
+	}
+
+	z.Write(data)
+	z.Close()
+
+	// Generate Tests
+	f.Reset()
+	z, err = os.Create("instructions_test.go")
+	if err != nil {
+		log.Fatalf(err.Error())
+	}
+
+	f.WriteString(`package cpu
+
+import (
+    "math/rand"
+    "testing"
+)
+
+const RunCycles = 10
+
+`)
+
+	for _, v := range generator.InstructionSet {
+		if v.TemplateName == "RSTXX" || v.TemplateName == "CBCall" {
+			continue
+		}
+		tpld, err := ioutil.ReadFile(fmt.Sprintf("generator/testtpl/%s.gotpl", v.TemplateName))
+
+		if err != nil {
+			panic(err)
+		}
+
+		tpl := template.Must(template.New(v.TemplateName).Parse(string(tpld)))
+
+		arg0 := ""
+		arg1 := ""
+		arg2 := ""
+
+		if len(v.TemplateArgs) >= 1 {
+			arg0 = v.TemplateArgs[0]
+		}
+
+		if len(v.TemplateArgs) >= 2 {
+			arg1 = v.TemplateArgs[1]
+		}
+
+		if len(v.TemplateArgs) >= 3 {
+			arg2 = v.TemplateArgs[2]
+		}
+
+		d := struct {
+			OpCodeX     string
+			OpCode      string
+			Instruction string
+			Cycles      []int
+			Asserts     string
+			Flags       string
+			Arg0        string
+			Arg1        string
+			Arg2        string
+		}{
+			OpCodeX:     fmt.Sprintf("%02X", v.Opcode),
+			OpCode:      fmt.Sprintf("%d", v.Opcode),
+			Instruction: v.Name,
+			Cycles:      v.Cycles,
+			Arg0:        arg0,
+			Arg1:        arg1,
+			Arg2:        arg2,
+		}
+
+		err = tpl.Execute(f, d)
+
+		f.WriteString("\n")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	data, err = format.Source(f.Bytes())
+
+	if err != nil {
+		z.Write(f.Bytes())
+		fmt.Println("Error formatting code: ")
+		panic(err)
+
+	}
+
+	z.Write(data)
+	z.Close()
 }

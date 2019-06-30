@@ -1,0 +1,35 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestRLA(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                c := (RegBefore.A >> 7) > 0;
+                f := uint8(0)
+                if RegBefore.GetCarry() {
+                    f = 1
+                }
+
+                var val = (RegBefore.A << 1) | f
+
+                
+                if (val) != (RegAfter.A) {
+                    t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
+                }                
+                if (c) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected c to be %v but got %v", c, RegAfter.GetCarry())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

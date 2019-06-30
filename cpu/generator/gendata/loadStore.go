@@ -377,18 +377,10 @@ func gbLDHLSPn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
-    /*
-    if v > 127 {
-        v = -((^v + 1) & 0xFF)
-    }
-    */
-
-    // TODO: WARNING, this probably is broken
-
     cpu.Registers.SetZero(false)
     cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(int(cpu.Registers.SP & 0xF) + v > 0xF)
-    cpu.Registers.SetCarry(int(cpu.Registers.SP & 0xFF) + v > 0xFF)
+	cpu.Registers.SetHalfCarry(int(cpu.Registers.SP&0xF) + (v & 0xF) > 0xF)
+	cpu.Registers.SetCarry(int(cpu.Registers.SP&0xFF) + (v & 0xFF) > 0xFF)
 
     v += int(cpu.Registers.SP)
 

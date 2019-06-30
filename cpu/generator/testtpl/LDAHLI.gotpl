@@ -1,0 +1,35 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDAHLI(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.H = 0xA0
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                var val = uint8( rand.Intn(0xFF))
+
+                cpu.Memory.WriteByte(cpu.Registers.HL(), val)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (val) != (RegAfter.A) {
+                    t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
+                }                
+                if (RegBefore.HL() + 1) != (RegAfter.HL()) {
+                    t.Errorf("Expected RegBefore.HL + 1 to be %v but got %v", RegBefore.HL() + 1, RegAfter.HL())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

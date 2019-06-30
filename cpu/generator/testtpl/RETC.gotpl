@@ -1,0 +1,51 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestRETC(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.SP = uint16( ((0xA1 << 8) + rand.Intn(0xF0)))
+
+                var valA = uint16( rand.Intn(0xFFFF))
+
+                cpu.Memory.WriteWord(cpu.Registers.SP, valA)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                if RegBefore.GetCarry() {
+                    
+                if (valA) != (RegAfter.PC) {
+                    t.Errorf("Expected valA to be %v but got %v", valA, RegAfter.PC)
+                }                    
+                if ({{index .Cycles 0}}) != (RegAfter.LastClockT) {
+                    t.Errorf("Expected {{index .Cycles 0}} to be %v but got %v", {{index .Cycles 0}}, RegAfter.LastClockT)
+                }                    
+                if ({{index .Cycles 0}} / 4) != (RegAfter.LastClockM) {
+                    t.Errorf("Expected {{index .Cycles 0}} / 4 to be %v but got %v", {{index .Cycles 0}} / 4, RegAfter.LastClockM)
+                }                    
+                if (RegBefore.SP + 2) != (RegAfter.SP) {
+                    t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP + 2, RegAfter.SP)
+                }                } else {
+                    
+                if ({{index .Cycles 1}}) != (RegAfter.LastClockT) {
+                    t.Errorf("Expected {{index .Cycles 1}} to be %v but got %v", {{index .Cycles 1}}, RegAfter.LastClockT)
+                }                    
+                if ({{index .Cycles 1}} / 4) != (RegAfter.LastClockM) {
+                    t.Errorf("Expected {{index .Cycles 1}} / 4 to be %v but got %v", {{index .Cycles 1}} / 4, RegAfter.LastClockM)
+                }                    
+                if (RegBefore.SP) != (RegAfter.SP) {
+                    t.Errorf("Expected RegBefore.SP to be %v but got %v", RegBefore.SP, RegAfter.SP)
+                }                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

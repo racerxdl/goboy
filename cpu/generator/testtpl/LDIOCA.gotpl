@@ -1,0 +1,26 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDIOCA(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.C = 0x80
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                // RegAfter := cpu.Registers.Clone()
+
+                
+                if (RegBefore.A) != (cpu.Memory.ReadByte(0xFF80)) {
+                    t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, cpu.Memory.ReadByte(0xFF80))
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

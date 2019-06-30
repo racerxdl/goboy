@@ -1,0 +1,48 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestJPNZnn(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.PC = uint16( ((0xA1 << 8) + rand.Intn(0xF0)))
+
+                var valA = uint16( rand.Intn(0xFFFF))
+
+                cpu.Memory.WriteWord(cpu.Registers.PC, valA)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                if !RegBefore.GetZero() {
+                    if (valA) != (RegAfter.PC) {
+                        t.Errorf("Expected valA to be %v but got %v", valA, RegAfter.PC)
+                    }
+                    if (RegAfter.LastClockT) != ({{index .Cycles 0}}) {
+                        t.Errorf("Expected RegAfter.LastClockT to be %v but got %v", RegAfter.LastClockT, {{index .Cycles 0}})
+                    }
+                    if (RegAfter.LastClockM) != ({{index .Cycles 0}} / 4) {
+                        t.Errorf("Expected RegAfter.LastClockM to be %v but got %v", RegAfter.LastClockM, {{index .Cycles 0}} / 4)
+                    }
+                } else {
+                    if (RegBefore.PC + 2) != (RegAfter.PC) {
+                        t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC + 2, RegAfter.PC)
+                    }
+                    if (RegAfter.LastClockT) != ({{index .Cycles 1}}) {
+                        t.Errorf("Expected RegAfter.LastClockT to be %v but got %v", RegAfter.LastClockT, {{index .Cycles 1}})
+                    }
+                    if (RegAfter.LastClockM) != ({{index .Cycles 1}} / 4) {
+                        t.Errorf("Expected RegAfter.LastClockM to be %v but got %v", RegAfter.LastClockM, {{index .Cycles 1}} / 4)
+                    }
+                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

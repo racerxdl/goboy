@@ -1,0 +1,25 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDrr{{.Arg0}}{{.Arg1}}(t *testing.T) {
+            cpu := MakeCore()
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                // region Test Difference
+                
+                if (RegAfter.{{.Arg0}}) != (RegBefore.{{.Arg1}}) {
+                    t.Errorf("Expected RegAfter.{{.Arg0}} to be %v but got %v", RegAfter.{{.Arg0}}, RegBefore.{{.Arg1}})
+                }                // endregion
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

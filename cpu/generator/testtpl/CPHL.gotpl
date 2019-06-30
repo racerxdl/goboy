@@ -1,0 +1,40 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestCPHL(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.H = 0xA0
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                var val = uint8( rand.Intn(0xFF))
+
+                cpu.Memory.WriteByte(cpu.Registers.HL(), val)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var halfCarry = (RegBefore.A & 0xF) < (val & 0xF)
+                var carry = RegBefore.A < val
+
+                
+                if (carry) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected carry to be %v but got %v", carry, RegAfter.GetCarry())
+                }                
+                if (RegBefore.A == val) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected RegBefore.A == val to be %v but got %v", RegBefore.A == val, RegAfter.GetZero())
+                }                
+                if (halfCarry) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

@@ -67,10 +67,6 @@ func gbJRn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
-    //if v > 127 {
-    //    v = -((^v + 1) & 0xFF)
-    //}
-
     cpu.Registers.PC = uint16(int(cpu.Registers.PC) + v)
 
     cpu.Registers.LastClockM = 3
@@ -81,9 +77,6 @@ func gbJRNZn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
-    //if v > 127 {
-    //    v = -((^v + 1) & 0xFF)
-    //}
 
     if cpu.Registers.GetZero() {
         cpu.Registers.LastClockM = 2
@@ -101,10 +94,6 @@ func gbJRZn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
-    //if v > 127 {
-    //    v = -((^v + 1) & 0xFF)
-    //}
-
     if !cpu.Registers.GetZero() {
         cpu.Registers.LastClockM = 2
         cpu.Registers.LastClockT = 8
@@ -120,10 +109,6 @@ func gbJRZn(cpu *Core) {
 func gbJRNCn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
-
-    //if v > 127 {
-    //    v = -((^v + 1) & 0xFF)
-    //}
 
     if cpu.Registers.GetCarry() {
         cpu.Registers.LastClockM = 2
@@ -141,11 +126,7 @@ func gbJRCn(cpu *Core) {
     v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
-    //if v > 127 {
-    //    v = -((^v + 1) & 0xFF)
-    //}
-
-    if cpu.Registers.GetCarry() {
+    if !cpu.Registers.GetCarry() {
         cpu.Registers.LastClockM = 2
         cpu.Registers.LastClockT = 8
         return

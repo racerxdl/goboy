@@ -1,0 +1,44 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestDECHLm(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+
+                cpu.Registers.H = 0xA0
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                var val = uint8( rand.Intn(0xFF))
+
+                cpu.Memory.WriteByte(cpu.Registers.HL(), val)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var valAfter = cpu.Memory.ReadByte(RegBefore.HL())
+
+                var newVal = uint8(val - 1)
+                var halfCarry = (val & 0xF)  == 0x00
+
+                
+                if (newVal) != (valAfter) {
+                    t.Errorf("Expected newVal to be %v but got %v", newVal, valAfter)
+                }                
+                if (newVal == 0) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected newVal == 0 to be %v but got %v", newVal == 0, RegAfter.GetZero())
+                }                
+                if (halfCarry) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

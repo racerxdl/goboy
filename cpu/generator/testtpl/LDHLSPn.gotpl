@@ -1,0 +1,80 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDHLSPn(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.PC = uint16(((0xA0 << 8) + rand.Intn(0xFFF)))
+
+                var signedV = rand.Intn(127) - 128
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, uint8(signedV))
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if uint16(int(RegBefore.SP) + signedV) != (RegAfter.HL()) {
+                    t.Errorf("Expected RegBefore.SP + signedV to be %v but got %v", int(RegBefore.SP) + signedV, RegAfter.HL())
+                }                
+
+                if (RegBefore.PC + 1) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC + 1, RegAfter.PC)
+                }                
+
+                if ((int(RegBefore.SP) & 0xF) + (signedV & 0xF) > 0xF) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected (RegBefore.SP & 0xF) + (signedV & 0xF) > 0xF to be %v but got %v", (int(RegBefore.SP) & 0xF) + (signedV & 0xF) > 0xF, RegAfter.GetHalfCarry())
+                }                
+
+                if ((int(RegBefore.SP) & 0xFF) + (signedV & 0xFF) > 0xFF) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP) & 0xFF) + (signedV & 0xFF) > 0xFF, RegAfter.GetCarry())
+                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.PC = uint16(((0xA0 << 8) + rand.Intn(0xFFF)))
+
+                var signedV = rand.Intn(127)
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, uint8(signedV))
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if uint16(int(RegBefore.SP) + signedV) != (RegAfter.HL()) {
+                    t.Errorf("Expected RegBefore.SP + signedV to be %v but got %v", int(RegBefore.SP) + signedV, RegAfter.HL())
+                }                
+
+                if (RegBefore.PC + 1) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC + 1, RegAfter.PC)
+                }                
+
+                if ((int(RegBefore.SP) & 0xF) + (signedV & 0xF) > 0xF) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected (RegBefore.SP & 0xF) + (signedV & 0xF) > 0xF to be %v but got %v", (int(RegBefore.SP) & 0xF) + (signedV & 0xF) > 0xF, RegAfter.GetHalfCarry())
+                }                
+
+                if ((int(RegBefore.SP) & 0xFF) + (signedV & 0xFF) > 0xFF) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP) & 0xFF) + (signedV & 0xFF) > 0xFF, RegAfter.GetCarry())
+                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

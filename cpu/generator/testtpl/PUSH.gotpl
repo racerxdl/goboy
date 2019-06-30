@@ -1,0 +1,35 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestPUSH{{.Arg0}}{{.Arg1}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.SP = uint16( ((0xA1 << 8) + rand.Intn(0xF0)))
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var valB = cpu.Memory.ReadByte(RegAfter.SP)
+                var valA = cpu.Memory.ReadByte(RegAfter.SP+1)
+
+                
+                if (RegBefore.SP - 2) != (RegAfter.SP) {
+                    t.Errorf("Expected RegBefore.SP - 2 to be %v but got %v", RegBefore.SP - 2, RegAfter.SP)
+                }                
+                if (RegBefore.{{.Arg0}}) != (valA) {
+                    t.Errorf("Expected RegBefore.{{.Arg0}} to be %v but got %v", RegBefore.{{.Arg0}}, valA)
+                }                
+                if (RegBefore.{{.Arg1}}) != (valB) {
+                    t.Errorf("Expected RegBefore.{{.Arg1}} to be %v but got %v", RegBefore.{{.Arg1}}, valB)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

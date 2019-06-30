@@ -12,7 +12,7 @@ type DisasmInstruction struct {
 	Opcode      uint8
 	Instruction string
 	Argument    []byte
-	Cycles      int
+	Cycles      []int
 	ZSHC        string
 	cbInst      bool
 }

@@ -1,0 +1,37 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestORn(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.PC = uint16( ((0xA0 << 8) + rand.Intn(0xFF)))
+                var val = uint8( rand.Intn(0xFF))
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, val)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                val = RegBefore.A | val
+
+                
+                if (RegBefore.PC + 1) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC + 1, RegAfter.PC)
+                }                
+                if (val) != (RegAfter.A) {
+                    t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
+                }                
+                if (val == 0) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

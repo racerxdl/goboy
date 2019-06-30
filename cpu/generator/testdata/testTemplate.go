@@ -1,6 +1,6 @@
 package testdata
 
-import "html/template"
+import "text/template"
 
 var testCPUTemplate = template.Must(template.New("Test Template").Parse(`
 func TestOpcode{{.OPCODE}}(t *testing.T) {

@@ -11,7 +11,7 @@ type CBInstruction struct {
 	Opcode       uint8
 	Name         string
 	Instruction  string
-	Cycles       int
+	Cycles       []int
 	ZSHC         string
 	Zero         string
 	Sub          string
@@ -28,12 +28,17 @@ func CBInstructionFromTXT(opcode uint8, txtData string) CBInstruction {
 
 	o := strings.Split(txtData, "|")
 	//|Name|Instruction|Cycles|ZSHC|Template[arguments]
-	cycles, _ := strconv.ParseInt(o[2], 10, 32)
+	cyclesS := strings.Split(o[2], "/")
+	cycles := make([]int, 0)
+	for _, v := range cyclesS {
+		s, _ := strconv.ParseInt(v, 10, 32)
+		cycles = append(cycles, int(s))
+	}
 	ins := CBInstruction{
 		Opcode:      opcode,
 		Name:        o[0],
 		Instruction: o[1],
-		Cycles:      int(cycles),
+		Cycles:      cycles,
 		ZSHC:        o[3],
 		Zero:        string(o[3][0]),
 		Sub:         string(o[3][1]),

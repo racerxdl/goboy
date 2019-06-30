@@ -1,0 +1,24 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestDI(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                if RegAfter.InterruptEnable {
+                    t.Errorf("Expected Interrupt Enable to be disabled")
+                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

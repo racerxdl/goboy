@@ -1,0 +1,29 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDAIOC(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.C = 0x80
+                var val = uint8( rand.Intn(0x10))
+
+                cpu.Memory.WriteByte(0xFF80, val)
+
+                // RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (val) != (RegAfter.A) {
+                    t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

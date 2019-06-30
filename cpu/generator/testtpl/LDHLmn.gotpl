@@ -1,0 +1,40 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDHLmn(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.H = 0xA0
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                cpu.Registers.PC = cpu.Registers.HL(); // Put PC in High Ram random value
+
+                var val = uint8( rand.Intn(0x50))
+
+                cpu.Memory.WriteByte(cpu.Registers.PC, val)
+
+                cpu.Registers.H = 0xFF
+                cpu.Registers.L = uint8( (0x80 + rand.Intn(0x50)))
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (val) {
+                    t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), val)
+                }                
+                if (RegBefore.PC + 1) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC + 1, RegAfter.PC)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

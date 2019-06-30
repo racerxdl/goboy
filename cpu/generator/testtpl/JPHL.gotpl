@@ -1,0 +1,27 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestJPHL(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                cpu.Registers.H = uint8( rand.Intn(0xFF))
+                cpu.Registers.L = uint8( rand.Intn(0xFF))
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (RegBefore.HL()) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.HL to be %v but got %v", RegBefore.HL(), RegAfter.PC)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

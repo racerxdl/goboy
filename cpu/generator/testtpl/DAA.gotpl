@@ -1,0 +1,49 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestDAA(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var a = int(RegBefore.A)
+
+                if RegBefore.GetSub() {
+                    if RegBefore.GetHalfCarry() {
+                        a = a - 0x6
+                    } else {
+                        a -= 0x60
+                    }
+                } else {
+                    if RegBefore.GetHalfCarry() || (a & 0xF) > 0x9 {
+                        a += 0x06
+                    } else {
+                        a += 0x60
+                    }
+                }
+
+                var zero = a == 0
+                var carry = ((a & 0x100) == 0x100) || RegBefore.GetCarry()
+
+                
+                if (carry) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected carry to be %v but got %v", carry, RegAfter.GetCarry())
+                }                
+                if (zero) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected zero to be %v but got %v", zero, RegAfter.GetZero())
+                }                
+                if uint8(a & 0xFF) != (RegAfter.A) {
+                    t.Errorf("Expected a & 0xFF to be %v but got %v", a & 0xFF, RegAfter.A)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

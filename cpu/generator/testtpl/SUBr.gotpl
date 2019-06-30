@@ -1,0 +1,45 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestSUBr{{.Arg0}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var sum = int(RegBefore.A) - int(RegBefore.{{.Arg0}})
+                var halfCarry = (RegBefore.A & 0xF) < (RegBefore.{{.Arg0}} & 0xF)
+
+                if uint8(sum) != RegAfter.A {
+                    t.Errorf("Expected uint8(sum) != RegAfter.A to be %v but got %v", false, uint8(sum) != RegAfter.A)
+                }
+
+                if "{{.Arg0}}" != "A" {
+                   if (RegBefore.{{.Arg0}}) != (RegAfter.{{.Arg0}}) {
+                        t.Errorf("Expected RegBefore.{{.Arg0}} to be %v but got %v", RegBefore.{{.Arg0}}, RegAfter.{{.Arg0}})
+                    }
+                }
+                
+                if (sum < 0) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected sum < 0 to be %v but got %v", sum < 0, RegAfter.GetCarry())
+                }                
+
+                if ((sum & 0xFF) == 0) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected (sum & 0xFF) == 0 to be %v but got %v", (sum & 0xFF) == 0, RegAfter.GetZero())
+                }                
+
+                if (halfCarry) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
+                }
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

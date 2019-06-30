@@ -1,0 +1,33 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLD{{.Arg0}}{{.Arg1}}m{{.Arg2}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to Catridge Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.{{.Arg0}} = 0xA0
+                cpu.Registers.{{.Arg1}} = uint8( rand.Intn(0xFF))
+
+                var hl = (uint16(cpu.Registers.{{.Arg0}}) << 8) + uint16(cpu.Registers.{{.Arg1}})
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (RegBefore.{{.Arg2}}) != (cpu.Memory.ReadByte(hl)) {
+                    t.Errorf("Expected RegBefore.{{.Arg2}} to be %v but got %v", RegBefore.{{.Arg2}}, cpu.Memory.ReadByte(hl))
+                }                
+                if (RegBefore.{{.Arg2}}) != (RegAfter.{{.Arg2}}) {
+                    t.Errorf("Expected RegBefore.{{.Arg2}} to be %v but got %v", RegBefore.{{.Arg2}}, RegAfter.{{.Arg2}})
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

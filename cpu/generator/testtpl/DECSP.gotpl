@@ -1,0 +1,25 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestDECSP(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var val = uint16(RegBefore.SP - 1)
+                
+                if (val) != (RegAfter.SP) {
+                    t.Errorf("Expected val to be %v but got %v", val, RegAfter.SP)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

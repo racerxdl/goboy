@@ -1,0 +1,33 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestDEC{{.Arg0}}{{.Arg1}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var valA = RegBefore.{{.Arg1}} - 1
+
+                valB := RegBefore.{{.Arg0}} - 1
+                if valA != 255 {
+                    valB = RegBefore.{{.Arg0}}
+                }
+                
+                if (valA) != (RegAfter.{{.Arg1}}) {
+                    t.Errorf("Expected valA to be %v but got %v", valA, RegAfter.{{.Arg1}})
+                }                
+                if (valB) != (RegAfter.{{.Arg0}}) {
+                    t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.{{.Arg0}})
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

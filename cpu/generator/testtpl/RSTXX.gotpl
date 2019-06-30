@@ -1,0 +1,35 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestRST{{.addr:02x}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                Assert.AreEqual(uint16( {{.addr}}, RegAfter.PC);)
+                
+                if (RegBefore.SP - 2) != (RegAfter.SP) {
+                    t.Errorf("Expected RegBefore.SP - 2 to be %v but got %v", RegBefore.SP - 2, RegAfter.SP)
+                }
+                RegAfter.RandomizeRegisters()
+                RegAfter.LoadRegs()
+
+                var regs = new [] {{."A", "B", "C", "D", "E", "F", "H", "L"}}
+                var savedMatch = regs
+                    .Select((reg) => RegBefore.GetRegister(reg) == RegAfter.GetRegister(reg))
+                    .Aggregate((a, b) => a && b)
+
+                Assert.IsTrue(savedMatch)
+
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

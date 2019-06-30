@@ -1,0 +1,33 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestCPr{{.Arg0}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                var halfCarry = (RegBefore.A & 0xF) < (RegBefore.{{.Arg0}} & 0xF)
+                var carry = RegBefore.A < RegBefore.{{.Arg0}}
+
+                
+                if (carry) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected carry to be %v but got %v", carry, RegAfter.GetCarry())
+                }                
+                if (RegBefore.A == RegBefore.{{.Arg0}}) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected RegBefore.A == RegBefore.{{.Arg0}} to be %v but got %v", RegBefore.A == RegBefore.{{.Arg0}}, RegAfter.GetZero())
+                }                
+                if (halfCarry) != (RegAfter.GetHalfCarry()) {
+                    t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion

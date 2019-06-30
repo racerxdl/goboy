@@ -109,7 +109,7 @@ func gbSBCr{{.I}}(cpu *Core) {
         f = 1
     }
 
-    sum := int(cpu.Registers.A) + b + f
+    sum := int(cpu.Registers.A) - b - f
 
     cpu.Registers.SetZero(sum & 0xFF == 0)
     cpu.Registers.SetCarry(sum < 0)
@@ -332,9 +332,8 @@ func gbADDHLSP(cpu *Core) {
 
 // gbADDSPn Reads a signed byte from [PC] and adds to SP
 func gbADDSPn(cpu *Core) {
-    a := int(cpu.Memory.ReadByte(cpu.Registers.PC))
+	a := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
-    a = (a << 24) >> 24 // Convert unsigned byte to signed
 
     cpu.Registers.SetZero(false)
     cpu.Registers.SetSub(false)
@@ -342,7 +341,6 @@ func gbADDSPn(cpu *Core) {
     cpu.Registers.SetHalfCarry(int(cpu.Registers.SP & 0xF) + (a & 0xF) > 0xF)
 
     cpu.Registers.SP = uint16(int(cpu.Registers.SP) + a)
-
 
     cpu.Registers.LastClockM = 4
     cpu.Registers.LastClockT = 16

@@ -18,7 +18,7 @@ type Instruction struct {
 	Opcode        uint8
 	Name          string
 	Instruction   string
-	Cycles        int
+	Cycles        []int
 	ZSHC          string
 	NumberOfBytes int
 	Zero          string
@@ -34,13 +34,18 @@ var tplRgx = regexp.MustCompile(`(.*)\[(.*)\]`)
 func InstructionFromTXT(opcode uint8, txtData string) Instruction {
 	o := strings.Split(txtData, "|")
 	//Name|Instruction|Cycles|ZSHC|Template[arguments]|NumberOfBytes
-	cycles, _ := strconv.ParseInt(o[2], 10, 32)
+	cyclesS := strings.Split(o[2], "/")
+	cycles := make([]int, 0)
+	for _, v := range cyclesS {
+		s, _ := strconv.ParseInt(v, 10, 32)
+		cycles = append(cycles, int(s))
+	}
 	numberOfBytes, _ := strconv.ParseInt(o[5], 10, 32)
 	ins := Instruction{
 		Opcode:        opcode,
 		Name:          o[0],
 		Instruction:   o[1],
-		Cycles:        int(cycles),
+		Cycles:        cycles,
 		NumberOfBytes: int(numberOfBytes),
 		ZSHC:          o[3],
 		Zero:          string(o[3][0]),

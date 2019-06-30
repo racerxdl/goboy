@@ -1,0 +1,34 @@
+        // region 0x{{.OpCodeX}} Test {{.Instruction}}
+        
+        func TestLDmm{{.Arg0}}(t *testing.T) {
+            cpu := MakeCore()
+            
+            // Console.WriteLine("Testing (0x{{.OpCodeX}}) \"{{.Instruction}}\"")
+            for i := 0; i < RunCycles; i++ {
+                cpu.Reset()
+                cpu.Registers.Randomize()
+                cpu.Memory.Randomize()
+
+                // Force write to High Ram Random Address (avoid writting to non writeable addresses)
+                cpu.Registers.PC = uint16( ((0xA0 << 8) + rand.Intn(0xFFF)))
+
+                var addr = uint16( ((0xA0 << 8) + rand.Intn(0xFFF)))
+
+                cpu.Memory.WriteWord(cpu.Registers.PC, addr)
+
+                RegBefore := cpu.Registers.Clone()
+                GBInstructions[0x{{.OpCodeX}}](cpu)
+                RegAfter := cpu.Registers.Clone()
+
+                
+                if (cpu.Memory.ReadByte(addr)) != (RegBefore.{{.Arg0}}) {
+                    t.Errorf("Expected cpu.Memory.ReadByte(addr) to be %v but got %v", cpu.Memory.ReadByte(addr), RegBefore.{{.Arg0}})
+                }                
+                if (RegBefore.PC + 2) != (RegAfter.PC) {
+                    t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC + 2, RegAfter.PC)
+                }
+                {{.Asserts}}
+                {{.Flags}}
+            }
+        }
+        // endregion
