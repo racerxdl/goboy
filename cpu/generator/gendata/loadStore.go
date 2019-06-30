@@ -68,8 +68,8 @@ var ldrrrmTemplate = template.Must(template.New("LDrrrm").Parse(`
 func gbLD{{.O}}{{.H}}{{.L}}m(cpu *Core) {
     hl := (uint16(cpu.Registers.{{.H}}) << 8) + uint16(cpu.Registers.{{.L}})
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(hl)
-    cpu.Registers.LastClockM = 4
-    cpu.Registers.LastClockT = 16
+    cpu.Registers.LastClockM = 2
+    cpu.Registers.LastClockT = 8
 }
 `))
 

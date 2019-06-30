@@ -22,6 +22,15 @@ func TestNOP(t *testing.T) {
 		GBInstructions[0x00](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -74,6 +83,15 @@ func TestLDBCnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -120,6 +138,15 @@ func TestLDBCmA(t *testing.T) {
 		if (RegBefore.A) != (RegAfter.A) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -169,6 +196,15 @@ func TestINCBC(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.B)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -216,6 +252,15 @@ func TestINCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -256,6 +301,15 @@ func TestDECrB(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -304,6 +358,15 @@ func TestLDrnB(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -348,6 +411,15 @@ func TestRLCA(t *testing.T) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -391,6 +463,15 @@ func TestLDmmSP(t *testing.T) {
 		if (RegBefore.PC + 2) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 20 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 20, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 5 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 5, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -440,6 +521,15 @@ func TestADDHLBC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -479,6 +569,15 @@ func TestLDABCm(t *testing.T) {
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -528,6 +627,15 @@ func TestDECBC(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.B)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -575,6 +683,15 @@ func TestINCrC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -615,6 +732,15 @@ func TestDECrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -663,6 +789,15 @@ func TestLDrnC(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -707,6 +842,15 @@ func TestRRCA(t *testing.T) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -741,6 +885,15 @@ func TestStop(t *testing.T) {
 		if cpu.stopped != true {
 			t.Errorf("Expected cpu to be stopped")
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -794,6 +947,15 @@ func TestLDDEnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -840,6 +1002,15 @@ func TestLDDEmA(t *testing.T) {
 		if (RegBefore.A) != (RegAfter.A) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -889,6 +1060,15 @@ func TestINCDE(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.D)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -936,6 +1116,15 @@ func TestINCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -976,6 +1165,15 @@ func TestDECrD(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -1023,6 +1221,15 @@ func TestLDrnD(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1073,6 +1280,15 @@ func TestRLA(t *testing.T) {
 			t.Errorf("Expected c to be %v but got %v", c, RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -1115,6 +1331,15 @@ func TestJRn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC)+signedV+1)&0xFFFF, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -1150,6 +1375,15 @@ func TestJRn(t *testing.T) {
 		if (uint16(int(RegBefore.PC)+signedV+1) & 0xFFFF) != (RegAfter.PC) {
 			t.Errorf("Expected (RegBefore.PC + signedV + 1) & 0xFFFF to be %v but got %v", uint16(int(RegBefore.PC)+signedV+1)&0xFFFF, RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1199,6 +1433,15 @@ func TestADDHLDE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -1238,6 +1481,15 @@ func TestLDADEm(t *testing.T) {
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1287,6 +1539,15 @@ func TestDECDE(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.D)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -1334,6 +1595,15 @@ func TestINCrE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -1374,6 +1644,15 @@ func TestDECrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -1421,6 +1700,15 @@ func TestLDrnE(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1471,6 +1759,15 @@ func TestRRA(t *testing.T) {
 		if (c > 0) != (RegAfter.GetCarry()) {
 			t.Errorf("Expected c > 0 to be %v but got %v", c > 0, RegAfter.GetCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() {
@@ -1642,6 +1939,15 @@ func TestLDHLnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -1686,6 +1992,15 @@ func TestLDHLIA(t *testing.T) {
 		if (RegBefore.HL() + 1) != (RegAfter.HL()) {
 			t.Errorf("Expected RegBefore.HL() + 1 to be %v but got %v", RegBefore.HL()+1, RegAfter.HL())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1735,6 +2050,15 @@ func TestINCHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.H)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -1782,6 +2106,15 @@ func TestINCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -1822,6 +2155,15 @@ func TestDECrH(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -1869,6 +2211,15 @@ func TestLDrnH(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -1932,6 +2283,15 @@ func TestDAA(t *testing.T) {
 		if uint8(a&0xFF) != (RegAfter.A) {
 			t.Errorf("Expected a & 0xFF to be %v but got %v", a&0xFF, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() != RegBefore.GetSub() {
@@ -2096,6 +2456,15 @@ func TestADDHLHL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2138,6 +2507,15 @@ func TestLDAHLI(t *testing.T) {
 		if (RegBefore.HL() + 1) != (RegAfter.HL()) {
 			t.Errorf("Expected RegBefore.HL + 1 to be %v but got %v", RegBefore.HL()+1, RegAfter.HL())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -2187,6 +2565,15 @@ func TestDECHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.H)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2234,6 +2621,15 @@ func TestINCrL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -2274,6 +2670,15 @@ func TestDECrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -2322,6 +2727,15 @@ func TestLDrnL(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2361,6 +2775,15 @@ func TestCPL(t *testing.T) {
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -2530,6 +2953,15 @@ func TestLDSPnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2575,6 +3007,15 @@ func TestLDHLDA(t *testing.T) {
 			t.Errorf("Expected RegBefore.HL - 1 to be %v but got %v", RegBefore.HL()-1, RegAfter.HL())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2614,6 +3055,15 @@ func TestINCSP(t *testing.T) {
 		if (val) != (RegAfter.SP) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.SP)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -2673,6 +3123,15 @@ func TestINCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -2725,6 +3184,15 @@ func TestDECHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -2773,6 +3241,15 @@ func TestLDHLmn(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -2806,6 +3283,15 @@ func TestSCF(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0x37](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -2973,6 +3459,15 @@ func TestADDHLSP(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3016,6 +3511,15 @@ func TestLDAHLD(t *testing.T) {
 			t.Errorf("Expected RegBefore.HL - 1 to be %v but got %v", RegBefore.HL()-1, RegAfter.HL())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3055,6 +3559,15 @@ func TestDECSP(t *testing.T) {
 		if (val) != (RegAfter.SP) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.SP)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3103,6 +3616,15 @@ func TestINCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -3143,6 +3665,15 @@ func TestDECrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -3191,6 +3722,15 @@ func TestLDrnA(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3229,6 +3769,15 @@ func TestCCF(t *testing.T) {
 			t.Errorf("Expected !RegBefore.GetCarry() to be %v but got %v", !RegBefore.GetCarry(), RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3264,6 +3813,15 @@ func TestLDrrBB(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.B)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3304,6 +3862,15 @@ func TestLDrrBC(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.C)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3342,6 +3909,15 @@ func TestLDrrBD(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.D)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3382,6 +3958,15 @@ func TestLDrrBE(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.E)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3421,6 +4006,15 @@ func TestLDrrBH(t *testing.T) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3459,6 +4053,15 @@ func TestLDrrBL(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3506,6 +4109,15 @@ func TestLDrHLmB(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.B)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3544,6 +4156,15 @@ func TestLDrrBA(t *testing.T) {
 		if (RegAfter.B) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.B to be %v but got %v", RegAfter.B, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3584,6 +4205,15 @@ func TestLDrrCB(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.B)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3622,6 +4252,15 @@ func TestLDrrCC(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.C)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3662,6 +4301,15 @@ func TestLDrrCD(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.D)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3700,6 +4348,15 @@ func TestLDrrCE(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.E)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3740,6 +4397,15 @@ func TestLDrrCH(t *testing.T) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3778,6 +4444,15 @@ func TestLDrrCL(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3825,6 +4500,15 @@ func TestLDrHLmC(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.C)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3863,6 +4547,15 @@ func TestLDrrCA(t *testing.T) {
 		if (RegAfter.C) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.C to be %v but got %v", RegAfter.C, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3903,6 +4596,15 @@ func TestLDrrDB(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.B)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -3941,6 +4643,15 @@ func TestLDrrDC(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.C)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -3981,6 +4692,15 @@ func TestLDrrDD(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.D)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4019,6 +4739,15 @@ func TestLDrrDE(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.E)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4059,6 +4788,15 @@ func TestLDrrDH(t *testing.T) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4097,6 +4835,15 @@ func TestLDrrDL(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4144,6 +4891,15 @@ func TestLDrHLmD(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.D)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4182,6 +4938,15 @@ func TestLDrrDA(t *testing.T) {
 		if (RegAfter.D) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.D to be %v but got %v", RegAfter.D, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4222,6 +4987,15 @@ func TestLDrrEB(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.B)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4260,6 +5034,15 @@ func TestLDrrEC(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.C)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4300,6 +5083,15 @@ func TestLDrrED(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.D)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4338,6 +5130,15 @@ func TestLDrrEE(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.E)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4378,6 +5179,15 @@ func TestLDrrEH(t *testing.T) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4416,6 +5226,15 @@ func TestLDrrEL(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4463,6 +5282,15 @@ func TestLDrHLmE(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.E)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4501,6 +5329,15 @@ func TestLDrrEA(t *testing.T) {
 		if (RegAfter.E) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.E to be %v but got %v", RegAfter.E, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4541,6 +5378,15 @@ func TestLDrrHB(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.B)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4579,6 +5425,15 @@ func TestLDrrHC(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.C)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4619,6 +5474,15 @@ func TestLDrrHD(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.D)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4657,6 +5521,15 @@ func TestLDrrHE(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.E)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4697,6 +5570,15 @@ func TestLDrrHH(t *testing.T) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4735,6 +5617,15 @@ func TestLDrrHL(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4782,6 +5673,15 @@ func TestLDrHLmH(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.H)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4820,6 +5720,15 @@ func TestLDrrHA(t *testing.T) {
 		if (RegAfter.H) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.H to be %v but got %v", RegAfter.H, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4860,6 +5769,15 @@ func TestLDrrLB(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.B)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4898,6 +5816,15 @@ func TestLDrrLC(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.C) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.C)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -4938,6 +5865,15 @@ func TestLDrrLD(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.D)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -4976,6 +5912,15 @@ func TestLDrrLE(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.E) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.E)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5016,6 +5961,15 @@ func TestLDrrLH(t *testing.T) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5054,6 +6008,15 @@ func TestLDrrLL(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5101,6 +6064,15 @@ func TestLDrHLmL(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.L)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5139,6 +6111,15 @@ func TestLDrrLA(t *testing.T) {
 		if (RegAfter.L) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.L to be %v but got %v", RegAfter.L, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5182,6 +6163,15 @@ func TestLDHLmrB(t *testing.T) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.B)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5223,6 +6213,15 @@ func TestLDHLmrC(t *testing.T) {
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.C) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.C)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5266,6 +6265,15 @@ func TestLDHLmrD(t *testing.T) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.D)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5307,6 +6315,15 @@ func TestLDHLmrE(t *testing.T) {
 		if (cpu.Memory.ReadByte(cpu.Registers.HL())) != (RegAfter.E) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.E)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5350,6 +6367,15 @@ func TestLDHLmrH(t *testing.T) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.H)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5392,6 +6418,15 @@ func TestLDHLmrL(t *testing.T) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.L)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5429,6 +6464,15 @@ func TestHALT(t *testing.T) {
 		if !cpu.halted {
 			t.Errorf("Expected cpu to be halted")
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5472,6 +6516,15 @@ func TestLDHLmrA(t *testing.T) {
 			t.Errorf("Expected cpu.Memory.ReadByte(cpu.Registers.HL()) to be %v but got %v", cpu.Memory.ReadByte(cpu.Registers.HL()), RegAfter.A)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5510,6 +6563,15 @@ func TestLDrrAB(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.B) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.B)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5550,6 +6612,15 @@ func TestLDrrAC(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.C)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5588,6 +6659,15 @@ func TestLDrrAD(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.D) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.D)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5628,6 +6708,15 @@ func TestLDrrAE(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.E)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5667,6 +6756,15 @@ func TestLDrrAH(t *testing.T) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.H)
 		} // endregion
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5705,6 +6803,15 @@ func TestLDrrAL(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.L) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.L)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5752,6 +6859,15 @@ func TestLDrHLmA(t *testing.T) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -5790,6 +6906,15 @@ func TestLDrrAA(t *testing.T) {
 		if (RegAfter.A) != (RegBefore.A) {
 			t.Errorf("Expected RegAfter.A to be %v but got %v", RegAfter.A, RegBefore.A)
 		} // endregion
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -5848,6 +6973,15 @@ func TestADDrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -5895,6 +7029,15 @@ func TestADDrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -5944,6 +7087,15 @@ func TestADDrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -5991,6 +7143,15 @@ func TestADDrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6040,6 +7201,15 @@ func TestADDrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6087,6 +7257,15 @@ func TestADDrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6141,6 +7320,15 @@ func TestADDHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6188,6 +7376,15 @@ func TestADDrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6248,6 +7445,15 @@ func TestADCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6306,6 +7512,15 @@ func TestADCrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6366,6 +7581,15 @@ func TestADCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6424,6 +7648,15 @@ func TestADCrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6484,6 +7717,15 @@ func TestADCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6542,6 +7784,15 @@ func TestADCrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -6602,6 +7853,15 @@ func TestADCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6661,6 +7921,15 @@ func TestADCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -6710,6 +7979,15 @@ func TestSUBrB(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -6761,6 +8039,15 @@ func TestSUBrC(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -6810,6 +8097,15 @@ func TestSUBrD(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -6861,6 +8157,15 @@ func TestSUBrE(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -6911,6 +8216,15 @@ func TestSUBrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -6960,6 +8274,15 @@ func TestSUBrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -7014,6 +8337,15 @@ func TestSUBHL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7063,6 +8395,15 @@ func TestSUBrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -7120,6 +8461,15 @@ func TestSBCrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7175,6 +8525,15 @@ func TestSBCrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -7232,6 +8591,15 @@ func TestSBCrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7287,6 +8655,15 @@ func TestSBCrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -7344,6 +8721,15 @@ func TestSBCrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7399,6 +8785,15 @@ func TestSBCrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -7459,6 +8854,15 @@ func TestSBCHLm(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7515,6 +8919,15 @@ func TestSBCrA(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -7548,6 +8961,15 @@ func TestANDrB(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -7589,6 +9011,15 @@ func TestANDrC(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7628,6 +9059,15 @@ func TestANDrD(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -7669,6 +9109,15 @@ func TestANDrE(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7709,6 +9158,15 @@ func TestANDrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7748,6 +9206,15 @@ func TestANDrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -7796,6 +9263,15 @@ func TestANDHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7835,6 +9311,15 @@ func TestANDrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -7876,6 +9361,15 @@ func TestXORrB(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7915,6 +9409,15 @@ func TestXORrC(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -7956,6 +9459,15 @@ func TestXORrD(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -7995,6 +9507,15 @@ func TestXORrE(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8036,6 +9557,15 @@ func TestXORrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8075,6 +9605,15 @@ func TestXORrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8123,6 +9662,15 @@ func TestXORHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8162,6 +9710,15 @@ func TestXORrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8203,6 +9760,15 @@ func TestORrB(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8242,6 +9808,15 @@ func TestORrC(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8283,6 +9858,15 @@ func TestORrD(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8322,6 +9906,15 @@ func TestORrE(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8363,6 +9956,15 @@ func TestORrH(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8402,6 +10004,15 @@ func TestORrL(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8450,6 +10061,15 @@ func TestORHL(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -8489,6 +10109,15 @@ func TestORrA(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -8534,6 +10163,15 @@ func TestCPrB(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -8571,6 +10209,15 @@ func TestCPrC(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -8610,6 +10257,15 @@ func TestCPrD(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -8647,6 +10303,15 @@ func TestCPrE(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -8686,6 +10351,15 @@ func TestCPrH(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -8723,6 +10397,15 @@ func TestCPrL(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -8769,6 +10452,15 @@ func TestCPHL(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -8806,6 +10498,15 @@ func TestCPrA(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -8919,6 +10620,15 @@ func TestPOPBC(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.C)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -9024,6 +10734,15 @@ func TestJPnn(t *testing.T) {
 		if (valA) != (RegAfter.PC) {
 			t.Errorf("Expected valA to be %v but got %v", valA, RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -9144,6 +10863,15 @@ func TestPUSHBC(t *testing.T) {
 			t.Errorf("Expected RegBefore.C to be %v but got %v", RegBefore.C, valB)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -9206,6 +10934,15 @@ func TestADDn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -9311,6 +11048,15 @@ func TestRET(t *testing.T) {
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -9493,6 +11239,15 @@ func TestCALLnn(t *testing.T) {
 			t.Errorf("Expected RegBefore.SP - 2 to be %v but got %v", RegBefore.SP-2, RegAfter.SP)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 24 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 24, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 6 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 6, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -9561,6 +11316,15 @@ func TestADCn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -9674,6 +11438,15 @@ func TestPOPDE(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.E)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -9771,6 +11544,15 @@ func TestNOPWARN_D3(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xD3](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -9891,6 +11673,15 @@ func TestPUSHDE(t *testing.T) {
 			t.Errorf("Expected RegBefore.E to be %v but got %v", RegBefore.E, valB)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -9952,6 +11743,15 @@ func TestSUBn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {
@@ -10062,6 +11862,15 @@ func TestRETI(t *testing.T) {
 			t.Errorf("Expected RegAfter.InterruptEnable to be true got false")
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10159,6 +11968,15 @@ func TestNOPWARN_DB(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xDB](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10264,6 +12082,15 @@ func TestNOPWARN_DD(t *testing.T) {
 		GBInstructions[0xDD](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10332,6 +12159,15 @@ func TestSBCn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if !RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be one")
@@ -10368,6 +12204,15 @@ func TestLDIOnA(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10423,6 +12268,15 @@ func TestPOPHL(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.L)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10463,6 +12317,15 @@ func TestLDIOCA(t *testing.T) {
 			t.Errorf("Expected RegBefore.A to be %v but got %v", RegBefore.A, cpu.Memory.ReadByte(0xFF80))
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10497,6 +12360,15 @@ func TestNOPWARN_E3(t *testing.T) {
 		GBInstructions[0xE3](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10530,6 +12402,15 @@ func TestNOPWARN_E4(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xE4](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10579,6 +12460,15 @@ func TestPUSHHL(t *testing.T) {
 		if (RegBefore.L) != (valB) {
 			t.Errorf("Expected RegBefore.L to be %v but got %v", RegBefore.L, valB)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10630,6 +12520,15 @@ func TestANDn(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -10688,6 +12587,15 @@ func TestADDSPn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -10733,6 +12641,15 @@ func TestADDSPn(t *testing.T) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -10767,6 +12684,15 @@ func TestJPHL(t *testing.T) {
 		if (RegBefore.HL()) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.HL to be %v but got %v", RegBefore.HL(), RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10816,6 +12742,15 @@ func TestLDmmA(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10849,6 +12784,15 @@ func TestNOPWARN_EB(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xEB](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10884,6 +12828,15 @@ func TestNOPWARN_EC(t *testing.T) {
 		GBInstructions[0xEC](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -10917,6 +12870,15 @@ func TestNOPWARN_ED(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xED](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -10969,6 +12931,15 @@ func TestXORn(t *testing.T) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetSub() {
 			t.Errorf("Expected Flag Sub to be zero")
@@ -11014,6 +12985,15 @@ func TestLDAIOn(t *testing.T) {
 		if (RegBefore.PC + 1) != (RegAfter.PC) {
 			t.Errorf("Expected RegBefore.PC + 1 to be %v but got %v", RegBefore.PC+1, RegAfter.PC)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11069,6 +13049,15 @@ func TestPOPAF(t *testing.T) {
 			t.Errorf("Expected valB to be %v but got %v", valB, RegAfter.F)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		// endregion
 
@@ -11099,6 +13088,15 @@ func TestLDAIOC(t *testing.T) {
 		if (val) != (RegAfter.A) {
 			t.Errorf("Expected val to be %v but got %v", val, RegAfter.A)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11138,6 +13136,15 @@ func TestDI(t *testing.T) {
 			t.Errorf("Expected Interrupt Enable to be disabled")
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -11171,6 +13178,15 @@ func TestNOPWARN_F4(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xF4](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11220,6 +13236,15 @@ func TestPUSHAF(t *testing.T) {
 		if (RegBefore.F) != (valB) {
 			t.Errorf("Expected RegBefore.F to be %v but got %v", RegBefore.F, valB)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11271,6 +13296,15 @@ func TestORn(t *testing.T) {
 		if (val == 0) != (RegAfter.GetZero()) {
 			t.Errorf("Expected val == 0 to be %v but got %v", val == 0, RegAfter.GetZero())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetSub() {
@@ -11326,6 +13360,15 @@ func TestLDHLSPn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP)&0xFF)+(signedV&0xFF) > 0xFF, RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -11368,6 +13411,15 @@ func TestLDHLSPn(t *testing.T) {
 			t.Errorf("Expected (RegBefore.SP & 0xFF) + (signedV & 0xFF) > 0xFF to be %v but got %v", (int(RegBefore.SP)&0xFF)+(signedV&0xFF) > 0xFF, RegAfter.GetCarry())
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 12 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 12, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 3 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 3, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() {
 			t.Errorf("Expected Flag Zero to be zero")
@@ -11399,6 +13451,15 @@ func TestLDHLSPr(t *testing.T) {
 		if (RegBefore.HL()) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.HL to be %v but got %v", RegBefore.HL(), RegAfter.SP)
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11450,6 +13511,15 @@ func TestLDAmm(t *testing.T) {
 			t.Errorf("Expected RegBefore.PC + 2 to be %v but got %v", RegBefore.PC+2, RegAfter.PC)
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 16 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 16, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 4 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 4, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -11488,6 +13558,15 @@ func TestEI(t *testing.T) {
 			t.Errorf("Expected Interrupt Enable to be enabled")
 		}
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 4 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 4, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 1 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 1, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -11522,6 +13601,15 @@ func TestNOPWARN_FC(t *testing.T) {
 		GBInstructions[0xFC](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
+
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
 			t.Errorf("Expected Flag Zero to not change")
@@ -11555,6 +13643,15 @@ func TestNOPWARN_FD(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xFD](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 0 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 0, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 0 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 0, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if RegAfter.GetZero() != RegBefore.GetZero() {
@@ -11612,6 +13709,15 @@ func TestCPn(t *testing.T) {
 		if (halfCarry) != (RegAfter.GetHalfCarry()) {
 			t.Errorf("Expected halfCarry to be %v but got %v", halfCarry, RegAfter.GetHalfCarry())
 		}
+
+		// region Test Cycles
+		if RegAfter.LastClockT != 8 {
+			t.Errorf("Expected LastClockT to be %d but got %d", 8, RegAfter.LastClockT)
+		}
+		if RegAfter.LastClockM != 2 {
+			t.Errorf("Expected LastClockM to be %d but got %d", 2, RegAfter.LastClockM)
+		}
+		// endregion
 
 		// region Test Flags
 		if !RegAfter.GetSub() {

@@ -1,6 +1,9 @@
 package testdata
 
-import "text/template"
+import (
+    "bytes"
+    "text/template"
+)
 
 var testCPUTemplate = template.Must(template.New("Test Template").Parse(`
 func TestOpcode{{.OPCODE}}(t *testing.T) {
@@ -40,6 +43,20 @@ var cycleTestTemplate = template.Must(template.New("Cycle Test Template").Parse(
     }
     // endregion
 `))
+
+func GenCycleTest(cycles int) string {
+    b := bytes.NewBuffer(nil)
+
+    cycleTestTemplate.Execute(b, struct {
+        LASTCLOCKT int
+        LASTCLOCKM int
+    }{
+        LASTCLOCKT: cycles,
+        LASTCLOCKM: cycles / 4,
+    })
+
+    return b.String()
+}
 
 func GenFlagTest(zshc string) string {
     test := `

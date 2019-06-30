@@ -166,6 +166,12 @@ const RunCycles = 10
 
 		flags := testdata.GenFlagTest(v.ZSHC)
 
+		asserts := ""
+
+		if len(v.Cycles) == 1 {
+			asserts += testdata.GenCycleTest(v.Cycles[0])
+		}
+
 		d := struct {
 			OpCodeX     string
 			OpCode      string
@@ -185,6 +191,7 @@ const RunCycles = 10
 			Arg1:        arg1,
 			Arg2:        arg2,
 			Flags:       flags,
+			Asserts:     asserts,
 		}
 
 		err = tpl.Execute(f, d)

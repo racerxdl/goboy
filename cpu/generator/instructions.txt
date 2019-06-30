@@ -238,7 +238,7 @@ ORr_e|OR A, E|4|Z000|ORr["E"]|1
 
 ORr_h|OR A, H|4|Z000|ORr["H"]|1
 ORr_l|OR A, L|4|Z000|ORr["L"]|1
-ORHL|OR A, [HL]|4|Z000|ORHL[]|1
+ORHL|OR A, [HL]|8|Z000|ORHL[]|1
 ORr_a|OR A, A|4|Z000|ORr["A"]|1
 
 CPr_b|CP A, B|4|Z1HC|CPr["B"]|1
