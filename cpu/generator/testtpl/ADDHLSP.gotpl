@@ -13,11 +13,11 @@
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 
-                var sum = RegBefore.HL() + RegBefore.SP
+                var sum = int(RegBefore.HL()) + int(RegBefore.SP)
                 var halfCarry = (RegBefore.HL() & 0xFFF) + (RegBefore.SP & 0xFFF) > 0xFFF
 
                 
-                if (sum & 0xFFFF) != (RegAfter.HL()) {
+                if (sum & 0xFFFF) != int(RegAfter.HL()) {
                     t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum & 0xFFFF, RegAfter.HL())
                 }                
                 if (sum > 65535) != (RegAfter.GetCarry()) {

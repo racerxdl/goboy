@@ -10,7 +10,7 @@ var rlrTemplate = template.Must(template.New("RLr").Parse(`
 func cbRLr{{.I}}(cpu *Core) {
     v := cpu.Registers.{{.I}}
     c := (v >> 7) > 0
-    f := byte(0)
+    f := uint8(0)
     if cpu.Registers.GetCarry() {
         f = 1
     }
@@ -52,7 +52,7 @@ var rrrTemplate = template.Must(template.New("RRr").Parse(`
 func cbRRr{{.I}}(cpu *Core) {
     v := cpu.Registers.{{.I}}
     c := v & 1
-    f := byte(0)
+    f := uint8(0)
     if cpu.Registers.GetCarry() {
         f = 1
     }
@@ -167,7 +167,7 @@ func cbSRLr{{.I}}(cpu *Core) {
 var bitTemplate = template.Must(template.New("BIT").Parse(`
 // cbBIT{{.N}}{{.I}} Sets Flag Zero to BIT {{.N}} from {{.I}}
 func cbBIT{{.N}}{{.I}}(cpu *Core) {
-    cpu.Registers.SetZero(cpu.Registers.{{.I}} & ( 1 << {{.N}}) != 0)
+    cpu.Registers.SetZero((cpu.Registers.{{.I}} & (1 << {{.N}})) != 0)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry(false)
 
@@ -179,7 +179,7 @@ func cbBIT{{.N}}{{.I}}(cpu *Core) {
 var bitmTemplate = template.Must(template.New("BITm").Parse(`
 // cbBITm{{.N}} Sets Flag Zero to BIT {{.N}} from [HL]
 func cbBITm{{.N}}(cpu *Core) {
-    cpu.Registers.SetZero(cpu.Memory.ReadByte(cpu.Registers.HL()) & ( 1 << {{.N}}) != 0)
+    cpu.Registers.SetZero((cpu.Memory.ReadByte(cpu.Registers.HL()) & (1 << {{.N}})) != 0)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry(false)
 
@@ -191,9 +191,9 @@ func cbBITm{{.N}}(cpu *Core) {
 var resTemplate = template.Must(template.New("RES").Parse(`
 // cbRES{{.N}}{{.I}} Resets BIT {{.N}} from {{.I}}
 func cbRES{{.N}}{{.I}}(cpu *Core) {
-    cpu.Registers.{{.I}} &= ^(uint8(1) << {{.N}})
+    cpu.Registers.{{.I}} &= (^(uint8(1) << {{.N}}))
 
-    cpu.Registers.LastClockM = 4
+    cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
 }
 `))
@@ -201,7 +201,7 @@ func cbRES{{.N}}{{.I}}(cpu *Core) {
 var reshlTemplate = template.Must(template.New("RESHL").Parse(`
 // cbRESHL{{.N}} Resets BIT {{.N}} from [HL]
 func cbRESHL{{.N}}(cpu *Core) {
-    v := cpu.Memory.ReadByte(cpu.Registers.HL()) & ^(uint8(1) << {{.N}})
+    v := cpu.Memory.ReadByte(cpu.Registers.HL()) & (^(uint8(1) << {{.N}}))
     cpu.Memory.WriteByte(cpu.Registers.HL(), v)
 
     cpu.Registers.LastClockM = 3
@@ -214,7 +214,7 @@ var setTemplate = template.Must(template.New("SET").Parse(`
 func cbSET{{.N}}{{.I}}(cpu *Core) {
     cpu.Registers.{{.I}} |= (1 << {{.N}})
 
-    cpu.Registers.LastClockM = 4
+    cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
 }
 `))
@@ -360,8 +360,8 @@ func cbRLCHL(cpu *Core) {
 // cbRLHL Rotates [HL] to the right
 func cbRRHL(cpu *Core) {
     v := cpu.Memory.ReadByte(cpu.Registers.HL())
-    c := (v >> 7) > 0
-    f := byte(0)
+    c := v & 0x01 > 0
+    f := uint8(0)
     if cpu.Registers.GetCarry() {
         f = 1
     }
@@ -382,7 +382,7 @@ func cbRRHL(cpu *Core) {
 // cbRLHL Rotates [HL] to the right with carry
 func cbRRCHL(cpu *Core) {
     v := cpu.Memory.ReadByte(cpu.Registers.HL())
-    c := v >> 7
+    c := v & 0x01
 
     v = (v >> 1) | (c << 7)
     cpu.Memory.WriteByte(cpu.Registers.HL(), v)
@@ -441,7 +441,7 @@ func cbSWAPHL(cpu *Core) {
     cpu.Registers.SetCarry(false)
 
     cpu.Registers.LastClockM = 4
-    cpu.Registers.LastClockT = 8 
+    cpu.Registers.LastClockT = 16
 }
 // cbSRLHL Shifts [HL] to the right.
 func cbSRLHL(cpu *Core) {

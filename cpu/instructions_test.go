@@ -507,11 +507,11 @@ func TestADDHLBC(t *testing.T) {
 		GBInstructions[0x09](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		var ab = uint16(RegBefore.B)<<8 + uint16(RegBefore.C)
-		var sum = RegBefore.HL() + ab
-		var halfCarry = (RegBefore.HL()&0xFFF)+(ab&0xFFF) > 0xFFF
+		var ab = int(RegBefore.B)<<8 + int(RegBefore.C)
+		var sum = int(RegBefore.HL()) + ab
+		var halfCarry = (int(RegBefore.HL())&0xFFF)+(ab&0xFFF) > 0xFFF
 
-		if (sum & 0xFFFF) != (RegAfter.HL()) {
+		if (sum & 0xFFFF) != int(RegAfter.HL()) {
 			t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum&0xFFFF, RegAfter.HL())
 		}
 		if (sum > 65535) != (RegAfter.GetCarry()) {
@@ -1419,11 +1419,11 @@ func TestADDHLDE(t *testing.T) {
 		GBInstructions[0x19](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		var ab = uint16(RegBefore.D)<<8 + uint16(RegBefore.E)
-		var sum = RegBefore.HL() + ab
-		var halfCarry = (RegBefore.HL()&0xFFF)+(ab&0xFFF) > 0xFFF
+		var ab = int(RegBefore.D)<<8 + int(RegBefore.E)
+		var sum = int(RegBefore.HL()) + ab
+		var halfCarry = (int(RegBefore.HL())&0xFFF)+(ab&0xFFF) > 0xFFF
 
-		if (sum & 0xFFFF) != (RegAfter.HL()) {
+		if (sum & 0xFFFF) != int(RegAfter.HL()) {
 			t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum&0xFFFF, RegAfter.HL())
 		}
 		if (sum > 65535) != (RegAfter.GetCarry()) {
@@ -2442,11 +2442,11 @@ func TestADDHLHL(t *testing.T) {
 		GBInstructions[0x29](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		var ab = uint16(RegBefore.H)<<8 + uint16(RegBefore.L)
-		var sum = RegBefore.HL() + ab
-		var halfCarry = (RegBefore.HL()&0xFFF)+(ab&0xFFF) > 0xFFF
+		var ab = int(RegBefore.H)<<8 + int(RegBefore.L)
+		var sum = int(RegBefore.HL()) + ab
+		var halfCarry = (int(RegBefore.HL())&0xFFF)+(ab&0xFFF) > 0xFFF
 
-		if (sum & 0xFFFF) != (RegAfter.HL()) {
+		if (sum & 0xFFFF) != int(RegAfter.HL()) {
 			t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum&0xFFFF, RegAfter.HL())
 		}
 		if (sum > 65535) != (RegAfter.GetCarry()) {
@@ -3446,10 +3446,10 @@ func TestADDHLSP(t *testing.T) {
 		GBInstructions[0x39](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		var sum = RegBefore.HL() + RegBefore.SP
+		var sum = int(RegBefore.HL()) + int(RegBefore.SP)
 		var halfCarry = (RegBefore.HL()&0xFFF)+(RegBefore.SP&0xFFF) > 0xFFF
 
-		if (sum & 0xFFFF) != (RegAfter.HL()) {
+		if (sum & 0xFFFF) != int(RegAfter.HL()) {
 			t.Errorf("Expected sum & 0xFFFF to be %v but got %v", sum&0xFFFF, RegAfter.HL())
 		}
 		if (sum > 65535) != (RegAfter.GetCarry()) {

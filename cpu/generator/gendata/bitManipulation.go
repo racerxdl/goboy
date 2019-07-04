@@ -5,12 +5,12 @@ func BuildBitManipulation() string {
 
 func gbRLA(cpu *Core) {
     c := (cpu.Registers.A >> 7) > 0
-    f := byte(0)
+    f := uint8(0)
     if cpu.Registers.GetCarry() {
         f = 1
     }
 
-    cpu.Registers.A = cpu.Registers.A << 1 | f
+    cpu.Registers.A = (cpu.Registers.A << 1) | f
 
     cpu.Registers.SetCarry(c)
     cpu.Registers.SetZero(false)
@@ -23,7 +23,7 @@ func gbRLA(cpu *Core) {
 
 func gbRLCA(cpu *Core) {
     c := (cpu.Registers.A >> 7) & 0x1
-    cpu.Registers.A = cpu.Registers.A << 1 | c
+    cpu.Registers.A = (cpu.Registers.A << 1) | c
 
     cpu.Registers.SetCarry(c > 0)
     cpu.Registers.SetZero(false)

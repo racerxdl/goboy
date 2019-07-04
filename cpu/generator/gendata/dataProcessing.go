@@ -26,12 +26,12 @@ func gbADDr{{.I}}(cpu *Core) {
 var addHLrrTemplate = template.Must(template.New("ADDHLrr").Parse(`
 // gbADDHL{{.I0}}{{.I1}} Adds ({{.I0}} << 8) + {{.I1}} to HL
 func gbADDHL{{.I0}}{{.I1}}(cpu *Core) {
-    {{.I0}}{{.I1}} := uint16(cpu.Registers.{{.I0}}) << 8 + uint16(cpu.Registers.{{.I1}})
-    sum := {{.I0}}{{.I1}} + cpu.Registers.HL()
+    {{.I0}}{{.I1}} := int(cpu.Registers.{{.I0}}) << 8 + int(cpu.Registers.{{.I1}})
+    sum := {{.I0}}{{.I1}} + int(cpu.Registers.HL())
 
     cpu.Registers.SetCarry(sum > 65535)
     cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry((({{.I0}}{{.I1}} & 0xFFF) + (cpu.Registers.HL() & 0xFFF)) > 0xFFF)
+    cpu.Registers.SetHalfCarry(((uint16({{.I0}}{{.I1}}) & 0xFFF) + (cpu.Registers.HL() & 0xFFF)) > 0xFFF)
 
     cpu.Registers.H = uint8(sum >> 8)
     cpu.Registers.L = uint8(sum & 0xFF)
@@ -69,7 +69,7 @@ func gbADCr{{.I}}(cpu *Core) {
 var subTemplate = template.Must(template.New("SUBr").Parse(`
 // gbSUBr{{.I}} Subtracts {{.I}} to A
 func gbSUBr{{.I}}(cpu *Core) {
-    sum := int16(cpu.Registers.A) - int16(cpu.Registers.{{.I}})
+    sum := int(cpu.Registers.A) - int(cpu.Registers.{{.I}})
 
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetZero(sum & 0xFF == 0)
@@ -82,23 +82,24 @@ func gbSUBr{{.I}}(cpu *Core) {
     cpu.Registers.LastClockT = 4
 }
 `))
-var subHLrrTemplate = template.Must(template.New("SUBHLrr").Parse(`
-// gbSUBHL{{.I0}}{{.I1}} HL from ({{.I0}} << 8) + {{.I1}}
-func gbSUBHL{{.I0}}{{.I1}}(cpu *Core) {
-    {{.I0}}{{.I1}} := int(cpu.Registers.{{.I0}}) << 8 + int(cpu.Registers.{{.I1}})
-    sum := {{.I0}}{{.I1}} - int(cpu.Registers.HL())
 
-    cpu.Registers.SetCarry(sum < 0)
-    cpu.Registers.SetSub(true)
-    cpu.Registers.SetHalfCarry((({{.I0}}{{.I1}} & 0xFFF) > int(cpu.Registers.HL() & 0xFFF)))
-
-    cpu.Registers.H = uint8(sum >> 8)
-    cpu.Registers.L = uint8(sum & 0xFF)
-
-    cpu.Registers.LastClockM = 2
-    cpu.Registers.LastClockT = 8
-}
-`))
+//var subHLrrTemplate = template.Must(template.New("SUBHLrr").Parse(`
+//// gbSUBHL{{.I0}}{{.I1}} HL from ({{.I0}} << 8) + {{.I1}}
+//func gbSUBHL{{.I0}}{{.I1}}(cpu *Core) {
+//    {{.I0}}{{.I1}} := int(cpu.Registers.{{.I0}}) << 8 + int(cpu.Registers.{{.I1}})
+//    sum := {{.I0}}{{.I1}} - int(cpu.Registers.HL())
+//
+//    cpu.Registers.SetCarry(sum < 0)
+//    cpu.Registers.SetSub(true)
+//    cpu.Registers.SetHalfCarry((({{.I0}}{{.I1}} & 0xFFF) > int(cpu.Registers.HL() & 0xFFF)))
+//
+//    cpu.Registers.H = uint8(sum >> 8)
+//    cpu.Registers.L = uint8(sum & 0xFF)
+//
+//    cpu.Registers.LastClockM = 2
+//    cpu.Registers.LastClockT = 8
+//}
+//`))
 
 var sbcrTemplate = template.Must(template.New("SBCr").Parse(`
 // gbSBCr{{.I}} Sets A to A - {{.I}} - FlagCarry
@@ -111,7 +112,7 @@ func gbSBCr{{.I}}(cpu *Core) {
 
     sum := int(cpu.Registers.A) - b - f
 
-    cpu.Registers.SetZero(sum & 0xFF == 0)
+    cpu.Registers.SetZero((sum & 0xFF) == 0)
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetSub(true)
     cpu.Registers.SetHalfCarry(int(cpu.Registers.A & 0xF) < (b & 0xF) + f)
@@ -333,10 +334,10 @@ func gbADDn(cpu *Core) {
 
 // gbADDHLSP Adds SP to HL
 func gbADDHLSP(cpu *Core) {
-    sum := cpu.Registers.HL() + cpu.Registers.SP
+    sum := int(cpu.Registers.HL()) + int(cpu.Registers.SP)
     cpu.Registers.SetCarry(sum > 65535)
-    //cpu.Registers.SetZero(su & 0xFF == 0)
-    cpu.Registers.SetSub(false)
+    
+	cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry(((cpu.Registers.SP & 0xFFF) + (cpu.Registers.HL() & 0xFFF)) > 0xFFF)
 
     cpu.Registers.H = uint8(sum >> 8)
@@ -374,7 +375,7 @@ func gbADCHL(cpu *Core) {
 
     sum := a + b + f
 
-    cpu.Registers.SetZero(sum == 0)
+    cpu.Registers.SetZero((sum & 0xFF) == 0)
     cpu.Registers.SetCarry(sum > 255)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry(int(a & 0xF) + (b & 0xF) + f > 0xF)
@@ -398,7 +399,7 @@ func gbADCn(cpu *Core) {
 
     sum := a + b + f
 
-    cpu.Registers.SetZero(sum == 0)
+    cpu.Registers.SetZero((sum & 0xFF) == 0)
     cpu.Registers.SetCarry(sum > 255)
     cpu.Registers.SetSub(false)
     cpu.Registers.SetHalfCarry(int(a & 0xF) + (b & 0xF) + f > 0xF)
@@ -462,7 +463,7 @@ func BuildSUB() string {
 // gbSUBHL Subtracts byte from [HL] to A
 func gbSUBHL(cpu *Core) {
     z := cpu.Memory.ReadByte(cpu.Registers.HL())
-    sum := int16(cpu.Registers.A) - int16(z)
+    sum := int(cpu.Registers.A) - int(z)
 
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetZero(sum & 0xFF == 0)
@@ -478,7 +479,7 @@ func gbSUBHL(cpu *Core) {
 func gbSUBn(cpu *Core) {
     z := cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
-    sum := int16(cpu.Registers.A) - int16(z)
+    sum := int(cpu.Registers.A) - int(z)
 
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetZero(sum & 0xFF == 0)
@@ -503,7 +504,7 @@ func gbSBCHL(cpu *Core) {
 
     sum := a - b - f
 
-    cpu.Registers.SetZero(sum == 0)
+    cpu.Registers.SetZero((sum & 0xFF) == 0)
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetSub(true)
     cpu.Registers.SetHalfCarry(int(a & 0xF) < (b & 0xF) + f)
@@ -527,7 +528,7 @@ func gbSBCn(cpu *Core) {
 
     sum := a - b - f
 
-    cpu.Registers.SetZero(sum == 0)
+    cpu.Registers.SetZero((sum & 0xFF) == 0)
     cpu.Registers.SetCarry(sum < 0)
     cpu.Registers.SetSub(true)
     cpu.Registers.SetHalfCarry(int(a & 0xF) < (b & 0xF) + f)
@@ -623,9 +624,8 @@ func gbDAA(cpu *Core) {
 	}
 
 	cpu.Registers.A = uint8(a)
-	
 
-	cpu.Registers.SetZero(a == 0)
+	cpu.Registers.SetZero((a & 0xFF) == 0)
 	cpu.Registers.SetHalfCarry(false)
 	
 	if a & 0x100 == 0x100 {
@@ -781,9 +781,9 @@ func BuildIncDec() string {
 // gbINCHLm Sets [HL] to [HL] + 1
 func gbINCHLm(cpu *Core) {
 	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
-	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v+1))
+	cpu.Memory.WriteByte(cpu.Registers.HL(), uint8(v+1))
 
-	cpu.Registers.SetZero((v+1) & 0xFF == 0)
+	cpu.Registers.SetZero(((v+1) & 0xFF) == 0)
 	cpu.Registers.SetSub(false)
 	cpu.Registers.SetHalfCarry((v & 0xF) + 1 > 0xF)
 
@@ -794,7 +794,7 @@ func gbINCHLm(cpu *Core) {
 // gbDECHLm Sets [HL] to [HL] - 1
 func gbDECHLm(cpu *Core) {
 	v := int(cpu.Memory.ReadByte(cpu.Registers.HL()))
-	cpu.Memory.WriteByte(cpu.Registers.HL(), (byte)(v-1))
+	cpu.Memory.WriteByte(cpu.Registers.HL(), uint8(v-1))
 
 	cpu.Registers.SetZero((v-1) & 0xFF == 0)
 	cpu.Registers.SetSub(true)
