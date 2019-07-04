@@ -25,13 +25,13 @@ func (k *GBKeys) Write(val uint8) {
 func (k *GBKeys) Read() uint8 {
 	switch k.selectedInput {
 	case 0x10:
-		return k.keys | 0x10
+		return k.keys | k.selectedInput
 	case 0x20:
-		return k.direction | 0x20
-	//case 0x30:
-	//    return k.keys | k.direction | 0x20 | 0x10
+		return k.direction | k.selectedInput
+	case 0x30: // That shouldn't happen, but thats what the hardware will return
+		return k.keys | k.direction | k.selectedInput
 	default:
-		return k.selectedInput & 0xF
+		return 0xF | k.selectedInput
 	}
 }
 
@@ -39,7 +39,7 @@ func (k *GBKeys) SetDirectionBit(bit int, val bool) {
 	if val {
 		k.direction |= (byte)(1 << uint(bit))
 	} else {
-		k.direction &= (byte)((^(1 << uint(bit))) & 0xF)
+		k.direction &= (byte)(^(1 << uint(bit)))
 	}
 
 	k.direction &= 0xF
@@ -59,10 +59,10 @@ func (k *GBKeys) Update(win *pixelgl.Window) {
 	lastK := k.keys
 	lastD := k.direction
 
-	k.SetDirectionBit(0, win.Pressed(pixelgl.KeyRight))
-	k.SetDirectionBit(1, win.Pressed(pixelgl.KeyLeft))
-	k.SetDirectionBit(2, win.Pressed(pixelgl.KeyUp))
-	k.SetDirectionBit(3, win.Pressed(pixelgl.KeyDown))
+	k.SetDirectionBit(0, !win.Pressed(pixelgl.KeyRight))
+	k.SetDirectionBit(1, !win.Pressed(pixelgl.KeyLeft))
+	k.SetDirectionBit(2, !win.Pressed(pixelgl.KeyUp))
+	k.SetDirectionBit(3, !win.Pressed(pixelgl.KeyDown))
 
 	k.SetKeysBit(0, !win.Pressed(pixelgl.KeyZ))
 	k.SetKeysBit(1, !win.Pressed(pixelgl.KeyX))

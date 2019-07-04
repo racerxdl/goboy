@@ -167,9 +167,9 @@ func cbSRLr{{.I}}(cpu *Core) {
 var bitTemplate = template.Must(template.New("BIT").Parse(`
 // cbBIT{{.N}}{{.I}} Sets Flag Zero to BIT {{.N}} from {{.I}}
 func cbBIT{{.N}}{{.I}}(cpu *Core) {
-    cpu.Registers.SetZero((cpu.Registers.{{.I}} & (1 << {{.N}})) != 0)
+    cpu.Registers.SetZero((cpu.Registers.{{.I}} & uint8(1 << {{.N}})) == 0)
     cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(false)
+    cpu.Registers.SetHalfCarry(true)
 
     cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 4
@@ -179,9 +179,9 @@ func cbBIT{{.N}}{{.I}}(cpu *Core) {
 var bitmTemplate = template.Must(template.New("BITm").Parse(`
 // cbBITm{{.N}} Sets Flag Zero to BIT {{.N}} from [HL]
 func cbBITm{{.N}}(cpu *Core) {
-    cpu.Registers.SetZero((cpu.Memory.ReadByte(cpu.Registers.HL()) & (1 << {{.N}})) != 0)
+    cpu.Registers.SetZero((cpu.Memory.ReadByte(cpu.Registers.HL()) & (1 << {{.N}})) == 0)
     cpu.Registers.SetSub(false)
-    cpu.Registers.SetHalfCarry(false)
+    cpu.Registers.SetHalfCarry(true)
 
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12

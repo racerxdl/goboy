@@ -609,26 +609,32 @@ func BuildOperators() string {
 func gbDAA(cpu *Core) {
 	a := int(cpu.Registers.A)
 
-	if cpu.Registers.GetSub() {
-		if cpu.Registers.GetHalfCarry() {
-			a -= 0x6
-		} else {
-			a -= 0x60
-		}
-	} else {
-		if cpu.Registers.GetHalfCarry() || (a & 0xF) > 0x9 {
-			a += 0x6
-		} else {
-			a += 0x60
-		}
+	correction := int(0)
+
+	if cpu.Registers.GetCarry() {
+		correction = 0x60
 	}
 
+    if cpu.Registers.GetHalfCarry() || (!cpu.Registers.GetSub() && ((a & 0x0F) > 9)) {
+        correction |= 0x06;
+    }
+
+    if cpu.Registers.GetCarry() || (!cpu.Registers.GetSub() && (a > 0x99)) {
+        correction |= 0x60;
+    }
+
+	if cpu.Registers.GetSub() {
+		a -= correction
+	} else {
+		a += correction
+	}
+	
 	cpu.Registers.A = uint8(a)
 
-	cpu.Registers.SetZero((a & 0xFF) == 0)
+	cpu.Registers.SetZero(cpu.Registers.A == 0)
 	cpu.Registers.SetHalfCarry(false)
 	
-	if a & 0x100 == 0x100 {
+	if (correction << 2) & 0x100 != 0 {
 		cpu.Registers.SetCarry(true)
 	}
 

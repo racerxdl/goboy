@@ -73,13 +73,17 @@ func gbPUSH{{.I0}}{{.I1}}(cpu *Core) {
 }
 `))
 var popTemplate = template.Must(template.New("POP").Parse(`
-// gbPOP{{.I0}}{{.I1}} Reads {{.I0}} and {{.I1}} to the Stack
+// gbPOP{{.I0}}{{.I1}} Reads {{.I0}} and {{.I1}} from the Stack
 func gbPOP{{.I0}}{{.I1}}(cpu *Core) {
     
     cpu.Registers.{{.I1}} = cpu.Memory.ReadByte(cpu.Registers.SP)
     cpu.Registers.SP++
     cpu.Registers.{{.I0}} = cpu.Memory.ReadByte(cpu.Registers.SP)
     cpu.Registers.SP++
+
+	if "{{.I1}}" == "F" {
+		cpu.Registers.{{.I1}} &= 0xF0 // Clear lower nibble from Flag
+	}
 
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12

@@ -306,7 +306,9 @@ func gbNOPWARN(cpu *Core, opcode int) {
 }
 
 func gbHALT(cpu *Core) {
-    cpu.halted = true
+	if cpu.Registers.InterruptEnable {
+		cpu.halted = true
+    }
     cpu.Registers.LastClockM = 1
     cpu.Registers.LastClockT = 4
 }

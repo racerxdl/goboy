@@ -41,6 +41,7 @@ type DebugData struct {
 	PCX, SPX                                 string
 	GPUSCROLLX, GPUSCROLLY, GPUWINX, GPUWINY string
 	GPUMODECLOCKS, GPULINE                   string
+	HALTED                                   string
 }
 
 func MakeCore() *Core {
@@ -164,6 +165,8 @@ func (c *Core) GetDebugData() DebugData {
 		GPUWINY:       fmt.Sprintf("%4d", c.GPU.winX),
 		GPUMODECLOCKS: fmt.Sprintf("%4d", c.GPU.modeClocks),
 		GPULINE:       fmt.Sprintf("%4d", c.GPU.line),
+
+		HALTED: fmt.Sprintf("%v", c.halted),
 	}
 }
 
@@ -192,37 +195,37 @@ func (c *Core) cycle() {
 	}
 
 	// Check Interrupts
-	if c.Registers.InterruptEnable && c.Registers.EnabledInterrupts != 0 && c.Registers.TriggerInterrupts != 0 {
+	if c.Registers.InterruptEnable && (c.Registers.EnabledInterrupts&c.Registers.TriggerInterrupts) > 0 {
 		c.halted = false
 		c.Registers.InterruptEnable = false
 		interruptsFired := c.Registers.EnabledInterrupts & c.Registers.TriggerInterrupts
 
 		switch {
 		case (interruptsFired & IntVblank) > 0:
-			c.Registers.TriggerInterrupts &^= IntVblank
+			c.Registers.TriggerInterrupts &= ^uint8(IntVblank)
 			gbRSTXX(c, AddrIntVblank) // V-Blank
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntLcdstat) > 0:
 			cpuLog.Debug("(INT) [LCDSTAT]")
-			c.Registers.TriggerInterrupts &^= IntLcdstat
+			c.Registers.TriggerInterrupts &= ^uint8(IntLcdstat)
 			gbRSTXX(c, AddrIntLcdstat) // LCD Stat
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntTimer) > 0:
 			cpuLog.Debug("(INT) [TIMER]")
-			c.Registers.TriggerInterrupts &^= IntTimer
+			c.Registers.TriggerInterrupts &= ^uint8(IntTimer)
 			gbRSTXX(c, AddrIntTimer) // Timer
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntSerial) > 0:
 			cpuLog.Debug("(INT) [SERIAL]")
-			c.Registers.TriggerInterrupts &^= IntSerial
+			c.Registers.TriggerInterrupts &= ^uint8(IntSerial)
 			gbRSTXX(c, AddrIntSerial) // Serial
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
 		case (interruptsFired & IntJoypad) > 0:
-			c.Registers.TriggerInterrupts &^= IntJoypad
+			c.Registers.TriggerInterrupts &= ^uint8(IntJoypad)
 			gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
