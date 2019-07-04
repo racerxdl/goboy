@@ -555,7 +555,7 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 	b1 := g.cpu.Memory.ReadByte(addr + 1)
 
 	for x := 0; x < 8; x++ {
-		sx := byte(1 << (7 - uint(x)))
+		sx := uint8(1 << (7 - uint(x)))
 		o := uint8(0)
 
 		if b0&sx != 0 {

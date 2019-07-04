@@ -109,10 +109,13 @@ func (m *Memory) GetVideoFrame() *pixel.PictureData {
 func (m *Memory) WriteByte(addr uint16, val byte) {
 	switch {
 	case addr < 0x3FFF: // Catridge ROM
+		// Do nothing, not allowed to write catridge
 	case addr >= 0x4000 && addr <= 0x7FFF: // Catridge Bank N
+		// Do nothing, not allowed to write catrige bank N
 	case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
 		m.videoRam[addr-0x8000] = val
 		m.cpu.GPU.updateTile(addr, val)
+		//time.Sleep(time.Millisecond * 100)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		m.catridgeRam[addr-0xA000] = val
 	case addr >= 0xC000 && addr <= 0xEFFF: // Work Ram
@@ -121,6 +124,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		m.cpu.GPU.UpdateOAM(addr, val)
 		m.cpu.GPU.oam[addr-0xFE00] = val
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable ... yet ...
+		// Nothing
 	case addr >= 0xFF00 && addr <= 0xFF7F: // I/O Ports
 		baseAddr := addr - 0xFF00
 		switch baseAddr & 0x00F0 {
@@ -178,6 +182,8 @@ func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		return m.cpu.GPU.oam[addr-0xFE00]
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable, ... yet ...
+		// nothing
+		return 0x00
 	case addr >= 0xFF00 && addr <= 0xFF7F:
 		switch addr & 0x00F0 {
 		case 0x00:

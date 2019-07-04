@@ -239,7 +239,7 @@ var decrrTemplate = template.Must(template.New("DECrr").Parse(`
 func gbDEC{{.I0}}{{.I1}}(cpu *Core) {
 	cpu.Registers.{{.I1}}--
 
-	if cpu.Registers.{{.I1}} == 0 {
+	if cpu.Registers.{{.I1}} == 0xFF {
 		cpu.Registers.{{.I0}}--
 	}
 

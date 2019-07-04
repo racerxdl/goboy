@@ -27,6 +27,8 @@ var debugTemplate = template.Must(template.New("debugger").Parse(`
 /-----------------------------------\
 |      |  HEX  |       BINARY       |
 |  HL  |  {{.HL}} | {{.HB}} {{.LB}}  |
+|  BC  |  {{.BC}} | {{.BB}} {{.CB}}  |
+|  DE  |  {{.DE}} | {{.DB}} {{.EB}}  |
 |  H   |    {{.H}} | -------- {{.HB}}  |
 |  L   |    {{.L}} | -------- {{.LB}}  |
 |------|-------|--------------------|
@@ -53,6 +55,7 @@ var debugTemplate = template.Must(template.New("debugger").Parse(`
 
 var screenOrigin pixel.Matrix
 var disasmText *text.Text
+var stackText *text.Text
 
 func MoveAndScaleTo(p pixel.Picture, x, y, s float64) pixel.Matrix {
 	return pixel.IM.
@@ -61,31 +64,73 @@ func MoveAndScaleTo(p pixel.Picture, x, y, s float64) pixel.Matrix {
 		Chained(screenOrigin)
 }
 
+const maxDisasmLines = 32
+const maxStackLines = 16
+
+func RefreshStack() {
+	stackText.Clear()
+	stackText.Color = colornames.Black
+	fmt.Fprintf(stackText, "Stack: \n\n")
+
+	offset, page := z80.GetStack()
+	l := len(page)
+	if l == 0 {
+		return
+	}
+
+	b := maxStackLines * 2
+
+	for i := 0; i < l; i += 2 {
+		if i < l-b {
+			continue
+		}
+
+		addr := offset + uint16(i)
+		stackText.Color = colornames.Black
+
+		v := uint16(page[i+1]<<8) + uint16(page[i])
+
+		if addr == z80.Registers.SP {
+			stackText.Color = colornames.Blue
+		}
+		fmt.Fprintf(stackText, "\t%04X: %02X %02X (%06d)\n", addr, page[i+1], page[i], v)
+	}
+}
+
 func RefreshDisasm() {
 	offset, page := z80.GetCurrentPage()
 	dis := cpu.Disasm(int(offset), page)
 
-	addr := z80.Registers.PC
+	if len(dis) > maxDisasmLines {
+		o := 0
 
-	if len(dis) > 32 {
-		s := 0
-		l := 32
-
-		o := addr - offset
-
-		// Make sure the current instruction is displayed
-		for int(o) >= l {
-			s += 32
-			o += 32
+		for i, v := range dis { // Find where PC is in disasm
+			if uint16(v.Address) == z80.Registers.PC {
+				o = i
+				break
+			}
 		}
 
-		dis = dis[:32]
+		for o > maxDisasmLines { // Move disasm lines up until PC is visible
+			dis = dis[maxDisasmLines:]
+			o -= maxDisasmLines
+		}
+		l := maxDisasmLines
+		if len(dis) < l {
+			l = len(dis)
+		}
+		dis = dis[:l]
 	}
 
 	disasmText.Clear()
 	disasmText.Color = colornames.Black
 	fmt.Fprintf(disasmText, "Disassembler: \n\n")
-	for _, d := range dis {
+	for i, d := range dis {
+
+		if i > 0 && strings.Contains(dis[i-1].Instruction, "RET") {
+			fmt.Fprintf(disasmText, "\n") // empty line on RET
+		}
+
 		disasmText.Color = colornames.Black
 
 		if d.Address == int(z80.Registers.PC) {
@@ -94,6 +139,14 @@ func RefreshDisasm() {
 		fmt.Fprintf(disasmText, "\t%04X: ", d.Address)
 
 		disasmText.Color = colornames.Black
+
+		if strings.Contains(d.Instruction, "RET") {
+			disasmText.Color = colornames.Blueviolet
+		}
+
+		if strings.Contains(d.Instruction, "CALL") {
+			disasmText.Color = colornames.Blueviolet
+		}
 
 		v := d.Instruction
 		if strings.Contains(d.Instruction, "d8") { // Imediated 8 bit unsigned
@@ -130,7 +183,7 @@ func run() {
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "GameBoy Emulator",
-		Bounds: pixel.R(0, 0, 1024, 768),
+		Bounds: pixel.R(0, 0, 1280, 768),
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -154,6 +207,7 @@ func run() {
 	debugger.Color = colornames.Black
 
 	disasmText = text.New(pixel.V(0, 0), atlas)
+	stackText = text.New(pixel.V(0, 0), atlas)
 
 	lcdText := text.New(pixel.V(0, 0), atlas)
 	lcdText.Color = colornames.Black
@@ -192,15 +246,17 @@ func run() {
 		// endregion
 		// region Tile Buffer
 		pixel.NewSprite(tilebuff, tilebuff.Bounds()).
-			Draw(win, MoveAndScaleTo(tilebuff, 800, 470, 1))
-		tileBufferText.Draw(win, pixel.IM.Moved(pixel.V(w-280, h-460)))
+			Draw(win, MoveAndScaleTo(tilebuff, 350, 30, 1))
+		tileBufferText.Draw(win, pixel.IM.Moved(pixel.V(w-900, h-20)))
 		// endregion
 
 		debugger.Clear()
 		debugTemplate.Execute(debugger, z80.GetDebugData())
-		debugger.Draw(win, pixel.IM.Moved(pixel.V(w-280, h-10)))
+		debugger.Draw(win, pixel.IM.Moved(pixel.V(w-520, h-10)))
 
-		disasmText.Draw(win, pixel.IM.Moved(pixel.V(w-650, h-25)))
+		disasmText.Draw(win, pixel.IM.Moved(pixel.V(w-780, h-25)))
+
+		stackText.Draw(win, pixel.IM.Moved(pixel.V(w-500, h-500)))
 
 		if win.JustPressed(pixelgl.KeyR) {
 			z80.Reset()
@@ -218,8 +274,33 @@ func run() {
 			z80.Pause()
 		}
 
+		// region SpeedHack
+		if win.JustPressed(pixelgl.KeyF1) {
+			z80.SetSpeedHack(8)
+		}
+		if win.JustPressed(pixelgl.KeyF2) {
+			z80.SetSpeedHack(4)
+		}
+		if win.JustPressed(pixelgl.KeyF3) {
+			z80.SetSpeedHack(2)
+		}
+		if win.JustPressed(pixelgl.KeyF4) {
+			z80.SetSpeedHack(1)
+		}
+		if win.JustPressed(pixelgl.KeyF5) {
+			z80.SetSpeedHack(1.0 / 2)
+		}
+		if win.JustPressed(pixelgl.KeyF6) {
+			z80.SetSpeedHack(1.0 / 4)
+		}
+		if win.JustPressed(pixelgl.KeyF7) {
+			z80.SetSpeedHack(1.0 / 256)
+		}
+		// endregion
+
 		if z80.IsPaused() {
 			RefreshDisasm()
+			RefreshStack()
 		}
 
 		z80.Keys.Update(win)

@@ -30,6 +30,14 @@ func (r *Registers) HL() uint16 {
 	return uint16(r.H)<<8 + uint16(r.L)
 }
 
+func (r *Registers) BC() uint16 {
+	return uint16(r.B)<<8 + uint16(r.C)
+}
+
+func (r *Registers) DE() uint16 {
+	return uint16(r.D)<<8 + uint16(r.E)
+}
+
 func (r *Registers) GetZero() bool {
 	return r.F&FlagZero > 0
 }

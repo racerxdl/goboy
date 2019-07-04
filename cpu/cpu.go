@@ -29,6 +29,7 @@ type Core struct {
 	halted         bool
 	stopped        bool
 	step           bool
+	speedMul       float64
 
 	l sync.Mutex
 }
@@ -36,6 +37,7 @@ type Core struct {
 type DebugData struct {
 	PC, SP, A, B, C, D, E, F, H, L, HL       string
 	AB, BB, CB, DB, EB, FB, LB, HB           string
+	BC, DE                                   string
 	PCX, SPX                                 string
 	GPUSCROLLX, GPUSCROLLY, GPUWINX, GPUWINY string
 	GPUMODECLOCKS, GPULINE                   string
@@ -47,6 +49,7 @@ func MakeCore() *Core {
 		running:   false,
 		stopped:   false,
 		paused:    true,
+		speedMul:  1,
 	}
 	c.Memory = MakeMemory(c)
 	c.GPU = MakeGPU(c)
@@ -76,6 +79,11 @@ func (c *Core) Stop() {
 	c.l.Unlock()
 }
 
+func (c *Core) SetSpeedHack(mul float64) {
+	cpuLog.Info("Set speed to %0.2f", mul)
+	c.speedMul = mul
+}
+
 func (c *Core) loop() {
 	cpuLog.Info("CPU Loop Started")
 	for c.running {
@@ -96,13 +104,29 @@ func (c *Core) loop() {
 }
 
 func (c *Core) GetCurrentPage() (uint16, []byte) {
-	a := (c.Registers.PC / 64) * 64
-	buff := make([]byte, 64)
-	for i := 0; i < 64; i++ {
+	a := (c.Registers.PC / 256) * 256
+	buff := make([]byte, 256)
+	for i := 0; i < 256; i++ {
 		buff[i] = c.Memory.ReadByteNoSideEffect(a + uint16(i))
 	}
 
 	return a, buff
+}
+
+func (c *Core) GetStack() (uint16, []byte) {
+	e := int(c.Registers.SP) + 2
+	s := e - 512
+
+	if s < 0 {
+		s = 0
+	}
+
+	buff := make([]byte, e-s)
+	for i := 0; i < e-s; i++ {
+		buff[i] = c.Memory.ReadByteNoSideEffect(uint16(s + i))
+	}
+
+	return uint16(s), buff
 }
 
 func (c *Core) GetDebugData() DebugData {
@@ -131,6 +155,8 @@ func (c *Core) GetDebugData() DebugData {
 		FB: fmt.Sprintf("%08b", c.Registers.F),
 
 		HL: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.HL())),
+		BC: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.BC())),
+		DE: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.DE())),
 
 		GPUSCROLLX:    fmt.Sprintf("%4d", c.GPU.scrollX),
 		GPUSCROLLY:    fmt.Sprintf("%4d", c.GPU.scrollY),
@@ -218,7 +244,7 @@ func (c *Core) cycle() {
 
 	c.l.Unlock()
 
-	cycleDuration := time.Duration(int64(totalClockM)) * Period
+	cycleDuration := time.Duration(int64(totalClockM)) * time.Duration(float64(Period)/c.speedMul)
 	x := time.Now()
 
 	// Sleep is not precise enough, so we will do a busy loop
