@@ -389,9 +389,9 @@ func (g *GPU) refreshTileData(tileNum int) {
 		// 144 x 288 Buffer
 		for y := 0; y < 8; y++ {
 			for x := 0; x < 8; x++ {
-				var px = (i%16)*9 + x
-				var py = (i/16)*9 + y
-				var p = py*g.tileBuffer.Stride + px
+				px := (i%16)*9 + x
+				py := (i/16)*9 + y
+				p := py*g.tileBuffer.Stride + px
 
 				g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
 			}
@@ -528,7 +528,7 @@ func (g *GPU) renderScanline() {
 	}
 }
 
-func (g *GPU) updateVRAM() {
+func (g *GPU) UpdateVRAM() {
 	for i := range g.vramBuffer.Pix {
 		py := i / 256
 		px := i % 256

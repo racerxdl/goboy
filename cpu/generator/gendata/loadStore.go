@@ -6,7 +6,7 @@ import (
 )
 
 // region Templates
-var ldrrTemplate = template.Must(template.New("LDrrIO").Parse(`
+var ldrrTemplate = template.Must(template.New("LDrr").Parse(`
 // gbLDrr{{.I}}{{.O}} Sets Register {{.O}} to the value in {{.I}}
 func gbLDrr{{.I}}{{.O}}(cpu *Core) {
     cpu.Registers.{{.I}} = cpu.Registers.{{.O}}
@@ -142,7 +142,11 @@ func BuildLDrIOn() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range AllRegisters {
+	regs := []string{
+		"A",
+	}
+
+	for _, O := range regs {
 		ldrIOnTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -162,7 +166,11 @@ func BuildLDHLI() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range AllRegisters {
+	regs := []string{
+		"A",
+	}
+
+	for _, I := range regs {
 		ldhliTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -176,19 +184,35 @@ func BuildLDHLI() string {
 func BuildLDRRnn() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, O1 := range AllRegisters {
-		for _, O2 := range AllRegisters {
-			if O1 != O2 {
-				ldrrnnTemplate.Execute(buff, struct {
-					O1 string
-					O2 string
-				}{
-					O1: O1,
-					O2: O2,
-				})
-			}
-		}
+	regs := [][2]string{
+		{"H", "L"},
+		{"B", "C"},
+		{"D", "E"},
 	}
+
+	for _, O := range regs {
+		ldrrnnTemplate.Execute(buff, struct {
+			O1 string
+			O2 string
+		}{
+			O1: O[0],
+			O2: O[1],
+		})
+	}
+
+	//for _, O1 := range AllRegisters {
+	//    for _, O2 := range AllRegisters {
+	//        if O1 != O2 {
+	//            ldrrnnTemplate.Execute(buff, struct {
+	//                O1 string
+	//                O2 string
+	//            }{
+	//                O1: O1,
+	//                O2: O2,
+	//            })
+	//        }
+	//    }
+	//}
 
 	return buff.String()
 }
@@ -197,7 +221,11 @@ func BuildLDrmm() string {
 	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range AllRegisters {
+	regs := []string{
+		"A",
+	}
+
+	for _, O := range regs {
 		ldrmmTemplate.Execute(buff, struct {
 			O string
 		}{
@@ -211,32 +239,53 @@ func BuildLDrmm() string {
 func BuildLDrrrm() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, O := range AllRegisters {
-		for _, H := range AllRegisters {
-			for _, L := range AllRegisters {
-				if H != L && H != O && L != O {
-					ldrrrmTemplate.Execute(buff, struct {
-						O string
-						H string
-						L string
-					}{
-						O: O,
-						H: H,
-						L: L,
-					})
-				}
-			}
-		}
+	regs := [][3]string{
+		{"A", "B", "C"},
+		{"A", "D", "E"},
 	}
+
+	for _, I := range regs {
+		ldrrrmTemplate.Execute(buff, struct {
+			O string
+			H string
+			L string
+		}{
+			O: I[0],
+			H: I[1],
+			L: I[2],
+		})
+	}
+
+	//
+	//for _, O := range AllRegisters {
+	//    for _, H := range AllRegisters {
+	//        for _, L := range AllRegisters {
+	//            if H != L && H != O && L != O {
+	//                ldrrrmTemplate.Execute(buff, struct {
+	//                    O string
+	//                    H string
+	//                    L string
+	//                }{
+	//                    O: O,
+	//                    H: H,
+	//                    L: L,
+	//                })
+	//            }
+	//        }
+	//    }
+	//}
 
 	return buff.String()
 }
 
 func BuildLDmm() string {
-	//
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range AllRegisters {
+	regs := []string{
+		"A",
+	}
+
+	for _, I := range regs {
 		ldmmTemplate.Execute(buff, struct {
 			I string
 		}{
@@ -313,23 +362,41 @@ func BuildLDRR() string {
 func BuildLDrrmr() string {
 	buff := bytes.NewBuffer(nil)
 
-	for _, I := range AllRegisters {
-		for _, H := range AllRegisters {
-			for _, L := range AllRegisters {
-				if H != L && H != I && L != I {
-					ldrrmrTemplate.Execute(buff, struct {
-						I string
-						H string
-						L string
-					}{
-						I: I,
-						H: H,
-						L: L,
-					})
-				}
-			}
-		}
+	regs := [][3]string{
+		{"B", "C", "A"}, // LDBCmA
+		{"D", "E", "A"}, // LDDEmA
 	}
+
+	for _, I := range regs {
+		ldrrmrTemplate.Execute(buff, struct {
+			I string
+			H string
+			L string
+		}{
+			I: I[2],
+			H: I[0],
+			L: I[1],
+		})
+	}
+
+	//for _, I := range AllRegisters {
+	//	for _, H := range AllRegisters {
+	//		for _, L := range AllRegisters {
+	//			if H != L && H != I && L != I && // Avoid repeated procs
+	//				L != "H" && H != "L" { // LHmX does not exists
+	//				ldrrmrTemplate.Execute(buff, struct {
+	//					I string
+	//					H string
+	//					L string
+	//				}{
+	//					I: I,
+	//					H: H,
+	//					L: L,
+	//				})
+	//			}
+	//		}
+	//	}
+	//}
 
 	return buff.String()
 }

@@ -223,6 +223,7 @@ func run() {
 		}
 
 		z80.Keys.Update(win)
+		z80.GPU.UpdateVRAM()
 
 		win.Update()
 	}

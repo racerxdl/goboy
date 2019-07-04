@@ -41,6 +41,8 @@ func (k *GBKeys) SetDirectionBit(bit int, val bool) {
 	} else {
 		k.direction &= (byte)((^(1 << uint(bit))) & 0xF)
 	}
+
+	k.direction &= 0xF
 }
 
 func (k *GBKeys) SetKeysBit(bit int, val bool) {
@@ -62,10 +64,10 @@ func (k *GBKeys) Update(win *pixelgl.Window) {
 	k.SetDirectionBit(2, win.Pressed(pixelgl.KeyUp))
 	k.SetDirectionBit(3, win.Pressed(pixelgl.KeyDown))
 
-	k.SetKeysBit(0, win.Pressed(pixelgl.KeyZ))
-	k.SetKeysBit(1, win.Pressed(pixelgl.KeyX))
-	k.SetKeysBit(2, win.Pressed(pixelgl.KeySpace))
-	k.SetKeysBit(3, win.Pressed(pixelgl.KeyEnter))
+	k.SetKeysBit(0, !win.Pressed(pixelgl.KeyZ))
+	k.SetKeysBit(1, !win.Pressed(pixelgl.KeyX))
+	k.SetKeysBit(2, !win.Pressed(pixelgl.KeySpace))
+	k.SetKeysBit(3, !win.Pressed(pixelgl.KeyEnter))
 
 	if lastK != k.keys || lastD != k.direction {
 		k.cpu.Registers.TriggerInterrupts |= IntJoypad
