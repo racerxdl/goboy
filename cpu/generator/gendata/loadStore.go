@@ -494,7 +494,7 @@ func gbLDAHLD(cpu *Core) {
   cpu.Registers.A = cpu.Memory.ReadByte(cpu.Registers.HL())
   cpu.Registers.L--
   if cpu.Registers.L == 255 {
-    cpu.Registers.H++
+    cpu.Registers.H--
   }
 
   cpu.Registers.LastClockM = 2
