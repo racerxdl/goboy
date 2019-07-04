@@ -8,30 +8,54 @@ import (
 func BuildStackManagement() string {
 	b := bytes.NewBuffer(nil)
 
-	AllRegisters := []string{
-		"A", "B", "C", "D", "E", "H", "L", "F",
+	regs := [][2]string{
+		{"A", "F"},
+		{"B", "C"},
+		{"D", "E"},
+		{"H", "L"},
 	}
 
-	for _, I0 := range AllRegisters {
-		for _, I1 := range AllRegisters {
-			if I0 != I1 {
-				pushTemplate.Execute(b, struct {
-					I0 string
-					I1 string
-				}{
-					I0: I0,
-					I1: I1,
-				})
-				popTemplate.Execute(b, struct {
-					I0 string
-					I1 string
-				}{
-					I0: I0,
-					I1: I1,
-				})
-			}
-		}
+	for _, I := range regs {
+		pushTemplate.Execute(b, struct {
+			I0 string
+			I1 string
+		}{
+			I0: I[0],
+			I1: I[1],
+		})
+		popTemplate.Execute(b, struct {
+			I0 string
+			I1 string
+		}{
+			I0: I[0],
+			I1: I[1],
+		})
 	}
+
+	//AllRegisters := []string{
+	//	"A", "B", "C", "D", "E", "H", "L", "F",
+	//}
+	//
+	//for _, I0 := range AllRegisters {
+	//	for _, I1 := range AllRegisters {
+	//		if I0 != I1 {
+	//			pushTemplate.Execute(b, struct {
+	//				I0 string
+	//				I1 string
+	//			}{
+	//				I0: I0,
+	//				I1: I1,
+	//			})
+	//			popTemplate.Execute(b, struct {
+	//				I0 string
+	//				I1 string
+	//			}{
+	//				I0: I0,
+	//				I1: I1,
+	//			})
+	//		}
+	//	}
+	//}
 
 	return b.String()
 }

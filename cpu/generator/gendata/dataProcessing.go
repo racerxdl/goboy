@@ -268,19 +268,35 @@ func BuildADD() string {
 		})
 	}
 
-	for _, I0 := range AllRegisters {
-		for _, I1 := range AllRegisters {
-			if I0 != I1 {
-				addHLrrTemplate.Execute(buff, struct {
-					I0 string
-					I1 string
-				}{
-					I0: I0,
-					I1: I1,
-				})
-			}
-		}
+	regs := [][2]string{
+		{"B", "C"},
+		{"D", "E"},
+		{"H", "L"},
 	}
+
+	for _, I := range regs {
+		addHLrrTemplate.Execute(buff, struct {
+			I0 string
+			I1 string
+		}{
+			I0: I[0],
+			I1: I[1],
+		})
+	}
+
+	//for _, I0 := range AllRegisters {
+	//	for _, I1 := range AllRegisters {
+	//		if I0 != I1 {
+	//			addHLrrTemplate.Execute(buff, struct {
+	//				I0 string
+	//				I1 string
+	//			}{
+	//				I0: I0,
+	//				I1: I1,
+	//			})
+	//		}
+	//	}
+	//}
 
 	return buff.String() + `
 // gbADDHL Adds byte from [HL] to A
@@ -410,20 +426,37 @@ func BuildSUB() string {
 			I: I,
 		})
 	}
+	//
+	//regs := [][2]string{
+	//	// {"B", "C"},
+	//	{"D", "E"},
+	//	{"H", "L"},
+	//}
+	//
+	//
+	//for _, I := range regs {
+	//	subHLrrTemplate.Execute(buff, struct {
+	//		I0 string
+	//		I1 string
+	//	}{
+	//		I0: I[0],
+	//		I1: I[1],
+	//	})
+	//}
 
-	for _, I0 := range AllRegisters {
-		for _, I1 := range AllRegisters {
-			if I0 != I1 {
-				subHLrrTemplate.Execute(buff, struct {
-					I0 string
-					I1 string
-				}{
-					I0: I0,
-					I1: I1,
-				})
-			}
-		}
-	}
+	//for _, I0 := range AllRegisters {
+	//	for _, I1 := range AllRegisters {
+	//		if I0 != I1 {
+	//			subHLrrTemplate.Execute(buff, struct {
+	//				I0 string
+	//				I1 string
+	//			}{
+	//				I0: I0,
+	//				I1: I1,
+	//			})
+	//		}
+	//	}
+	//}
 
 	return buff.String() + `
 // gbSUBHL Subtracts byte from [HL] to A
@@ -453,21 +486,6 @@ func gbSUBn(cpu *Core) {
     cpu.Registers.SetHalfCarry((cpu.Registers.A & 0xF) < (z & 0xF) )
 
     cpu.Registers.A = uint8(sum)
-
-    cpu.Registers.LastClockM = 2
-    cpu.Registers.LastClockT = 8
-}
-
-// gbSUBHLSP Subtracts SP from HL
-func gbSUBHLSP(cpu *Core) {
-    sum := int(cpu.Registers.HL()) - int(cpu.Registers.SP)
-    cpu.Registers.SetCarry(sum < 0)
-    cpu.Registers.SetZero(sum & 0xFFFF == 0)
-    cpu.Registers.SetSub(true)
-    cpu.Registers.SetHalfCarry(((cpu.Registers.SP & 0xFFF) < (cpu.Registers.HL() & 0xFFF)))
-
-    cpu.Registers.H = uint8(sum >> 8)
-    cpu.Registers.L = uint8(sum & 0xFF)
 
     cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
@@ -716,24 +734,47 @@ func BuildIncDec() string {
 		})
 	}
 
-	for _, I0 := range AllRegisters {
-		for _, I1 := range AllRegisters {
-			incrrTemplate.Execute(buff, struct {
-				I0 string
-				I1 string
-			}{
-				I0: I0,
-				I1: I1,
-			})
-			decrrTemplate.Execute(buff, struct {
-				I0 string
-				I1 string
-			}{
-				I0: I0,
-				I1: I1,
-			})
-		}
+	regs := [][2]string{
+		{"B", "C"},
+		{"D", "E"},
+		{"H", "L"},
 	}
+
+	for _, I := range regs {
+		incrrTemplate.Execute(buff, struct {
+			I0 string
+			I1 string
+		}{
+			I0: I[0],
+			I1: I[1],
+		})
+		decrrTemplate.Execute(buff, struct {
+			I0 string
+			I1 string
+		}{
+			I0: I[0],
+			I1: I[1],
+		})
+	}
+
+	//for _, I0 := range AllRegisters {
+	//	for _, I1 := range AllRegisters {
+	//		incrrTemplate.Execute(buff, struct {
+	//			I0 string
+	//			I1 string
+	//		}{
+	//			I0: I0,
+	//			I1: I1,
+	//		})
+	//		decrrTemplate.Execute(buff, struct {
+	//			I0 string
+	//			I1 string
+	//		}{
+	//			I0: I0,
+	//			I1: I1,
+	//		})
+	//	}
+	//}
 
 	return buff.String() + `
 
