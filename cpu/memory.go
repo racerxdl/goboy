@@ -95,10 +95,7 @@ func (m *Memory) GetVideoFrame() *pixel.PictureData {
 
 func (m *Memory) WriteByte(addr uint16, val byte) {
 	switch {
-	case addr < 0x3FFF: // Catridge ROM
-		m.catridge.Write(addr, val)
-		// Do nothing, not allowed to write catridge
-	case addr >= 0x4000 && addr <= 0x7FFF: // Catridge Bank N
+	case addr < 0x3FFF && addr <= 0x7FFF: // Catridge Bank N
 		m.catridge.Write(addr, val)
 	case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
 		m.cpu.GPU.Write(addr, val)
@@ -248,12 +245,18 @@ func (m *Memory) LoadRom(data []byte) {
 		m.catridge = mbc.MakeMBC0()
 	case gameboy.MBC1:
 		m.catridge = mbc.MakeMBC1()
+	case gameboy.MBC3:
+		m.catridge = mbc.MakeMBC3()
+	case gameboy.MBC5:
+		m.catridge = mbc.MakeMBC5()
+	default:
+		memLog.Warn("MBC Type %s not implemented!", mbcType)
 	}
 
 	m.catridge.LoadRom(data)
 
 	memLog.Debug("Loaded %s", m.RomName())
-	memLog.Debug("MBC Type: %s", m.MBCType())
+	memLog.Debug("MBC Type: %s", mbcType)
 	memLog.Debug("Rom Size: %s", m.RomSize())
 	memLog.Debug("Ram Size: %s", m.CatridgeRamSize())
 }

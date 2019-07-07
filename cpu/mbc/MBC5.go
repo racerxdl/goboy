@@ -7,35 +7,34 @@ import (
 	"math/rand"
 )
 
-var mbc1log = slog.Scope("MBC1")
+var mbc5log = slog.Scope("MBC5")
 
 // No MBC
-type MBC1 struct {
+type MBC5 struct {
 	romBanks      [][0x4000]byte
 	ramBanks      [][0x2000]byte
 	activeRomBank int
 	activeRamBank int
 	ramEnabled    bool
-	ramRomMode    bool
 }
 
-func MakeMBC1() *MBC1 {
-	return &MBC1{
-		romBanks:      make([][0x4000]byte, 128),
-		ramBanks:      make([][0x2000]byte, 4),
+func MakeMBC5() *MBC5 {
+	return &MBC5{
+		romBanks:      make([][0x4000]byte, 1024),
+		ramBanks:      make([][0x2000]byte, 16),
 		activeRomBank: 1,
 		activeRamBank: 0,
 		ramEnabled:    false,
-		ramRomMode:    false,
 	}
 }
 
-func (m *MBC1) Reset() {
+func (m *MBC5) Reset() {
 	for i := 0; i < len(m.romBanks); i++ {
 		for z := 0; z < len(m.romBanks[i]); z++ {
 			m.romBanks[i][z] = 0x00
 		}
 	}
+
 	for i := 0; i < len(m.ramBanks); i++ {
 		for z := 0; z < len(m.ramBanks[i]); z++ {
 			m.ramBanks[i][z] = 0x00
@@ -43,7 +42,7 @@ func (m *MBC1) Reset() {
 	}
 }
 
-func (m *MBC1) Randomize() {
+func (m *MBC5) Randomize() {
 	for i := 0; i < len(m.romBanks[0]); i++ {
 		m.romBanks[0][i] = byte(rand.Int31n(255))
 	}
@@ -55,21 +54,20 @@ func (m *MBC1) Randomize() {
 	}
 }
 
-func (m *MBC1) LoadRom(data []byte) {
-	mbc1log.Debug("Loading Bank 0")
+func (m *MBC5) LoadRom(data []byte) {
+	mbc5log.Debug("Loading Bank 0")
 	copy(m.romBanks[0][:], data) // Copy first rom bank
 	data = data[0x4000:]
 	n := 1
-
 	for len(data) > 0 {
-		mbc1log.Debug("Loading Bank %d", n)
+		mbc5log.Debug("Loading Bank %d", n)
 		copy(m.romBanks[n][:], data)
 		data = data[0x4000:]
 		n++
 	}
 }
 
-func (m *MBC1) RomName() string {
+func (m *MBC5) RomName() string {
 	o := m.romBanks[0][0x134 : 0x134+0xE]
 	n := bytes.Index(o, []byte{0x00})
 	if n != -1 {
@@ -78,21 +76,21 @@ func (m *MBC1) RomName() string {
 	return string(o)
 }
 
-func (m *MBC1) CatridgeRamSize() gameboy.RamSize {
+func (m *MBC5) CatridgeRamSize() gameboy.RamSize {
 	return gameboy.RamSize(m.romBanks[0][0x149])
 }
 
-func (m *MBC1) RomSize() gameboy.RomSize {
+func (m *MBC5) RomSize() gameboy.RomSize {
 	return gameboy.RomSize(m.romBanks[0][0x148])
 }
 
-func (m *MBC1) MBCType() gameboy.MBCType {
-	return gameboy.MBC1
+func (m *MBC5) MBCType() gameboy.MBCType {
+	return gameboy.MBC5
 }
 
-func (m *MBC1) Read(addr uint16) uint8 {
+func (m *MBC5) Read(addr uint16) uint8 {
 	switch {
-	case addr < 0x4000:
+	case addr <= 0x3FFF:
 		return m.romBanks[0][addr]
 	case addr >= 0x4000 && addr <= 0x7FFF:
 		return m.romBanks[m.activeRomBank][addr&0x3FFF]
@@ -107,30 +105,21 @@ func (m *MBC1) Read(addr uint16) uint8 {
 	return 0x00
 }
 
-func (m *MBC1) Write(addr uint16, val uint8) {
+func (m *MBC5) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
 		m.ramEnabled = val&0xF == 0xA
-		//mbc1log.Debug("Changed Ram Enable to %v", m.ramEnabled)
-	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
-		if val == 0 {
-			val = 1
-		}
-		m.activeRomBank &= 0x60
-		m.activeRomBank |= int(val & 0x1F)
-		//mbc1log.Debug("Changed Rom Bank to %d", m.activeRomBank)
+		mbc5log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+	case addr >= 0x2000 && addr < 0x3000: // ROM Bank Low Bits
+		m.activeRomBank = int(val)
+		mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
+	case addr >= 0x3000 && addr < 0x4000: // ROM Bank High Bits
+		m.activeRomBank &= 0xFF
+		m.activeRomBank |= int(val&1) << 8
+		mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
-		if m.ramRomMode {
-			m.activeRamBank = int(val & 0x3)
-			//mbc1log.Debug("Changed Ram Bank to %d", m.activeRamBank)
-		} else {
-			m.activeRomBank &= 0x1F
-			m.activeRomBank |= int(val&0x3) << 5
-			//mbc1log.Debug("Changed Rom Bank to %d", m.activeRomBank)
-		}
-	case addr >= 0x6000 && addr <= 0x7FFF:
-		m.ramRomMode = val > 0
-		//mbc1log.Debug("Changed Rom/Ram Mode %v", m.ramRomMode)
+		m.activeRamBank = int(val & 0x3)
+		mbc5log.Debug("Changed Ram Bank to %d", m.activeRamBank)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {
 			m.ramBanks[m.activeRamBank][addr-0xA000] = val

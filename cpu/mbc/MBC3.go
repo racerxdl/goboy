@@ -7,10 +7,10 @@ import (
 	"math/rand"
 )
 
-var mbc1log = slog.Scope("MBC1")
+var mbc3log = slog.Scope("MBC3")
 
 // No MBC
-type MBC1 struct {
+type MBC3 struct {
 	romBanks      [][0x4000]byte
 	ramBanks      [][0x2000]byte
 	activeRomBank int
@@ -19,8 +19,8 @@ type MBC1 struct {
 	ramRomMode    bool
 }
 
-func MakeMBC1() *MBC1 {
-	return &MBC1{
+func MakeMBC3() *MBC3 {
+	return &MBC3{
 		romBanks:      make([][0x4000]byte, 128),
 		ramBanks:      make([][0x2000]byte, 4),
 		activeRomBank: 1,
@@ -30,7 +30,7 @@ func MakeMBC1() *MBC1 {
 	}
 }
 
-func (m *MBC1) Reset() {
+func (m *MBC3) Reset() {
 	for i := 0; i < len(m.romBanks); i++ {
 		for z := 0; z < len(m.romBanks[i]); z++ {
 			m.romBanks[i][z] = 0x00
@@ -43,7 +43,7 @@ func (m *MBC1) Reset() {
 	}
 }
 
-func (m *MBC1) Randomize() {
+func (m *MBC3) Randomize() {
 	for i := 0; i < len(m.romBanks[0]); i++ {
 		m.romBanks[0][i] = byte(rand.Int31n(255))
 	}
@@ -55,21 +55,21 @@ func (m *MBC1) Randomize() {
 	}
 }
 
-func (m *MBC1) LoadRom(data []byte) {
-	mbc1log.Debug("Loading Bank 0")
+func (m *MBC3) LoadRom(data []byte) {
+	mbc3log.Debug("Loading Bank 0")
 	copy(m.romBanks[0][:], data) // Copy first rom bank
 	data = data[0x4000:]
 	n := 1
 
 	for len(data) > 0 {
-		mbc1log.Debug("Loading Bank %d", n)
+		mbc3log.Debug("Loading Bank %d", n)
 		copy(m.romBanks[n][:], data)
 		data = data[0x4000:]
 		n++
 	}
 }
 
-func (m *MBC1) RomName() string {
+func (m *MBC3) RomName() string {
 	o := m.romBanks[0][0x134 : 0x134+0xE]
 	n := bytes.Index(o, []byte{0x00})
 	if n != -1 {
@@ -78,21 +78,21 @@ func (m *MBC1) RomName() string {
 	return string(o)
 }
 
-func (m *MBC1) CatridgeRamSize() gameboy.RamSize {
+func (m *MBC3) CatridgeRamSize() gameboy.RamSize {
 	return gameboy.RamSize(m.romBanks[0][0x149])
 }
 
-func (m *MBC1) RomSize() gameboy.RomSize {
+func (m *MBC3) RomSize() gameboy.RomSize {
 	return gameboy.RomSize(m.romBanks[0][0x148])
 }
 
-func (m *MBC1) MBCType() gameboy.MBCType {
-	return gameboy.MBC1
+func (m *MBC3) MBCType() gameboy.MBCType {
+	return gameboy.MBC3
 }
 
-func (m *MBC1) Read(addr uint16) uint8 {
+func (m *MBC3) Read(addr uint16) uint8 {
 	switch {
-	case addr < 0x4000:
+	case addr <= 0x3FFF:
 		return m.romBanks[0][addr]
 	case addr >= 0x4000 && addr <= 0x7FFF:
 		return m.romBanks[m.activeRomBank][addr&0x3FFF]
@@ -107,30 +107,23 @@ func (m *MBC1) Read(addr uint16) uint8 {
 	return 0x00
 }
 
-func (m *MBC1) Write(addr uint16, val uint8) {
+func (m *MBC3) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
 		m.ramEnabled = val&0xF == 0xA
-		//mbc1log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		//mbc3log.Debug("Changed Ram Enable to %v", m.ramEnabled)
 	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
 		if val == 0 {
 			val = 1
 		}
-		m.activeRomBank &= 0x60
-		m.activeRomBank |= int(val & 0x1F)
-		//mbc1log.Debug("Changed Rom Bank to %d", m.activeRomBank)
+		m.activeRomBank = int(val & 0x7F)
+		//mbc3log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
-		if m.ramRomMode {
-			m.activeRamBank = int(val & 0x3)
-			//mbc1log.Debug("Changed Ram Bank to %d", m.activeRamBank)
-		} else {
-			m.activeRomBank &= 0x1F
-			m.activeRomBank |= int(val&0x3) << 5
-			//mbc1log.Debug("Changed Rom Bank to %d", m.activeRomBank)
-		}
+		m.activeRamBank = int(val & 0x3)
+		//mbc3log.Debug("Changed Ram Bank to %d", m.activeRamBank)
 	case addr >= 0x6000 && addr <= 0x7FFF:
 		m.ramRomMode = val > 0
-		//mbc1log.Debug("Changed Rom/Ram Mode %v", m.ramRomMode)
+		//mbc3log.Debug("Changed Rom/Ram Mode %v", m.ramRomMode)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {
 			m.ramBanks[m.activeRamBank][addr-0xA000] = val

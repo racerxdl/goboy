@@ -175,8 +175,10 @@ func RefreshDisasm() {
 func run() {
 	//game, err := ioutil.ReadFile("./opus5.gb")
 	//game, err := ioutil.ReadFile("./tetris.gb")
-	game, err := ioutil.ReadFile("./cpu_instrs.gb")
-
+	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
+	game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
 	if err != nil {
 		panic(err)
 	}

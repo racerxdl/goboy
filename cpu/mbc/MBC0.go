@@ -65,9 +65,7 @@ func (m *MBC0) MBCType() gameboy.MBCType {
 
 func (m *MBC0) Read(addr uint16) uint8 {
 	switch {
-	case addr <= 0x3FFF:
-		return m.romData[addr]
-	case addr >= 0x4000 && addr <= 0x7FFF:
+	case addr <= 0x7FFF:
 		return m.romData[addr]
 	case addr >= 0xA000 && addr <= 0xBFFF:
 		return m.ramData[addr-0xA000]
