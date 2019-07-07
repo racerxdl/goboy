@@ -31,13 +31,10 @@ var gbBios = []byte{
 }
 
 type Memory struct {
-	videoRam    []byte
 	workRam     []byte
 	highRam     []byte
-	romData     []byte
-	catridgeRam []byte
 	videoBuffer *pixel.PictureData
-	currentBank uint16
+	catridge    Catridge
 
 	inBIOS bool
 	cpu    *Core
@@ -45,12 +42,10 @@ type Memory struct {
 
 func MakeMemory(cpu *Core) *Memory {
 	m := &Memory{
-		videoRam:    make([]byte, 0x2000),
-		workRam:     make([]byte, 0x2000),
-		highRam:     make([]byte, 0x7F),
-		romData:     make([]byte, 0x8000),
-		catridgeRam: make([]byte, 0x2000),
-		cpu:         cpu,
+		workRam:  make([]byte, 0x2000),
+		highRam:  make([]byte, 0x7F),
+		cpu:      cpu,
+		catridge: MakeMBC0(), // Load Default Catridge
 	}
 
 	m.Reset()
@@ -63,15 +58,9 @@ func (m *Memory) Reset() {
 	m.videoBuffer = pixel.PictureDataFromImage(img)
 	pixhelp.ClearPictureData(m.videoBuffer, color.Black)
 
-	m.currentBank = 0
-
-	for i := 0; i < 0x7FFF; i++ {
-		m.romData[i] = 0x00
-	}
+	m.catridge.Reset()
 
 	for i := 0; i < 0x2000; i++ {
-		m.videoRam[i] = 0x00
-		m.catridgeRam[i] = 0x00
 		m.workRam[i] = 0x00
 	}
 
@@ -83,13 +72,9 @@ func (m *Memory) Reset() {
 }
 
 func (m *Memory) Randomize() {
-	for i := 0; i < 0x7FFF; i++ {
-		m.romData[i] = byte(rand.Int31n(255))
-	}
+	m.catridge.Randomize()
 
 	for i := 0; i < 0x2000; i++ {
-		m.videoRam[i] = byte(rand.Int31n(255))
-		m.catridgeRam[i] = byte(rand.Int31n(255))
 		m.workRam[i] = byte(rand.Int31n(255))
 	}
 
@@ -109,38 +94,38 @@ func (m *Memory) GetVideoFrame() *pixel.PictureData {
 func (m *Memory) WriteByte(addr uint16, val byte) {
 	switch {
 	case addr < 0x3FFF: // Catridge ROM
+		m.catridge.Write(addr, val)
 		// Do nothing, not allowed to write catridge
 	case addr >= 0x4000 && addr <= 0x7FFF: // Catridge Bank N
-		// Do nothing, not allowed to write catrige bank N
+		m.catridge.Write(addr, val)
 	case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
-		m.videoRam[addr-0x8000] = val
-		m.cpu.GPU.updateTile(addr, val)
-		//time.Sleep(time.Millisecond * 100)
+		m.cpu.GPU.Write(addr, val)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
-		m.catridgeRam[addr-0xA000] = val
+		m.catridge.Write(addr, val)
 	case addr >= 0xC000 && addr <= 0xEFFF: // Work Ram
 		m.workRam[addr&0x1FFF] = val
 	case addr >= 0xFE00 && addr <= 0xFE9F:
-		m.cpu.GPU.UpdateOAM(addr, val)
-		m.cpu.GPU.oam[addr-0xFE00] = val
+		m.cpu.GPU.Write(addr, val)
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable ... yet ...
 		// Nothing
 	case addr >= 0xFF00 && addr <= 0xFF7F: // I/O Ports
+		switch addr {
+		case 0xFF00:
+			m.cpu.Keys.Write(addr, val)
+		case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
+			m.cpu.Timer.Write(addr, val)
+		case 0xFF0F:
+			m.cpu.Registers.TriggerInterrupts = val
+		}
+
 		baseAddr := addr - 0xFF00
+
 		switch baseAddr & 0x00F0 {
 		case 0x00:
-			switch addr {
-			case 0xFF00:
-				m.cpu.Keys.Write(val)
-			case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
-				m.cpu.Timer.Write(addr, val)
-			case 0xFF0F:
-				m.cpu.Registers.TriggerInterrupts = val
-			}
 		case 0x10, 0x20, 0x30:
 			// TODO
 		case 0x40, 0x50, 0x60, 0x70:
-			m.cpu.GPU.WriteByte(addr, val)
+			m.cpu.GPU.Write(addr, val)
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:
 		m.highRam[addr-0xFF80] = val
@@ -170,36 +155,37 @@ func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 				m.inBIOS = false
 			}
 		}
-		return m.romData[addr]
+		return m.catridge.Read(addr)
 	case addr >= 0x4000 && addr <= 0x7FFF:
-		return m.romData[addr+0x4000*m.currentBank]
+		return m.catridge.Read(addr)
 	case addr >= 0x8000 && addr <= 0x9FFF:
-		return m.videoRam[addr-0x8000]
+		return m.cpu.GPU.Read(addr)
 	case addr >= 0xA000 && addr <= 0xBFFF:
-		return m.catridgeRam[addr-0xA000]
+		return m.catridge.Read(addr)
 	case addr >= 0xC000 && addr <= 0xEFFF:
 		return m.workRam[addr&0x1FFF]
 	case addr >= 0xFE00 && addr <= 0xFE9F:
-		return m.cpu.GPU.oam[addr-0xFE00]
+		return m.cpu.GPU.Read(addr)
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable, ... yet ...
 		// nothing
 		return 0x00
 	case addr >= 0xFF00 && addr <= 0xFF7F:
+		switch addr {
+		case 0xFF00:
+			return m.cpu.Keys.Read(addr)
+		case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
+			return m.cpu.Timer.Read(addr)
+		case 0xFF0F:
+			return m.cpu.Registers.TriggerInterrupts
+		}
+
 		switch addr & 0x00F0 {
 		case 0x00:
-			switch addr {
-			case 0xFF00:
-				return m.cpu.Keys.Read()
-			case 0xFF04, 0xFF05, 0xFF06, 0xFF07:
-				return m.cpu.Timer.Read(addr)
-			case 0xFF0F:
-				return m.cpu.Registers.TriggerInterrupts
-			}
 			return 0x00
 		case 0x10, 0x20, 0x30:
 			return 0x00
 		case 0x40, 0x50, 0x60, 0x70:
-			return m.cpu.GPU.ReadByte(addr)
+			return m.cpu.GPU.Read(addr)
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:
 		return m.highRam[addr-0xFF80]
@@ -233,18 +219,33 @@ func (m *Memory) WriteWord(addr uint16, val uint16) {
 }
 
 func (m *Memory) RomName() string {
-	o := m.romData[0x134 : 0x134+0xE]
-	return string(o)
-}
-
-func (m *Memory) CatridgeRamSize() RamSize {
-	return RamSize(m.romData[0x149])
+	return m.catridge.RomName()
 }
 
 func (m *Memory) RomSize() RomSize {
-	return RomSize(m.romData[0x148])
+	return m.catridge.RomSize()
+}
+
+func (m *Memory) MBCType() MBCType {
+	return m.catridge.MBCType()
+}
+
+func (m *Memory) CatridgeRamSize() RamSize {
+	return m.catridge.CatridgeRamSize()
 }
 
 func (m *Memory) LoadRom(data []byte) {
-	copy(m.romData, data)
+	mbcType := CatridgeTypeToMBC(data[0x147])
+
+	switch mbcType {
+	case MBCNone:
+		m.catridge = MakeMBC0()
+	}
+
+	m.catridge.LoadRom(data)
+
+	memLog.Debug("Loaded %s", m.RomName())
+	memLog.Debug("MBC Type: %s", m.MBCType())
+	memLog.Debug("Rom Size: %s", m.RomSize())
+	memLog.Debug("Ram Size: %s", m.CatridgeRamSize())
 }

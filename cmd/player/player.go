@@ -173,12 +173,9 @@ func RefreshDisasm() {
 }
 
 func run() {
-	/*
-
-	 */
 	//game, err := ioutil.ReadFile("./opus5.gb")
-	//game, err := ioutil.ReadFile("./tetris.gb")
-	game, err := ioutil.ReadFile("./cpu_instrs.gb")
+	game, err := ioutil.ReadFile("./tetris.gb")
+	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
 
 	if err != nil {
 		panic(err)
@@ -231,6 +228,8 @@ func run() {
 	h := r.Max.Y
 
 	RefreshDisasm()
+
+	win.SetTitle(fmt.Sprintf("GameBoy Emulator - %s", z80.Memory.RomName()))
 
 	for !win.Closed() {
 		vframe := z80.Memory.GetVideoFrame()

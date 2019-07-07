@@ -18,11 +18,11 @@ func MakeGBKeys(cpu *Core) *GBKeys {
 	}
 }
 
-func (k *GBKeys) Write(val uint8) {
+func (k *GBKeys) Write(addr uint16, val uint8) {
 	k.selectedInput = val & 0x30
 }
 
-func (k *GBKeys) Read() uint8 {
+func (k *GBKeys) Read(addr uint16) uint8 {
 	switch k.selectedInput {
 	case 0x10:
 		return k.keys | k.selectedInput

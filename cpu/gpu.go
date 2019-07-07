@@ -31,6 +31,7 @@ type GPU struct {
 	registers                    []byte
 	tileSet                      []gpuTile
 	vramBuffer                   *pixel.PictureData
+	vram                         []byte
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
 	bgPallete                    [4]color.RGBA
@@ -80,6 +81,7 @@ func MakeGPU(cpu *Core) *GPU {
 
 	gpu.registers = make([]byte, 0xFF)
 	gpu.currentRow = make([]byte, 160)
+	gpu.vram = make([]byte, 0x2000)
 	for i := 0; i < 160; i++ {
 		gpu.currentRow[i] = 0x00
 	}
@@ -99,6 +101,10 @@ func (g *GPU) Reset() {
 	g.tileSet = make([]gpuTile, 512)
 	for i := 0; i < 512; i++ {
 		g.tileSet[i] = makeGPUTile()
+	}
+
+	for i := 0; i < 0x2000; i++ {
+		g.vram[i] = 0x00
 	}
 
 	g.vramBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
@@ -177,7 +183,19 @@ func (g *GPU) state() uint8 {
 	return state
 }
 
-func (g *GPU) ReadByte(addr uint16) byte {
+func (g *GPU) Read(addr uint16) byte {
+	if addr < 0xFF40 { // GPU Memory
+		switch {
+		case addr >= 0x8000 && addr <= 0x9FFF:
+			return g.vram[addr-0x8000]
+		case addr >= 0xFE00 && addr <= 0xFE9F:
+			return g.oam[addr-0xFE00]
+		}
+
+		return 0x00
+	}
+
+	// GPU Registers
 	switch addr {
 	case 0xFF40:
 		return g.state()
@@ -214,7 +232,20 @@ func (g *GPU) ReadByte(addr uint16) byte {
 	}
 }
 
-func (g *GPU) WriteByte(addr uint16, val uint8) {
+func (g *GPU) Write(addr uint16, val uint8) {
+	if addr < 0xFF40 { // GPU Memory
+		switch {
+		case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
+			g.vram[addr-0x8000] = val
+			g.updateTile(addr, val)
+		case addr >= 0xFE00 && addr <= 0xFE9F:
+			g.oam[addr-0xFE00] = val
+			g.UpdateOAM(addr, val)
+		}
+		return
+	}
+
+	// GPU Registers
 	g.registers[addr-0xFF40] = val
 
 	switch addr {
