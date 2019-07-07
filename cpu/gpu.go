@@ -227,7 +227,7 @@ func (g *GPU) Read(addr uint16) byte {
 	case 0xFF4A:
 		return uint8(g.winY)
 	case 0xFF4B:
-		return uint8(g.winX)
+		return uint8(g.winX + 7)
 	default:
 		return g.registers[addr-0xFF40]
 	}
@@ -338,7 +338,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 	case 0xFF4A:
 		g.winY = int(val)
 	case 0xFF4B:
-		g.winX = int(val)
+		g.winX = int(val) - 7
 	}
 }
 
@@ -348,9 +348,9 @@ func (g *GPU) updateOAM(addr uint16, val uint8) {
 	if obj < 40 {
 		switch relAddr & 3 {
 		case 0:
-			g.objs[obj].Y = int(val) - 16
+			g.objs[obj].Y = int(val - 16)
 		case 1:
-			g.objs[obj].X = int(val) - 8
+			g.objs[obj].X = int(val - 8)
 		case 2:
 			if g.objSize {
 				g.objs[obj].Tile = val & 0xFE
@@ -541,13 +541,13 @@ func (g *GPU) renderScanline() {
 					bufferOffset := (iline * vFrame.Stride) + obj.X
 					var c color.RGBA
 					for x := 0; x < 8; x++ {
-						if obj.XFlip {
+						if !obj.XFlip {
 							c = pallete[tileRow[x]]
 						} else {
 							c = pallete[tileRow[7-x]]
 						}
 
-						if tileRow[x] != 0x00 && obj.X+x >= 0 && obj.X+x < 160 && (obj.Prio || g.currentRow[x] == 0x00) {
+						if tileRow[x] != 0x00 && obj.X+x >= 0 && obj.X+x < 160 && (!obj.Prio || vFrame.Pix[bufferOffset] == pallete[0]) {
 							vFrame.Pix[bufferOffset] = c
 						}
 						bufferOffset++
@@ -655,7 +655,7 @@ func (g *GPU) Cycle() {
 			g.renderScanline()
 			g.mode = gameboy.HBlank
 
-			// TODO: DMA
+			// TODO: DMA on CGB
 
 			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
 				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat

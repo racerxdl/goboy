@@ -55,16 +55,17 @@ func (m *MBC5) Randomize() {
 }
 
 func (m *MBC5) LoadRom(data []byte) {
-	mbc5log.Debug("Loading Bank 0")
 	copy(m.romBanks[0][:], data) // Copy first rom bank
 	data = data[0x4000:]
 	n := 1
+
 	for len(data) > 0 {
-		mbc5log.Debug("Loading Bank %d", n)
 		copy(m.romBanks[n][:], data)
 		data = data[0x4000:]
 		n++
 	}
+
+	mbc1log.Debug("Loaded %d banks", n)
 }
 
 func (m *MBC5) RomName() string {
