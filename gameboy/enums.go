@@ -1,4 +1,6 @@
-package cpu
+package gameboy
+
+import "github.com/quan-to/slog"
 
 type RamSize byte
 type RomSize byte
@@ -94,7 +96,7 @@ func CatridgeTypeToMBC(ct uint8) MBCType {
 		return MBC5
 	}
 
-	memLog.Error("Unknown MBC Type: %02X", ct)
+	slog.Error("Unknown MBC Type: %02X", ct)
 
 	return MBCNone
 }

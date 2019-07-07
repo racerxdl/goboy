@@ -1,6 +1,9 @@
 package cpu
 
-import "github.com/faiface/pixel/pixelgl"
+import (
+	"github.com/faiface/pixel/pixelgl"
+	"github.com/racerxdl/goboy/gameboy"
+)
 
 type GBKeys struct {
 	cpu           *Core
@@ -70,6 +73,6 @@ func (k *GBKeys) Update(win *pixelgl.Window) {
 	k.SetKeysBit(3, !win.Pressed(pixelgl.KeyEnter))
 
 	if lastK != k.keys || lastD != k.direction {
-		k.cpu.Registers.TriggerInterrupts |= IntJoypad
+		k.cpu.Registers.TriggerInterrupts |= gameboy.IntJoypad
 	}
 }

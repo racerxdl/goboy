@@ -1,4 +1,4 @@
-package cpu
+package gameboy
 
 //region Interrupts
 const (

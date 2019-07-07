@@ -174,8 +174,8 @@ func RefreshDisasm() {
 
 func run() {
 	//game, err := ioutil.ReadFile("./opus5.gb")
-	game, err := ioutil.ReadFile("./tetris.gb")
-	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
+	//game, err := ioutil.ReadFile("./tetris.gb")
+	game, err := ioutil.ReadFile("./cpu_instrs.gb")
 
 	if err != nil {
 		panic(err)

@@ -1,6 +1,7 @@
 package cpu
 
 import (
+	"github.com/racerxdl/goboy/gameboy"
 	"math/rand"
 	"strings"
 )
@@ -39,50 +40,50 @@ func (r *Registers) DE() uint16 {
 }
 
 func (r *Registers) GetZero() bool {
-	return r.F&FlagZero > 0
+	return r.F&gameboy.FlagZero > 0
 }
 
 func (r *Registers) SetZero(v bool) {
 	if v {
-		r.F |= FlagZero
+		r.F |= gameboy.FlagZero
 	} else {
-		r.F &= InvFlagZero
+		r.F &= gameboy.InvFlagZero
 	}
 }
 
 func (r *Registers) GetSub() bool {
-	return r.F&FlagSub > 0
+	return r.F&gameboy.FlagSub > 0
 }
 
 func (r *Registers) SetSub(v bool) {
 	if v {
-		r.F |= FlagSub
+		r.F |= gameboy.FlagSub
 	} else {
-		r.F &= InvFlagSub
+		r.F &= gameboy.InvFlagSub
 	}
 }
 
 func (r *Registers) GetHalfCarry() bool {
-	return r.F&FlagHalfCarry > 0
+	return r.F&gameboy.FlagHalfCarry > 0
 }
 
 func (r *Registers) SetHalfCarry(v bool) {
 	if v {
-		r.F |= FlagHalfCarry
+		r.F |= gameboy.FlagHalfCarry
 	} else {
-		r.F &= InvFlagHalfCarry
+		r.F &= gameboy.InvFlagHalfCarry
 	}
 }
 
 func (r *Registers) GetCarry() bool {
-	return r.F&FlagCarry > 0
+	return r.F&gameboy.FlagCarry > 0
 }
 
 func (r *Registers) SetCarry(v bool) {
 	if v {
-		r.F |= FlagCarry
+		r.F |= gameboy.FlagCarry
 	} else {
-		r.F &= InvFlagCarry
+		r.F &= gameboy.InvFlagCarry
 	}
 }
 

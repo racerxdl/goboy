@@ -3,6 +3,7 @@ package cpu
 import (
 	"fmt"
 	"github.com/quan-to/slog"
+	"github.com/racerxdl/goboy/gameboy"
 	"runtime"
 	"strings"
 	"sync"
@@ -175,6 +176,7 @@ func (c *Core) IsPaused() bool {
 }
 
 func (c *Core) cycle() {
+	x := time.Now()
 	c.l.Lock()
 	// Normal Cycle
 	c.Registers.CycleCount++
@@ -201,31 +203,31 @@ func (c *Core) cycle() {
 		interruptsFired := c.Registers.EnabledInterrupts & c.Registers.TriggerInterrupts
 
 		switch {
-		case (interruptsFired & IntVblank) > 0:
-			c.Registers.TriggerInterrupts &= ^uint8(IntVblank)
+		case (interruptsFired & gameboy.IntVblank) > 0:
+			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntVblank)
 			gbRSTXX(c, AddrIntVblank) // V-Blank
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & IntLcdstat) > 0:
+		case (interruptsFired & gameboy.IntLcdstat) > 0:
 			cpuLog.Debug("(INT) [LCDSTAT]")
-			c.Registers.TriggerInterrupts &= ^uint8(IntLcdstat)
+			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntLcdstat)
 			gbRSTXX(c, AddrIntLcdstat) // LCD Stat
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & IntTimer) > 0:
+		case (interruptsFired & gameboy.IntTimer) > 0:
 			cpuLog.Debug("(INT) [TIMER]")
-			c.Registers.TriggerInterrupts &= ^uint8(IntTimer)
+			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntTimer)
 			gbRSTXX(c, AddrIntTimer) // Timer
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & IntSerial) > 0:
+		case (interruptsFired & gameboy.IntSerial) > 0:
 			cpuLog.Debug("(INT) [SERIAL]")
-			c.Registers.TriggerInterrupts &= ^uint8(IntSerial)
+			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntSerial)
 			gbRSTXX(c, AddrIntSerial) // Serial
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & IntJoypad) > 0:
-			c.Registers.TriggerInterrupts &= ^uint8(IntJoypad)
+		case (interruptsFired & gameboy.IntJoypad) > 0:
+			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntJoypad)
 			gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
 			totalClockM += c.Registers.LastClockM
 			totalClockT += c.Registers.LastClockT
@@ -242,13 +244,12 @@ func (c *Core) cycle() {
 		c.GPU.Cycle()
 
 		// Timer Flow
-		c.Timer.Increment()
+		c.Timer.Increment(totalClockM)
 	}
 
 	c.l.Unlock()
 
 	cycleDuration := time.Duration(int64(totalClockM)) * time.Duration(float64(Period)/c.speedMul)
-	x := time.Now()
 
 	// Sleep is not precise enough, so we will do a busy loop
 	for time.Since(x) < cycleDuration {

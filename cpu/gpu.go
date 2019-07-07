@@ -2,6 +2,7 @@ package cpu
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/racerxdl/goboy/gameboy"
 	"github.com/racerxdl/goboy/pixhelp"
 	"image"
 	"image/color"
@@ -9,7 +10,7 @@ import (
 )
 
 type GPU struct {
-	mode                         GPUMode
+	mode                         gameboy.GPUMode
 	cpu                          *Core
 	modeClocks                   int
 	line                         byte
@@ -48,19 +49,19 @@ func (g *GPU) GetTileBuffer() *pixel.PictureData {
 }
 
 func (g *GPU) LycLy() bool {
-	return (g.lcdStat & FlagLycLy) > 0
+	return (g.lcdStat & gameboy.FlagLycLy) > 0
 }
 
 func (g *GPU) OamMode() bool {
-	return (g.lcdStat & FlagOamMode) > 0
+	return (g.lcdStat & gameboy.FlagOamMode) > 0
 }
 
 func (g *GPU) VBlankMode() bool {
-	return (g.lcdStat & FlagVblankMode) > 0
+	return (g.lcdStat & gameboy.FlagVblankMode) > 0
 }
 
 func (g *GPU) HBlankMode() bool {
-	return (g.lcdStat & FlagHblankMode) > 0
+	return (g.lcdStat & gameboy.FlagHblankMode) > 0
 }
 
 func MakeGPU(cpu *Core) *GPU {
@@ -97,7 +98,7 @@ func (g *GPU) Reset() {
 	g.winX = 0
 	g.winY = 0
 	g.line = 0
-	g.mode = OamRead
+	g.mode = gameboy.OamRead
 	g.tileSet = make([]gpuTile, 512)
 	for i := 0; i < 512; i++ {
 		g.tileSet[i] = makeGPUTile()
@@ -605,59 +606,59 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 func (g *GPU) Cycle() {
 	g.modeClocks += g.cpu.Registers.LastClockM
 	switch g.mode {
-	case HBlank:
+	case gameboy.HBlank:
 		if g.modeClocks > horizontalBlankCycles {
 			g.modeClocks = 0
 			g.line++
 
 			if g.line == 144 {
-				g.mode = VBlank
+				g.mode = gameboy.VBlank
 
-				g.cpu.Registers.TriggerInterrupts |= IntVblank
+				g.cpu.Registers.TriggerInterrupts |= gameboy.IntVblank
 				if g.VBlankMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 				}
 			} else {
-				g.mode = OamRead
+				g.mode = gameboy.OamRead
 				if g.OamMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 				}
 			}
 
 			if g.line == g.lineCompare && g.LycLy() && g.cpu.Registers.InterruptEnable {
-				g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 			}
 		}
-	case VBlank:
+	case gameboy.VBlank:
 		if g.modeClocks >= (verticalBlankCycles / 9) {
 			g.modeClocks = 0
 			g.line++
 			if g.line == g.lineCompare && g.LycLy() {
-				g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 			}
 			if g.line > 153 {
-				g.mode = OamRead
+				g.mode = gameboy.OamRead
 				g.line = 0
 				if g.OamMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 				}
 			}
 		}
-	case OamRead:
+	case gameboy.OamRead:
 		if g.modeClocks >= oamCycles {
 			g.modeClocks = 0
-			g.mode = VramRead
+			g.mode = gameboy.VramRead
 		}
-	case VramRead:
+	case gameboy.VramRead:
 		if g.modeClocks >= vRamCycles {
 			g.modeClocks = 0
 			g.renderScanline()
-			g.mode = HBlank
+			g.mode = gameboy.HBlank
 
 			// TODO: DMA
 
 			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
-				g.cpu.Registers.TriggerInterrupts |= IntLcdstat
+				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 			}
 		}
 	}

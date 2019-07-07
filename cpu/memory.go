@@ -3,6 +3,8 @@ package cpu
 import (
 	"github.com/faiface/pixel"
 	"github.com/quan-to/slog"
+	"github.com/racerxdl/goboy/cpu/mbc"
+	"github.com/racerxdl/goboy/gameboy"
 	"github.com/racerxdl/goboy/pixhelp"
 	"image"
 	"image/color"
@@ -45,7 +47,7 @@ func MakeMemory(cpu *Core) *Memory {
 		workRam:  make([]byte, 0x2000),
 		highRam:  make([]byte, 0x7F),
 		cpu:      cpu,
-		catridge: MakeMBC0(), // Load Default Catridge
+		catridge: mbc.MakeMBC0(), // Load Default Catridge
 	}
 
 	m.Reset()
@@ -138,6 +140,10 @@ func (m *Memory) ReadByte(addr uint16) byte {
 	return m.readByte(addr, false)
 }
 
+func (m *Memory) Read(addr uint16) byte {
+	return m.ReadByte(addr)
+}
+
 func (m *Memory) ReadByteNoSideEffect(addr uint16) byte {
 	return m.readByte(addr, true)
 }
@@ -222,24 +228,26 @@ func (m *Memory) RomName() string {
 	return m.catridge.RomName()
 }
 
-func (m *Memory) RomSize() RomSize {
+func (m *Memory) RomSize() gameboy.RomSize {
 	return m.catridge.RomSize()
 }
 
-func (m *Memory) MBCType() MBCType {
+func (m *Memory) MBCType() gameboy.MBCType {
 	return m.catridge.MBCType()
 }
 
-func (m *Memory) CatridgeRamSize() RamSize {
+func (m *Memory) CatridgeRamSize() gameboy.RamSize {
 	return m.catridge.CatridgeRamSize()
 }
 
 func (m *Memory) LoadRom(data []byte) {
-	mbcType := CatridgeTypeToMBC(data[0x147])
+	mbcType := gameboy.CatridgeTypeToMBC(data[0x147])
 
 	switch mbcType {
-	case MBCNone:
-		m.catridge = MakeMBC0()
+	case gameboy.MBCNone:
+		m.catridge = mbc.MakeMBC0()
+	case gameboy.MBC1:
+		m.catridge = mbc.MakeMBC1()
 	}
 
 	m.catridge.LoadRom(data)

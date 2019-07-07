@@ -1,7 +1,8 @@
-package cpu
+package mbc
 
 import (
 	"bytes"
+	"github.com/racerxdl/goboy/gameboy"
 	"math/rand"
 )
 
@@ -50,16 +51,16 @@ func (m *MBC0) RomName() string {
 	return string(o)
 }
 
-func (m *MBC0) CatridgeRamSize() RamSize {
-	return RamSize(m.romData[0x149])
+func (m *MBC0) CatridgeRamSize() gameboy.RamSize {
+	return gameboy.RamSize(m.romData[0x149])
 }
 
-func (m *MBC0) RomSize() RomSize {
-	return RomSize(m.romData[0x148])
+func (m *MBC0) RomSize() gameboy.RomSize {
+	return gameboy.RomSize(m.romData[0x148])
 }
 
-func (m *MBC0) MBCType() MBCType {
-	return MBCNone
+func (m *MBC0) MBCType() gameboy.MBCType {
+	return gameboy.MBCNone
 }
 
 func (m *MBC0) Read(addr uint16) uint8 {

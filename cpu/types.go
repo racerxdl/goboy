@@ -1,5 +1,7 @@
 package cpu
 
+import "github.com/racerxdl/goboy/gameboy"
+
 type GBInstruction func(*Core)
 
 type MemoryInterface interface {
@@ -10,9 +12,9 @@ type MemoryInterface interface {
 type Catridge interface {
 	LoadRom([]byte)
 	RomName() string
-	CatridgeRamSize() RamSize
-	RomSize() RomSize
-	MBCType() MBCType
+	CatridgeRamSize() gameboy.RamSize
+	RomSize() gameboy.RomSize
+	MBCType() gameboy.MBCType
 
 	// Memory Interface
 	Write(addr uint16, val uint8)

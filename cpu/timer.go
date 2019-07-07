@@ -1,5 +1,7 @@
 package cpu
 
+import "github.com/racerxdl/goboy/gameboy"
+
 type Timer struct {
 	mainTime, subTime, divTime int
 	divReg, tacReg             uint8
@@ -34,14 +36,14 @@ func (t *Timer) Cycle() {
 
 	if t.timaReg > 0xFF {
 		t.timaReg = t.tmaReg
-		t.cpu.Registers.TriggerInterrupts |= IntTimer
+		t.cpu.Registers.TriggerInterrupts |= gameboy.IntTimer
 	}
 
 	t.timaReg &= 0xFF
 }
 
-func (t *Timer) Increment() {
-	t.subTime += t.cpu.Registers.LastClockM
+func (t *Timer) Increment(clockM int) {
+	t.subTime += clockM
 
 	if t.subTime >= 4 {
 		t.mainTime++
