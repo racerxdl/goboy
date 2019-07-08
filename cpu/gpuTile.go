@@ -10,7 +10,7 @@ func makeGPUTile() gpuTile {
 	}
 
 	for i := 0; i < 8; i++ {
-		t.TileData[i] = make([]byte, 8)
+		t.TileData[i] = make([]byte, 16)
 	}
 
 	return t

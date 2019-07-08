@@ -410,7 +410,10 @@ func (g *GPU) UpdateOAM(addr uint16, val uint8) {
 func (g *GPU) sortOAM() {
 	copy(g.prioObjs, g.objs)
 	sort.SliceStable(g.prioObjs, func(i, j int) bool {
-		return g.prioObjs[i].X < g.prioObjs[j].X || g.prioObjs[i].Pos < g.prioObjs[j].Pos
+		if g.prioObjs[j].Prio && !g.prioObjs[i].Prio {
+			return true
+		}
+		return g.prioObjs[i].X > g.prioObjs[j].X
 	})
 
 }
@@ -555,7 +558,7 @@ func (g *GPU) renderScanline() {
 
 			wY := (int(g.line) - g.winY) % 8
 			wX := g.winX % 8
-			wTileOffset := (g.winX / 8) // % 32
+			wTileOffset := (g.winX / 8) % 32
 			// endregion
 
 			x := wX
@@ -616,14 +619,24 @@ func (g *GPU) renderScanline() {
 				if obj.Y < 0 || obj.Y >= 160 {
 					continue
 				}
+				spriteHeight := 7
 
-				if obj.Y <= iline && (obj.Y+8) > iline {
+				if g.objSize {
+					spriteHeight = 15
+				}
+
+				if obj.Y <= iline && (obj.Y+spriteHeight) >= iline {
 					var tileRow []byte
 					tileData := g.tileSet[obj.Tile]
 					yp := iline - obj.Y
 
 					if obj.YFlip {
-						yp = 7 - (iline - obj.Y)
+						yp = spriteHeight - (iline - obj.Y)
+					}
+
+					if yp > 7 {
+						tileData = g.tileSet[obj.Tile+1]
+						yp -= 8
 					}
 
 					tileRow = tileData.TileData[yp]
@@ -646,7 +659,7 @@ func (g *GPU) renderScanline() {
 						if cp != 0x00 &&
 							obj.X+x >= 0 &&
 							obj.X+x < 160 &&
-							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0]) {
+							(!obj.Prio || g.currentRow[x] == 0x00) {
 							g.lcdBuffer.Pix[bufferOffset] = c
 						}
 						bufferOffset++
