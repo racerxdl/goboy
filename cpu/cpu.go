@@ -21,6 +21,7 @@ type Core struct {
 	GPU       *GPU
 	Timer     *Timer
 	Keys      *GBKeys
+	SoundCard *SoundCard
 
 	running        bool
 	paused         bool
@@ -57,6 +58,7 @@ func MakeCore() *Core {
 	c.GPU = MakeGPU(c)
 	c.Timer = MakeTimer(c)
 	c.Keys = MakeGBKeys(c)
+	c.SoundCard = MakeSoundCard(c)
 	c.Reset()
 	return c
 }
@@ -243,7 +245,7 @@ func (c *Core) cycle() {
 		c.GPU.Cycle()
 
 		// Timer Flow
-		c.Timer.Increment(totalClockM)
+		c.Timer.Increment(totalClockT)
 	}
 
 	c.l.Unlock()

@@ -66,7 +66,7 @@ func (m *MBC3) LoadRom(data []byte) {
 		n++
 	}
 
-	mbc1log.Debug("Loaded %d banks", n)
+	mbc3log.Debug("Loaded %d banks", n)
 }
 
 func (m *MBC3) RomName() string {
@@ -145,7 +145,7 @@ func (m *MBC3) LoadRam(data []byte) {
 		n++
 	}
 
-	mbc1log.Debug("Loaded %d ram banks", n)
+	mbc3log.Debug("Loaded %d ram banks", n)
 }
 
 func (m *MBC3) DumpRam() []byte {

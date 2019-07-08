@@ -141,9 +141,14 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 
 		switch baseAddr & 0x00F0 {
 		case 0x00:
-		case 0x10, 0x20, 0x30:
+		case 0x10, 0x20:
+			m.cpu.SoundCard.Write(addr, val)
+		case 0x30:
 			// TODO
-		case 0x40, 0x50, 0x60, 0x70:
+		case 0x50:
+			cpuLog.Info("Disabling Internal BIOS")
+			m.inBIOS = false
+		case 0x40, 0x60, 0x70:
 			m.cpu.GPU.Write(addr, val)
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:
@@ -171,11 +176,6 @@ func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 		if m.inBIOS {
 			if addr < 0x100 {
 				return gbBios[addr]
-			}
-
-			if addr == 0x100 && !noSideEffects {
-				memLog.Debug("Jumping out from BIOS")
-				m.inBIOS = false
 			}
 		}
 		return m.catridge.Read(addr)
@@ -205,7 +205,9 @@ func (m *Memory) readByte(addr uint16, noSideEffects bool) byte {
 		switch addr & 0x00F0 {
 		case 0x00:
 			return 0x00
-		case 0x10, 0x20, 0x30:
+		case 0x10, 0x20:
+			return m.cpu.SoundCard.Read(addr)
+		case 0x30:
 			return 0x00
 		case 0x40, 0x50, 0x60, 0x70:
 			return m.cpu.GPU.Read(addr)

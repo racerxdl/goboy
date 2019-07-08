@@ -34,6 +34,7 @@ type GPU struct {
 	bgBuffer                     *pixel.PictureData
 	winBuffer                    *pixel.PictureData
 	lcdBuffer                    *pixel.PictureData
+	syncLcdBuffer                *pixel.PictureData
 	vram                         []byte
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
@@ -45,7 +46,7 @@ type GPU struct {
 }
 
 func (g *GPU) GetLCDBuffer() *pixel.PictureData {
-	return g.lcdBuffer
+	return g.syncLcdBuffer
 }
 
 func (g *GPU) GetBGRam() *pixel.PictureData {
@@ -124,7 +125,9 @@ func (g *GPU) Reset() {
 
 	img := image.NewRGBA(image.Rect(0, 0, 160, 144))
 	g.lcdBuffer = pixel.PictureDataFromImage(img)
+	g.syncLcdBuffer = pixel.PictureDataFromImage(img)
 	pixhelp.ClearPictureData(g.lcdBuffer, color.White)
+	pixhelp.ClearPictureData(g.syncLcdBuffer, color.White)
 
 	g.tileSet = make([]gpuTile, 512)
 	for i := 0; i < 512; i++ {
@@ -612,11 +615,11 @@ func (g *GPU) renderScanline() {
 					break
 				}
 
-				if obj.X < 0 || obj.X >= 168 {
+				if obj.X+8 < 0 || obj.X-8 >= 168 {
 					continue
 				}
 
-				if obj.Y < 0 || obj.Y >= 160 {
+				if obj.Y+8 < 0 || obj.Y-8 >= 160 {
 					continue
 				}
 				spriteHeight := 7
@@ -764,6 +767,7 @@ func (g *GPU) Cycle() {
 				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
 			}
 			if g.line > 153 {
+				copy(g.syncLcdBuffer.Pix, g.lcdBuffer.Pix)
 				g.mode = gameboy.OamRead
 				g.line = 0
 				if g.OamMode() && g.cpu.Registers.InterruptEnable {

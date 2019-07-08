@@ -65,7 +65,7 @@ func (m *MBC5) LoadRom(data []byte) {
 		n++
 	}
 
-	mbc1log.Debug("Loaded %d banks", n)
+	mbc5log.Debug("Loaded %d banks", n)
 }
 
 func (m *MBC5) RomName() string {
@@ -110,17 +110,17 @@ func (m *MBC5) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
 		m.ramEnabled = val&0xF == 0xA
-		mbc5log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		//mbc5log.Debug("Changed Ram Enable to %v", m.ramEnabled)
 	case addr >= 0x2000 && addr < 0x3000: // ROM Bank Low Bits
 		m.activeRomBank = int(val)
-		mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
+		//mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x3000 && addr < 0x4000: // ROM Bank High Bits
 		m.activeRomBank &= 0xFF
 		m.activeRomBank |= int(val&1) << 8
-		mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
+		//mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
 		m.activeRamBank = int(val & 0x3)
-		mbc5log.Debug("Changed Ram Bank to %d", m.activeRamBank)
+		//mbc5log.Debug("Changed Ram Bank to %d", m.activeRamBank)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {
 			m.ramBanks[m.activeRamBank][addr-0xA000] = val
@@ -139,7 +139,7 @@ func (m *MBC5) LoadRam(data []byte) {
 		n++
 	}
 
-	mbc1log.Debug("Loaded %d ram banks", n)
+	mbc5log.Debug("Loaded %d ram banks", n)
 }
 
 func (m *MBC5) DumpRam() []byte {

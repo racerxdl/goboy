@@ -147,6 +147,9 @@ func (m *MBC1) LoadRam(data []byte) {
 		copy(m.ramBanks[n][:], data)
 		data = data[0x2000:]
 		n++
+		if n >= len(m.ramBanks) {
+			break
+		}
 	}
 
 	mbc1log.Debug("Loaded %d ram banks", n)
