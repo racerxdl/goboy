@@ -410,7 +410,7 @@ func (g *GPU) UpdateOAM(addr uint16, val uint8) {
 func (g *GPU) sortOAM() {
 	copy(g.prioObjs, g.objs)
 	sort.SliceStable(g.prioObjs, func(i, j int) bool {
-		return g.prioObjs[i].X < g.prioObjs[j].X || g.prioObjs[i].Pos > g.prioObjs[j].Pos
+		return g.prioObjs[i].X < g.prioObjs[j].X || g.prioObjs[i].Pos < g.prioObjs[j].Pos
 	})
 
 }
@@ -555,7 +555,7 @@ func (g *GPU) renderScanline() {
 
 			wY := (int(g.line) - g.winY) % 8
 			wX := g.winX % 8
-			wTileOffset := (g.winX / 8) % 32
+			wTileOffset := (g.winX / 8) // % 32
 			// endregion
 
 			x := wX
@@ -574,7 +574,7 @@ func (g *GPU) renderScanline() {
 
 				for i := 0; i < 160; i++ {
 					c := g.bgPallete[0]
-					g.currentRow[i] = tileRow[0]
+					//g.currentRow[i] = tileRow[0]
 					if x >= 0 {
 						c = g.bgPallete[tileRow[x]]
 						g.currentRow[i] = tileRow[x]
@@ -646,7 +646,7 @@ func (g *GPU) renderScanline() {
 						if cp != 0x00 &&
 							obj.X+x >= 0 &&
 							obj.X+x < 160 &&
-							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == pallete[0]) {
+							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0]) {
 							g.lcdBuffer.Pix[bufferOffset] = c
 						}
 						bufferOffset++
