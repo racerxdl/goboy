@@ -84,3 +84,12 @@ func (m *MBC0) Write(addr uint16, val uint8) {
 		m.ramData[addr-0xA000] = val
 	}
 }
+
+func (m *MBC0) LoadRam(data []byte) {
+	copy(m.ramData[:], data)
+	mbc1log.Debug("Loaded 1 ram banks")
+}
+
+func (m *MBC0) DumpRam() []byte {
+	return m.ramData
+}

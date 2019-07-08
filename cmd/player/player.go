@@ -42,7 +42,7 @@ var debugTemplate = template.Must(template.New("debugger").Parse(`
 |  F   |    {{.F}} | -------- {{.FB}}  |
 \-----------------------------------/
 
-{{.HALTED}}
+       Halted: {{.HALTED}}
 
                GPU DATA
       /-----------------------\
@@ -64,6 +64,17 @@ func MoveAndScaleTo(p pixel.Picture, x, y, s float64) pixel.Matrix {
 		Moved(pixel.V(p.Bounds().W()/2+x/s, p.Bounds().H()/2+y/s)).
 		Scaled(pixel.V(0, 0), s).
 		Chained(screenOrigin)
+}
+
+func OverObject(v pixel.Vec, p pixel.Picture, matrix pixel.Matrix) bool {
+	b := p.Bounds().Size() // matrix.Unproject(p.Bounds().Size())
+	w := b.X
+	h := b.Y
+	v = matrix.Unproject(v)
+	v.X += w / 2
+	v.Y += h / 2
+
+	return v.X > 0 && v.X < w && v.Y > 0 && v.Y < h
 }
 
 const maxDisasmLines = 32
@@ -176,14 +187,16 @@ func run() {
 	//game, err := ioutil.ReadFile("./opus5.gb")
 	//game, err := ioutil.ReadFile("./tetris.gb")
 	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
-	//game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
-	game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
+	game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
 	if err != nil {
 		panic(err)
 	}
 
 	z80.Memory.LoadRom(game)
+	z80.Memory.SetSaveFile(fmt.Sprintf("%s.sav", z80.Memory.RomName()))
+	z80.Memory.LoadCatridgeRAMData()
 
 	cfg := pixelgl.WindowConfig{
 		Title:  "GameBoy Emulator",
@@ -232,12 +245,29 @@ func run() {
 	RefreshDisasm()
 
 	win.SetTitle(fmt.Sprintf("GameBoy Emulator - %s", z80.Memory.RomName()))
+	win.SetSmooth(false)
+
+	hh := true
 
 	for !win.Closed() {
 		vframe := z80.Memory.GetVideoFrame()
-		vram := z80.GPU.GetVRAM()
+		vram := z80.GPU.GetBGRam()
+		if !hh {
+			vram = z80.GPU.GetWinRam()
+		}
 		tilebuff := z80.GPU.GetTileBuffer()
 
+		mp := win.MousePosition()
+
+		if OverObject(mp, vram, MoveAndScaleTo(vram, 10, 350, 1.25)) {
+			// Highlight Tile
+			n := MoveAndScaleTo(vram, 10, 350, 1.25).Unproject(mp)
+			n.X += vram.Bounds().Size().X / 2
+			n.Y += vram.Bounds().Size().Y / 2
+			z80.GPU.SetHighlightTile(n.X, n.Y)
+		} else {
+			z80.GPU.SetHighlightTile(-1, -1)
+		}
 		win.Clear(colornames.Skyblue)
 
 		// region LCD
@@ -278,6 +308,11 @@ func run() {
 
 		if win.JustPressed(pixelgl.KeyP) {
 			z80.Pause()
+		}
+
+		if win.JustPressed(pixelgl.KeyU) {
+			hh = !hh
+			z80.GPU.SetHighlightBG(hh)
 		}
 
 		// region SpeedHack

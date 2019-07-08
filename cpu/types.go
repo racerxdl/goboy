@@ -23,4 +23,6 @@ type Catridge interface {
 	// Tools
 	Reset()
 	Randomize()
+	DumpRam() []byte
+	LoadRam([]byte)
 }

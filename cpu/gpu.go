@@ -31,17 +31,28 @@ type GPU struct {
 	tileBuffer                   *pixel.PictureData
 	registers                    []byte
 	tileSet                      []gpuTile
-	vramBuffer                   *pixel.PictureData
+	bgBuffer                     *pixel.PictureData
+	winBuffer                    *pixel.PictureData
+	lcdBuffer                    *pixel.PictureData
 	vram                         []byte
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
 	bgPallete                    [4]color.RGBA
 	obj0Pallete                  [4]color.RGBA
 	obj1Pallete                  [4]color.RGBA
+	highLightedXY                pixel.Vec
+	highLightBG                  bool
 }
 
-func (g *GPU) GetVRAM() *pixel.PictureData {
-	return g.vramBuffer
+func (g *GPU) GetLCDBuffer() *pixel.PictureData {
+	return g.lcdBuffer
+}
+
+func (g *GPU) GetBGRam() *pixel.PictureData {
+	return g.bgBuffer
+}
+func (g *GPU) GetWinRam() *pixel.PictureData {
+	return g.winBuffer
 }
 
 func (g *GPU) GetTileBuffer() *pixel.PictureData {
@@ -64,10 +75,21 @@ func (g *GPU) HBlankMode() bool {
 	return (g.lcdStat & gameboy.FlagHblankMode) > 0
 }
 
+func (g *GPU) SetHighlightTile(x, y float64) {
+	g.highLightedXY = pixel.V(x, y)
+	g.refreshTileData(-1)
+}
+
+func (g *GPU) SetHighlightBG(highLightBG bool) {
+	g.highLightBG = highLightBG
+}
+
 func MakeGPU(cpu *Core) *GPU {
 	gpu := &GPU{
-		cpu:        cpu,
-		tileBuffer: pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
+		cpu:           cpu,
+		tileBuffer:    pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
+		highLightedXY: pixel.V(-1, -1),
+		highLightBG:   true,
 	}
 
 	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
@@ -99,6 +121,11 @@ func (g *GPU) Reset() {
 	g.winY = 0
 	g.line = 0
 	g.mode = gameboy.OamRead
+
+	img := image.NewRGBA(image.Rect(0, 0, 160, 144))
+	g.lcdBuffer = pixel.PictureDataFromImage(img)
+	pixhelp.ClearPictureData(g.lcdBuffer, color.White)
+
 	g.tileSet = make([]gpuTile, 512)
 	for i := 0; i < 512; i++ {
 		g.tileSet[i] = makeGPUTile()
@@ -108,9 +135,11 @@ func (g *GPU) Reset() {
 		g.vram[i] = 0x00
 	}
 
-	g.vramBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
-	pixhelp.ClearPictureData(g.vramBuffer, color.Black)
-	g.oam = make([]byte, 160)
+	g.bgBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
+	pixhelp.ClearPictureData(g.bgBuffer, color.Black)
+	g.winBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
+	pixhelp.ClearPictureData(g.winBuffer, color.Black)
+	g.oam = make([]byte, 256)
 
 	g.switchLCD = true
 	g.switchBg = false
@@ -282,11 +311,14 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		g.scrollY = int(val)
 	case 0xFF43:
 		g.scrollX = int(val)
+	case 0xFF44:
+		g.line = 0 // Reset Line
 	case 0xFF45:
 		g.lineCompare = val
 	case 0xFF46:
+		u := uint16(val) << 8
 		for i := 0; i < 160; i++ { // DMA
-			v := g.cpu.Memory.ReadByte((uint16(val) << 8) + uint16(i))
+			v := g.cpu.Memory.ReadByte(u + uint16(i))
 			g.oam[i] = v
 			g.updateOAM(uint16(0xFE00+i), v)
 		}
@@ -312,7 +344,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			var b = (uint(val) >> (i * 2)) & 3
 			switch b {
 			case 0:
-				g.obj0Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
+				g.obj0Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
 			case 1:
 				g.obj0Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
 			case 2:
@@ -326,7 +358,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			var b = (uint(val) >> (i * 2)) & 3
 			switch b {
 			case 0:
-				g.obj1Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
+				g.obj1Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
 			case 1:
 				g.obj1Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
 			case 2:
@@ -348,9 +380,9 @@ func (g *GPU) updateOAM(addr uint16, val uint8) {
 	if obj < 40 {
 		switch relAddr & 3 {
 		case 0:
-			g.objs[obj].Y = int(val - 16)
+			g.objs[obj].Y = int(val) - 16
 		case 1:
-			g.objs[obj].X = int(val - 8)
+			g.objs[obj].X = int(val) - 8
 		case 2:
 			if g.objSize {
 				g.objs[obj].Tile = val & 0xFE
@@ -378,18 +410,7 @@ func (g *GPU) UpdateOAM(addr uint16, val uint8) {
 func (g *GPU) sortOAM() {
 	copy(g.prioObjs, g.objs)
 	sort.SliceStable(g.prioObjs, func(i, j int) bool {
-		a := g.prioObjs[i]
-		b := g.prioObjs[j]
-
-		if a.X < b.X {
-			return true
-		}
-
-		if a.Pos < b.Pos {
-			return true
-		}
-
-		return false
+		return g.prioObjs[i].X < g.prioObjs[j].X || g.prioObjs[i].Pos > g.prioObjs[j].Pos
 	})
 
 }
@@ -401,14 +422,54 @@ func (g *GPU) refreshTileData(tileNum int) {
 			// 16 x 32 tiles with 1px spacing
 			// 16 * 9 x 32 * 9
 			// 144 x 288 Buffer
+
 			for y := 0; y < 8; y++ {
 				for x := 0; x < 8; x++ {
 					px := (i%16)*9 + x
 					py := (i/16)*9 + y
 					p := py*g.tileBuffer.Stride + px
-
 					g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
 				}
+			}
+		}
+		for i := 0; i < len(g.tileBuffer.Pix); i++ {
+			var x = i % g.tileBuffer.Stride
+			var y = i / g.tileBuffer.Stride
+			if (x%9 == 8) || (y%9 == 8) {
+				g.tileBuffer.Pix[i] = pixhelp.ToRGBA(color.Transparent)
+			}
+		}
+		// Refresh HighLight
+		if g.highLightedXY.X > 0 && g.highLightedXY.Y > 0 {
+			// Draw Highlight
+			px := int(g.highLightedXY.X)
+			py := int(g.highLightedXY.Y)
+			z := (px / 8) + ((py / 8) * 32)
+			b := int(g.bgMapBase)
+			if !g.highLightBG {
+				b = int(g.winMapBase)
+			}
+			v := int(g.Read(uint16(VRamBase + b + z)))
+
+			if g.bgTileBase != 0x0000 && v < 128 {
+				v += 256
+			}
+
+			px = (v % 16) * 9
+			py = (v / 16) * 9
+
+			for y := 0; y < 8; y++ {
+				p := (py+y)*g.tileBuffer.Stride + px
+				g.tileBuffer.Pix[p] = color.RGBA{R: 255, A: 255}
+				p = (py+y)*g.tileBuffer.Stride + px + 8
+				g.tileBuffer.Pix[p] = color.RGBA{R: 255, A: 255}
+			}
+
+			for x := 0; x < 8; x++ {
+				p := (py)*g.tileBuffer.Stride + px + x
+				g.tileBuffer.Pix[p] = color.RGBA{R: 255, A: 255}
+				p = (py+8)*g.tileBuffer.Stride + px + x
+				g.tileBuffer.Pix[p] = color.RGBA{R: 255, A: 255}
 			}
 		}
 	} else {
@@ -434,9 +495,8 @@ func (g *GPU) refreshTileData(tileNum int) {
 func (g *GPU) renderScanline() {
 	if g.switchLCD {
 		// region Background Draw
-		vFrame := g.cpu.Memory.GetVideoFrame()
-		if g.switchBg || g.switchWin {
-			bufferOffset := int(g.line) * vFrame.Stride
+		if g.switchBg {
+			bufferOffset := int(g.line) * g.lcdBuffer.Stride
 
 			// region Background Offset Compute
 			bgVramOffset := VRamBase
@@ -447,32 +507,11 @@ func (g *GPU) renderScanline() {
 			bgX := g.scrollX % 8
 			bgTileOffset := (g.scrollX / 8) % 32
 			// endregion
-			// region Window Offset Compute
-			winVramOffset := VRamBase
-			winVramOffset += int(g.winMapBase)
-			winVramOffset += (((int(g.line) + g.winY) & 0xFF) / 8) * 32
 
-			wY := (int(g.line) + g.winY) % 8
-			wX := g.winX % 8
-			wTileOffset := (g.winX / 8) % 32
-			// endregion
-
-			x := 0
-			y := 0
-			tileOffset := 0
-			vramOffset := 0
-
-			if g.switchWin {
-				x = wX
-				y = wY
-				tileOffset = wTileOffset
-				vramOffset = winVramOffset
-			} else {
-				x = bgX
-				y = bgY
-				tileOffset = bgTileOffset
-				vramOffset = bgVramOffset
-			}
+			x := bgX
+			y := bgY
+			tileOffset := bgTileOffset
+			vramOffset := bgVramOffset
 
 			tile := int(g.cpu.Memory.ReadByte(uint16(vramOffset + tileOffset)))
 
@@ -483,9 +522,11 @@ func (g *GPU) renderScanline() {
 			tileRow := g.tileSet[tile].TileData[y]
 
 			for i := 0; i < 160; i++ {
-				c := g.bgPallete[tileRow[x]]
-				g.currentRow[i] = tileRow[x]
-				vFrame.Pix[bufferOffset] = c
+				if x >= 0 {
+					c := g.bgPallete[tileRow[x]]
+					g.currentRow[i] = tileRow[x]
+					g.lcdBuffer.Pix[bufferOffset] = c
+				}
 				bufferOffset++
 				x++
 				if x != 8 {
@@ -494,12 +535,66 @@ func (g *GPU) renderScanline() {
 
 				x = 0
 				tileOffset = (tileOffset + 1) % 32
-				tile := int(g.cpu.Memory.ReadByte(uint16(vramOffset + tileOffset)))
+				tile := int(g.Read(uint16(vramOffset + tileOffset)))
 				if g.bgTileBase != 0x0000 && tile < 128 {
 					tile += 256
 				}
 
 				tileRow = g.tileSet[tile].TileData[y]
+			}
+		}
+		// endregion
+		// region Window Draw
+		if g.switchWin {
+			bufferOffset := int(g.line) * g.lcdBuffer.Stride
+
+			// region Window Offset Compute
+			winVramOffset := VRamBase
+			winVramOffset += int(g.winMapBase)
+			winVramOffset += (((int(g.line) - g.winY) & 0xFF) / 8) * 32
+
+			wY := (int(g.line) - g.winY) % 8
+			wX := g.winX % 8
+			wTileOffset := (g.winX / 8) % 32
+			// endregion
+
+			x := wX
+			y := wY
+			tileOffset := wTileOffset
+			vramOffset := winVramOffset
+
+			tile := int(g.cpu.Memory.ReadByte(uint16(vramOffset + tileOffset)))
+
+			if g.bgTileBase != 0x0000 && tile < 128 {
+				tile += 256
+			}
+
+			if int(g.line)-g.winY >= 0 {
+				tileRow := g.tileSet[tile].TileData[y]
+
+				for i := 0; i < 160; i++ {
+					c := g.bgPallete[0]
+					g.currentRow[i] = tileRow[0]
+					if x >= 0 {
+						c = g.bgPallete[tileRow[x]]
+						g.currentRow[i] = tileRow[x]
+					}
+					g.lcdBuffer.Pix[bufferOffset] = c
+					bufferOffset++
+					x++
+					if x != 8 {
+						continue
+					}
+
+					x = 0
+					tileOffset = (tileOffset + 1) % 32
+					tile := int(g.Read(uint16(vramOffset + tileOffset)))
+					if g.bgTileBase != 0x0000 && tile < 128 {
+						tile += 256
+					}
+
+					tileRow = g.tileSet[tile].TileData[y]
+				}
 			}
 		}
 		// endregion
@@ -525,30 +620,34 @@ func (g *GPU) renderScanline() {
 				if obj.Y <= iline && (obj.Y+8) > iline {
 					var tileRow []byte
 					tileData := g.tileSet[obj.Tile]
+					yp := iline - obj.Y
 
-					if !obj.YFlip {
-						tileRow = tileData.TileData[iline-obj.Y]
-					} else {
-						tileRow = tileData.TileData[7-(iline-obj.Y)]
+					if obj.YFlip {
+						yp = 7 - (iline - obj.Y)
 					}
 
+					tileRow = tileData.TileData[yp]
 					pallete := g.obj0Pallete
 
 					if obj.Palette != 0 {
 						pallete = g.obj1Pallete
 					}
 
-					bufferOffset := (iline * vFrame.Stride) + obj.X
+					bufferOffset := (iline * g.lcdBuffer.Stride) + obj.X
 					var c color.RGBA
 					for x := 0; x < 8; x++ {
-						if !obj.XFlip {
-							c = pallete[tileRow[x]]
-						} else {
-							c = pallete[tileRow[7-x]]
+						cp := tileRow[x]
+						if obj.XFlip {
+							cp = tileRow[7-x]
 						}
 
-						if tileRow[x] != 0x00 && obj.X+x >= 0 && obj.X+x < 160 && (!obj.Prio || vFrame.Pix[bufferOffset] == pallete[0]) {
-							vFrame.Pix[bufferOffset] = c
+						c = pallete[cp]
+
+						if cp != 0x00 &&
+							obj.X+x >= 0 &&
+							obj.X+x < 160 &&
+							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == pallete[0]) {
+							g.lcdBuffer.Pix[bufferOffset] = c
 						}
 						bufferOffset++
 					}
@@ -561,15 +660,30 @@ func (g *GPU) renderScanline() {
 }
 
 func (g *GPU) UpdateVRAM() {
-	for i := range g.vramBuffer.Pix {
+	for i := range g.bgBuffer.Pix {
 		py := i / 256
 		px := i % 256
+
+		// Background
 		tileNum := (px / 8) + ((py / 8) * 32)
-		v := g.cpu.Memory.ReadByte(uint16(VRamBase + int(g.bgMapBase) + tileNum))
+		v := int(g.Read(uint16(VRamBase + int(g.bgMapBase) + tileNum)))
+		if g.bgTileBase != 0x0000 && v < 128 {
+			v += 256
+		}
 		tile := g.tileSet[v]
 		x := px % 8
 		y := py % 8
-		g.vramBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
+		g.bgBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
+
+		// Window
+		v = int(g.Read(uint16(VRamBase + int(g.winMapBase) + tileNum)))
+		if g.bgTileBase != 0x0000 && v < 128 {
+			v += 256
+		}
+		tile = g.tileSet[v]
+		x = px % 8
+		y = py % 8
+		g.winBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
 	}
 }
 
@@ -583,8 +697,8 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 	tile := (relAddr >> 4) & 511
 	y := (relAddr >> 1) & 7
 
-	b0 := g.cpu.Memory.ReadByte(addr)
-	b1 := g.cpu.Memory.ReadByte(addr + 1)
+	b0 := g.Read(addr)
+	b1 := g.Read(addr + 1)
 
 	for x := 0; x < 8; x++ {
 		sx := uint8(1 << (7 - uint(x)))

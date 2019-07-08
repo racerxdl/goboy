@@ -163,7 +163,7 @@ func (c *Core) GetDebugData() DebugData {
 		GPUSCROLLX:    fmt.Sprintf("%4d", c.GPU.scrollX),
 		GPUSCROLLY:    fmt.Sprintf("%4d", c.GPU.scrollY),
 		GPUWINX:       fmt.Sprintf("%4d", c.GPU.winX),
-		GPUWINY:       fmt.Sprintf("%4d", c.GPU.winX),
+		GPUWINY:       fmt.Sprintf("%4d", c.GPU.winY),
 		GPUMODECLOCKS: fmt.Sprintf("%4d", c.GPU.modeClocks),
 		GPULINE:       fmt.Sprintf("%4d", c.GPU.line),
 
@@ -176,7 +176,6 @@ func (c *Core) IsPaused() bool {
 }
 
 func (c *Core) cycle() {
-	x := time.Now()
 	c.l.Lock()
 	// Normal Cycle
 	c.Registers.CycleCount++
@@ -249,8 +248,9 @@ func (c *Core) cycle() {
 
 	c.l.Unlock()
 
-	cycleDuration := time.Duration(int64(totalClockM)) * time.Duration(float64(Period)/c.speedMul)
+	cycleDuration := 2 * time.Duration(int64(totalClockM)) * time.Duration(float64(Period)/c.speedMul)
 
+	x := time.Now()
 	// Sleep is not precise enough, so we will do a busy loop
 	for time.Since(x) < cycleDuration {
 		runtime.Gosched()

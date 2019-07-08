@@ -5,10 +5,10 @@ import (
 	"github.com/quan-to/slog"
 	"github.com/racerxdl/goboy/cpu/mbc"
 	"github.com/racerxdl/goboy/gameboy"
-	"github.com/racerxdl/goboy/pixhelp"
-	"image"
-	"image/color"
+	"io/ioutil"
 	"math/rand"
+	"os"
+	"time"
 )
 
 var memLog = slog.Scope("Memory")
@@ -33,10 +33,11 @@ var gbBios = []byte{
 }
 
 type Memory struct {
-	workRam     []byte
-	highRam     []byte
-	videoBuffer *pixel.PictureData
-	catridge    Catridge
+	workRam      []byte
+	highRam      []byte
+	catridge     Catridge
+	saveFilename string
+	lastRamSave  time.Time
 
 	inBIOS bool
 	cpu    *Core
@@ -44,10 +45,11 @@ type Memory struct {
 
 func MakeMemory(cpu *Core) *Memory {
 	m := &Memory{
-		workRam:  make([]byte, 0x2000),
-		highRam:  make([]byte, 0x7F),
-		cpu:      cpu,
-		catridge: mbc.MakeMBC0(), // Load Default Catridge
+		workRam:     make([]byte, 0x2000),
+		highRam:     make([]byte, 0x7F),
+		cpu:         cpu,
+		catridge:    mbc.MakeMBC0(), // Load Default Catridge
+		lastRamSave: time.Now().Add(-time.Second * 3600),
 	}
 
 	m.Reset()
@@ -55,11 +57,28 @@ func MakeMemory(cpu *Core) *Memory {
 	return m
 }
 
-func (m *Memory) Reset() {
-	img := image.NewRGBA(image.Rect(0, 0, 160, 144))
-	m.videoBuffer = pixel.PictureDataFromImage(img)
-	pixhelp.ClearPictureData(m.videoBuffer, color.Black)
+func (m *Memory) SetSaveFile(filename string) {
+	m.saveFilename = filename
+}
 
+func (m *Memory) SaveCatridgeRAMData() {
+	if time.Since(m.lastRamSave) > time.Second*5 {
+		_ = ioutil.WriteFile(m.saveFilename, m.catridge.DumpRam(), os.ModePerm)
+		m.lastRamSave = time.Now()
+	}
+}
+
+func (m *Memory) LoadCatridgeRAMData() {
+	d, err := ioutil.ReadFile(m.saveFilename)
+	if err != nil {
+		memLog.Error("Error loading battery at %s: %s", m.saveFilename, err)
+		return
+	}
+
+	m.catridge.LoadRam(d)
+}
+
+func (m *Memory) Reset() {
 	m.catridge.Reset()
 
 	for i := 0; i < 0x2000; i++ {
@@ -86,11 +105,11 @@ func (m *Memory) Randomize() {
 }
 
 func (m *Memory) GetVideoSprite() *pixel.Sprite {
-	return pixel.NewSprite(m.videoBuffer, m.videoBuffer.Bounds())
+	return pixel.NewSprite(m.cpu.GPU.GetLCDBuffer(), m.cpu.GPU.GetLCDBuffer().Bounds())
 }
 
 func (m *Memory) GetVideoFrame() *pixel.PictureData {
-	return m.videoBuffer
+	return m.cpu.GPU.GetLCDBuffer()
 }
 
 func (m *Memory) WriteByte(addr uint16, val byte) {
@@ -101,6 +120,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		m.cpu.GPU.Write(addr, val)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		m.catridge.Write(addr, val)
+		m.SaveCatridgeRAMData()
 	case addr >= 0xC000 && addr <= 0xEFFF: // Work Ram
 		m.workRam[addr&0x1FFF] = val
 	case addr >= 0xFE00 && addr <= 0xFE9F:

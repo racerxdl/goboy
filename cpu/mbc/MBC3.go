@@ -130,3 +130,30 @@ func (m *MBC3) Write(addr uint16, val uint8) {
 		}
 	}
 }
+
+func (m *MBC3) LoadRam(data []byte) {
+	copy(m.ramBanks[0][:], data) // Copy first rom bank
+	if len(data) < 0x2000 {
+		return
+	}
+	data = data[0x2000:]
+	n := 1
+
+	for len(data) > 0 {
+		copy(m.ramBanks[n][:], data)
+		data = data[0x2000:]
+		n++
+	}
+
+	mbc1log.Debug("Loaded %d ram banks", n)
+}
+
+func (m *MBC3) DumpRam() []byte {
+	c := make([]byte, 0x2000*len(m.ramBanks))
+
+	for i, v := range m.ramBanks {
+		copy(c[0x2000*i:], v[:])
+	}
+
+	return c
+}
