@@ -4,7 +4,7 @@ func BuildFlowControl() string {
 	return `
    
 func gbJPnn(cpu *Core) {
-    cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+    cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
     cpu.Registers.LastClockM = 4
     cpu.Registers.LastClockT = 16
 }
@@ -21,7 +21,7 @@ func gbJPNZnn(cpu *Core) {
         cpu.Registers.LastClockT = 12
         cpu.Registers.PC += 2
     } else {
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
         cpu.Registers.LastClockM = 4
         cpu.Registers.LastClockT = 16
     }
@@ -33,7 +33,7 @@ func gbJPZnn(cpu *Core) {
         cpu.Registers.LastClockT = 12
         cpu.Registers.PC += 2
     } else {
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
         cpu.Registers.LastClockM = 4
         cpu.Registers.LastClockT = 16
     }
@@ -45,7 +45,7 @@ func gbJPNCnn(cpu *Core) {
         cpu.Registers.LastClockT = 12
         cpu.Registers.PC += 2
     } else {
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
         cpu.Registers.LastClockM = 4
         cpu.Registers.LastClockT = 16
     }
@@ -57,14 +57,14 @@ func gbJPCnn(cpu *Core) {
         cpu.Registers.LastClockT = 12
         cpu.Registers.PC += 2
     } else {
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
         cpu.Registers.LastClockM = 4
         cpu.Registers.LastClockT = 16
     }
 }
 
 func gbJRn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     cpu.Registers.PC = uint16(int(cpu.Registers.PC) + v)
@@ -74,7 +74,7 @@ func gbJRn(cpu *Core) {
 }
 
 func gbJRNZn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
 
@@ -91,7 +91,7 @@ func gbJRNZn(cpu *Core) {
 }
 
 func gbJRZn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     if !cpu.Registers.GetZero() {
@@ -107,7 +107,7 @@ func gbJRZn(cpu *Core) {
 }
 
 func gbJRNCn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     if cpu.Registers.GetCarry() {
@@ -123,7 +123,7 @@ func gbJRNCn(cpu *Core) {
 }
 
 func gbJRCn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     if !cpu.Registers.GetCarry() {
@@ -147,7 +147,7 @@ func gbStop(cpu *Core) {
 func gbCALLnn(cpu *Core) {
     cpu.Registers.SP -= 2
     cpu.Memory.WriteWord(cpu.Registers.SP, cpu.Registers.PC + 2)
-    cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+    cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
 
     cpu.Registers.LastClockM = 6
     cpu.Registers.LastClockT = 24
@@ -161,7 +161,7 @@ func gbCALLNZnn(cpu *Core) {
     } else {
         cpu.Registers.SP -= 2
         cpu.Memory.WriteWord(cpu.Registers.SP, cpu.Registers.PC+2)
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
 
         cpu.Registers.LastClockM = 6
         cpu.Registers.LastClockT = 24
@@ -176,7 +176,7 @@ func gbCALLZnn(cpu *Core) {
     } else {
         cpu.Registers.SP -= 2
         cpu.Memory.WriteWord(cpu.Registers.SP, cpu.Registers.PC+2)
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
 
         cpu.Registers.LastClockM = 6
         cpu.Registers.LastClockT = 24
@@ -191,7 +191,7 @@ func gbCALLNCnn(cpu *Core) {
     } else {
         cpu.Registers.SP -= 2
         cpu.Memory.WriteWord(cpu.Registers.SP, cpu.Registers.PC+2)
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
 
         cpu.Registers.LastClockM = 6
         cpu.Registers.LastClockT = 24
@@ -206,7 +206,7 @@ func gbCALLCnn(cpu *Core) {
     } else {
         cpu.Registers.SP -= 2
         cpu.Memory.WriteWord(cpu.Registers.SP, cpu.Registers.PC+2)
-        cpu.Registers.PC = cpu.Memory.ReadWord(cpu.Registers.PC)
+        cpu.Registers.PC = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
 
         cpu.Registers.LastClockM = 6
         cpu.Registers.LastClockT = 24

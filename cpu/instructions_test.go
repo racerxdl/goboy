@@ -2255,33 +2255,43 @@ func TestDAA(t *testing.T) {
 		GBInstructions[0x27](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		var a = int(RegBefore.A)
+		correction := int(0)
+		a := int(RegBefore.A)
+
+		if RegBefore.GetCarry() {
+			correction = 0x60
+		}
+
+		if RegBefore.GetHalfCarry() || (!RegBefore.GetSub() && ((a & 0x0F) > 9)) {
+			correction |= 0x06
+		}
+
+		if RegBefore.GetCarry() || (!RegBefore.GetSub() && (a > 0x99)) {
+			correction |= 0x60
+		}
 
 		if RegBefore.GetSub() {
-			if RegBefore.GetHalfCarry() {
-				a = a - 0x6
-			} else {
-				a -= 0x60
-			}
+			a -= correction
 		} else {
-			if RegBefore.GetHalfCarry() || (a&0xF) > 0x9 {
-				a += 0x06
-			} else {
-				a += 0x60
-			}
+			a += correction
 		}
 
-		var zero = a == 0
-		var carry = ((a & 0x100) == 0x100) || RegBefore.GetCarry()
+		expectedA := uint8(a)
+		expectedZero := expectedA == 0
+		expectedCarry := RegBefore.GetCarry()
 
-		if (carry) != (RegAfter.GetCarry()) {
-			t.Errorf("Expected carry to be %v but got %v", carry, RegAfter.GetCarry())
+		if (correction<<2)&0x100 != 0 {
+			expectedCarry = true
 		}
-		if (zero) != (RegAfter.GetZero()) {
-			t.Errorf("Expected zero to be %v but got %v", zero, RegAfter.GetZero())
+
+		if (expectedCarry) != (RegAfter.GetCarry()) {
+			t.Errorf("Expected carry to be %v but got %v", expectedCarry, RegAfter.GetCarry())
 		}
-		if uint8(a&0xFF) != (RegAfter.A) {
-			t.Errorf("Expected a & 0xFF to be %v but got %v", a&0xFF, RegAfter.A)
+		if (expectedZero) != (RegAfter.GetZero()) {
+			t.Errorf("Expected zero to be %v but got %v", expectedZero, RegAfter.GetZero())
+		}
+		if expectedA != (RegAfter.A) {
+			t.Errorf("Expected a & 0xFF to be %v but got %v", expectedA&0xFF, RegAfter.A)
 		}
 
 		// region Test Cycles
@@ -6461,7 +6471,11 @@ func TestHALT(t *testing.T) {
 		GBInstructions[0x76](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		if !cpu.halted {
+		if !RegBefore.InterruptEnable && cpu.halted {
+			t.Errorf("Expected cpu not to be halted when interrupts are disabled")
+		}
+
+		if !cpu.halted && RegBefore.InterruptEnable {
 			t.Errorf("Expected cpu to be halted")
 		}
 
@@ -10610,6 +10624,10 @@ func TestPOPBC(t *testing.T) {
 		GBInstructions[0xC1](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		if "C" == "F" {
+			valB &= 0xF0
+		}
+
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)
 		}
@@ -11427,6 +11445,10 @@ func TestPOPDE(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xD1](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		if "E" == "F" {
+			valB &= 0xF0
+		}
 
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)
@@ -12258,6 +12280,10 @@ func TestPOPHL(t *testing.T) {
 		GBInstructions[0xE1](cpu)
 		RegAfter := cpu.Registers.Clone()
 
+		if "L" == "F" {
+			valB &= 0xF0
+		}
+
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)
 		}
@@ -13038,6 +13064,10 @@ func TestPOPAF(t *testing.T) {
 		RegBefore := cpu.Registers.Clone()
 		GBInstructions[0xF1](cpu)
 		RegAfter := cpu.Registers.Clone()
+
+		if "F" == "F" {
+			valB &= 0xF0
+		}
 
 		if (RegBefore.SP + 2) != (RegAfter.SP) {
 			t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP+2, RegAfter.SP)

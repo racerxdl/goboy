@@ -21,7 +21,7 @@ type Registers struct {
 
 	InterruptEnable        bool
 	EnabledInterrupts      byte
-	TriggerInterrupts      byte
+	InterruptsFired        byte
 	CycleCount             int
 	LastClockM, LastClockT int
 }
@@ -134,7 +134,7 @@ func (r *Registers) Reset() {
 	r.PC = 0
 	r.SP = 0
 	r.InterruptEnable = true
-	r.TriggerInterrupts = 0
+	r.InterruptsFired = 0
 	r.LastClockM = 0
 	r.LastClockT = 0
 	r.EnabledInterrupts = 0
@@ -228,5 +228,5 @@ func (r *Registers) Randomize() {
 
 	r.InterruptEnable = rand.Float32() > 0.5
 	r.EnabledInterrupts = byte(rand.Int31n(255))
-	r.TriggerInterrupts = byte(rand.Int31n(255))
+	r.InterruptsFired = byte(rand.Int31n(255))
 }

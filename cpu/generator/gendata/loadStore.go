@@ -36,7 +36,7 @@ func gbLDHLmr{{.I}}(cpu *Core) {
 var ldrnTemplate = template.Must(template.New("LDrn").Parse(`
 // gbLDrn{{.O}} Loads a byte from Program Memory into {{.O}}. Increments PC
 func gbLDrn{{.O}}(cpu *Core) {
-    cpu.Registers.{{.O}} = cpu.Memory.ReadByte(cpu.Registers.PC)
+    cpu.Registers.{{.O}} = cpu.Memory.ReadByteForPC(cpu.Registers.PC)
     cpu.Registers.PC++
     cpu.Registers.LastClockM = 2
     cpu.Registers.LastClockT = 8
@@ -56,7 +56,7 @@ func gbLD{{.H}}{{.L}}m{{.I}}(cpu *Core) {
 var ldmmTemplate = template.Must(template.New("LDmm").Parse(`
 // gbLDmm{{.I}} Writes register {{.I}} to memory pointed by PC
 func gbLDmm{{.I}}(cpu *Core) {
-    cpu.Memory.WriteByte(cpu.Memory.ReadWord(cpu.Registers.PC), cpu.Registers.{{.I}})
+    cpu.Memory.WriteByte(cpu.Memory.ReadWordForPC(cpu.Registers.PC), cpu.Registers.{{.I}})
     cpu.Registers.PC += 2
     cpu.Registers.LastClockM = 4
     cpu.Registers.LastClockT = 16
@@ -76,7 +76,7 @@ func gbLD{{.O}}{{.H}}{{.L}}m(cpu *Core) {
 var ldrmmTemplate = template.Must(template.New("LDrmm").Parse(`
 // gbLD{{.O}}mm Writes register {{.O}} to memory pointed by PC
 func gbLD{{.O}}mm(cpu *Core) {
-    addr := cpu.Memory.ReadWord(cpu.Registers.PC)
+    addr := cpu.Memory.ReadWordForPC(cpu.Registers.PC)
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(addr)
     cpu.Registers.PC += 2
     cpu.Registers.LastClockM = 4
@@ -88,9 +88,9 @@ var ldrrnnTemplate = template.Must(template.New("LDrrnn").Parse(`
 // gbLD{{.O1}}{{.O2}}nn Reads [PC] to {{.O2}} and [PC+1] to {{.O1}}
 func gbLD{{.O1}}{{.O2}}nn(cpu *Core) {
 
-    cpu.Registers.{{.O2}} = cpu.Memory.ReadByte(cpu.Registers.PC)
+    cpu.Registers.{{.O2}} = cpu.Memory.ReadByteForPC(cpu.Registers.PC)
     cpu.Registers.PC++
-    cpu.Registers.{{.O1}} = cpu.Memory.ReadByte(cpu.Registers.PC)
+    cpu.Registers.{{.O1}} = cpu.Memory.ReadByteForPC(cpu.Registers.PC)
     cpu.Registers.PC++
 
     cpu.Registers.LastClockM = 3
@@ -114,7 +114,7 @@ func gbLDHLI{{.I}}(cpu *Core) {
 var ldrIOnTemplate = template.Must(template.New("LDRIOn").Parse(`
 // gbLD{{.O}}IOn
 func gbLD{{.O}}IOn(cpu *Core) {
-    addr := cpu.Memory.ReadByte(cpu.Registers.PC)
+    addr := cpu.Memory.ReadByteForPC(cpu.Registers.PC)
     cpu.Registers.PC++
     cpu.Registers.{{.O}} = cpu.Memory.ReadByte(0xFF00 + uint16(addr))
 
@@ -126,7 +126,7 @@ func gbLD{{.O}}IOn(cpu *Core) {
 var ldIOnrTemplate = template.Must(template.New("LDIOnR").Parse(`
 // gbLDIOn{{.O}}
 func gbLDIOn{{.O}}(cpu *Core) {
-    addr := cpu.Memory.ReadByte(cpu.Registers.PC)
+    addr := cpu.Memory.ReadByteForPC(cpu.Registers.PC)
     cpu.Registers.PC++
 	cpu.Memory.WriteByte(0xFF00 + uint16(addr), cpu.Registers.{{.O}})
 
@@ -405,21 +405,21 @@ func BuildLSSingles() string {
 	return `
 // LDHLmn Writes byte from Program Memory into Memory (H/L). Increments Program Counter
 func gbLDHLmn(cpu *Core) {
-    cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Memory.ReadByte(cpu.Registers.PC))
+    cpu.Memory.WriteByte(cpu.Registers.HL(), cpu.Memory.ReadByteForPC(cpu.Registers.PC))
     cpu.Registers.PC++
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
 }
 // LDSPnn Reads word from Program Counter and stores in SP
 func gbLDSPnn(cpu *Core) {
-    cpu.Registers.SP = cpu.Memory.ReadWord(cpu.Registers.PC)
+    cpu.Registers.SP = cpu.Memory.ReadWordForPC(cpu.Registers.PC)
     cpu.Registers.PC += 2
     cpu.Registers.LastClockM = 3
     cpu.Registers.LastClockT = 12
 }
 // LDmmSP
 func gbLDmmSP(cpu *Core) {
-    addr := cpu.Memory.ReadWord(cpu.Registers.PC)
+    addr := cpu.Memory.ReadWordForPC(cpu.Registers.PC)
     cpu.Memory.WriteWord(addr, cpu.Registers.SP)
     cpu.Registers.PC += 2
     cpu.Registers.LastClockM = 5
@@ -441,7 +441,7 @@ func gbLDIOCA(cpu *Core) {
 
 // LDHLSPn
 func gbLDHLSPn(cpu *Core) {
-    v := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
+    v := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     cpu.Registers.SetZero(false)

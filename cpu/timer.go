@@ -36,7 +36,7 @@ func (t *Timer) Cycle() {
 
 	if t.timaReg > 0xFF {
 		t.timaReg = t.tmaReg
-		t.cpu.Registers.TriggerInterrupts |= gameboy.IntTimer
+		t.cpu.Registers.InterruptsFired |= gameboy.IntTimer
 	}
 
 	t.timaReg &= 0xFF

@@ -13,34 +13,44 @@
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 
-                var a = int(RegBefore.A)
+                correction := int(0)
+                a := int(RegBefore.A)
 
-                if RegBefore.GetSub() {
-                    if RegBefore.GetHalfCarry() {
-                        a = a - 0x6
-                    } else {
-                        a -= 0x60
-                    }
-                } else {
-                    if RegBefore.GetHalfCarry() || (a & 0xF) > 0x9 {
-                        a += 0x06
-                    } else {
-                        a += 0x60
-                    }
+                if RegBefore.GetCarry() {
+                    correction = 0x60
                 }
 
-                var zero = a == 0
-                var carry = ((a & 0x100) == 0x100) || RegBefore.GetCarry()
+                if RegBefore.GetHalfCarry() || (!RegBefore.GetSub() && ((a & 0x0F) > 9)) {
+                    correction |= 0x06
+                }
+
+                if RegBefore.GetCarry() || (!RegBefore.GetSub() && (a > 0x99)) {
+                    correction |= 0x60
+                }
+
+                if RegBefore.GetSub() {
+                    a -= correction
+                } else {
+                    a += correction
+                }
+
+                expectedA := uint8(a)
+                expectedZero := expectedA == 0
+                expectedCarry := RegBefore.GetCarry()
+
+                if (correction<<2)&0x100 != 0 {
+                    expectedCarry = true
+                }
 
                 
-                if (carry) != (RegAfter.GetCarry()) {
-                    t.Errorf("Expected carry to be %v but got %v", carry, RegAfter.GetCarry())
+                if (expectedCarry) != (RegAfter.GetCarry()) {
+                    t.Errorf("Expected carry to be %v but got %v", expectedCarry, RegAfter.GetCarry())
                 }                
-                if (zero) != (RegAfter.GetZero()) {
-                    t.Errorf("Expected zero to be %v but got %v", zero, RegAfter.GetZero())
+                if (expectedZero) != (RegAfter.GetZero()) {
+                    t.Errorf("Expected zero to be %v but got %v", expectedZero, RegAfter.GetZero())
                 }                
-                if uint8(a & 0xFF) != (RegAfter.A) {
-                    t.Errorf("Expected a & 0xFF to be %v but got %v", a & 0xFF, RegAfter.A)
+                if expectedA != (RegAfter.A) {
+                    t.Errorf("Expected a & 0xFF to be %v but got %v", expectedA & 0xFF, RegAfter.A)
                 }
                 {{.Asserts}}
                 {{.Flags}}

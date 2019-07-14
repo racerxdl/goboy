@@ -93,3 +93,7 @@ func (m *MBC0) LoadRam(data []byte) {
 func (m *MBC0) DumpRam() []byte {
 	return m.ramData
 }
+
+func (m *MBC0) GBC() bool {
+	return m.romData[0x143] == 0x80
+}

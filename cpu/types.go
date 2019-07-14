@@ -15,6 +15,7 @@ type Catridge interface {
 	CatridgeRamSize() gameboy.RamSize
 	RomSize() gameboy.RomSize
 	MBCType() gameboy.MBCType
+	GBC() bool
 
 	// Memory Interface
 	Write(addr uint16, val uint8)

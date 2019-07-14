@@ -36,6 +36,7 @@ type GPU struct {
 	lcdBuffer                    *pixel.PictureData
 	syncLcdBuffer                *pixel.PictureData
 	vram                         []byte
+	vramBank                     uint16
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
 	bgPallete                    [4]color.RGBA
@@ -43,6 +44,7 @@ type GPU struct {
 	obj1Pallete                  [4]color.RGBA
 	highLightedXY                pixel.Vec
 	highLightBG                  bool
+	cgbMode                      bool
 }
 
 func (g *GPU) GetLCDBuffer() *pixel.PictureData {
@@ -76,6 +78,10 @@ func (g *GPU) HBlankMode() bool {
 	return (g.lcdStat & gameboy.FlagHblankMode) > 0
 }
 
+func (g *GPU) CGBMode() bool {
+	return g.cgbMode
+}
+
 func (g *GPU) SetHighlightTile(x, y float64) {
 	g.highLightedXY = pixel.V(x, y)
 	g.refreshTileData(-1)
@@ -85,12 +91,17 @@ func (g *GPU) SetHighlightBG(highLightBG bool) {
 	g.highLightBG = highLightBG
 }
 
+func (g *GPU) SetCGBMode(c bool) {
+	g.cgbMode = c
+}
+
 func MakeGPU(cpu *Core) *GPU {
 	gpu := &GPU{
 		cpu:           cpu,
 		tileBuffer:    pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
 		highLightedXY: pixel.V(-1, -1),
 		highLightBG:   true,
+		vramBank:      0,
 	}
 
 	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
@@ -105,7 +116,7 @@ func MakeGPU(cpu *Core) *GPU {
 
 	gpu.registers = make([]byte, 0xFF)
 	gpu.currentRow = make([]byte, 160)
-	gpu.vram = make([]byte, 0x2000)
+	gpu.vram = make([]byte, 0x4000)
 	for i := 0; i < 160; i++ {
 		gpu.currentRow[i] = 0x00
 	}
@@ -134,7 +145,7 @@ func (g *GPU) Reset() {
 		g.tileSet[i] = makeGPUTile()
 	}
 
-	for i := 0; i < 0x2000; i++ {
+	for i := 0; i < 0x4000; i++ {
 		g.vram[i] = 0x00
 	}
 
@@ -220,7 +231,7 @@ func (g *GPU) Read(addr uint16) byte {
 	if addr < 0xFF40 { // GPU Memory
 		switch {
 		case addr >= 0x8000 && addr <= 0x9FFF:
-			return g.vram[addr-0x8000]
+			return g.vram[addr-0x8000+0x2000*g.vramBank]
 		case addr >= 0xFE00 && addr <= 0xFE9F:
 			return g.oam[addr-0xFE00]
 		}
@@ -269,7 +280,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 	if addr < 0xFF40 { // GPU Memory
 		switch {
 		case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
-			g.vram[addr-0x8000] = val
+			g.vram[addr-0x8000+0x2000*g.vramBank] = val
 			g.updateTile(addr, val)
 		case addr >= 0xFE00 && addr <= 0xFE9F:
 			g.oam[addr-0xFE00] = val
@@ -733,8 +744,8 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 	g.refreshTileData(int(tile))
 }
 
-func (g *GPU) Cycle() {
-	g.modeClocks += g.cpu.Registers.LastClockM
+func (g *GPU) Cycle(clocks int) {
+	g.modeClocks += clocks
 	switch g.mode {
 	case gameboy.HBlank:
 		if g.modeClocks > horizontalBlankCycles {
@@ -744,19 +755,19 @@ func (g *GPU) Cycle() {
 			if g.line == 144 {
 				g.mode = gameboy.VBlank
 
-				g.cpu.Registers.TriggerInterrupts |= gameboy.IntVblank
+				g.cpu.Registers.InterruptsFired |= gameboy.IntVblank
 				if g.VBlankMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			} else {
 				g.mode = gameboy.OamRead
 				if g.OamMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			}
 
 			if g.line == g.lineCompare && g.LycLy() && g.cpu.Registers.InterruptEnable {
-				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 			}
 		}
 	case gameboy.VBlank:
@@ -764,14 +775,14 @@ func (g *GPU) Cycle() {
 			g.modeClocks = 0
 			g.line++
 			if g.line == g.lineCompare && g.LycLy() {
-				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 			}
 			if g.line > 153 {
 				copy(g.syncLcdBuffer.Pix, g.lcdBuffer.Pix)
 				g.mode = gameboy.OamRead
 				g.line = 0
 				if g.OamMode() && g.cpu.Registers.InterruptEnable {
-					g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			}
 		}
@@ -789,7 +800,7 @@ func (g *GPU) Cycle() {
 			// TODO: DMA on CGB
 
 			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
-				g.cpu.Registers.TriggerInterrupts |= gameboy.IntLcdstat
+				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 			}
 		}
 	}

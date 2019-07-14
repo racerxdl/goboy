@@ -38,6 +38,9 @@ var debugTemplate = template.Must(template.New("debugger").Parse(`
 |  D   |    {{.D}} | -------- {{.DB}}  |
 |  E   |    {{.E}} | -------- {{.EB}}  |
 |------|-------|--------------------|
+|  EI  |    {{.EI}} | -------- {{.EIB}}  |
+|  IF  |    {{.IF}} | -------- {{.IFB}}  |
+|  IME | {{.IME}} | -------- --------  |
 |      |                  ZSHC----  |
 |  F   |    {{.F}} | -------- {{.FB}}  |
 \-----------------------------------/
@@ -186,11 +189,14 @@ func RefreshDisasm() {
 func run() {
 	//game, err := ioutil.ReadFile("./opus5.gb")
 	//game, err := ioutil.ReadFile("./tetris.gb")
-	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
+	game, err := ioutil.ReadFile("./cpu_instrs.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
-	game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Flasher_v1.19/ZELDA-DX.GB")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/instr_timing/instr_timing.gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/interrupt_time/interrupt_time.gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/dmg_sound/rom_singles/02-len ctr.gb")
 	if err != nil {
 		panic(err)
 	}
@@ -293,7 +299,7 @@ func run() {
 
 		disasmText.Draw(win, pixel.IM.Moved(pixel.V(w-780, h-25)))
 
-		stackText.Draw(win, pixel.IM.Moved(pixel.V(w-500, h-500)))
+		stackText.Draw(win, pixel.IM.Moved(pixel.V(w-500, h-550)))
 
 		if win.JustPressed(pixelgl.KeyR) {
 			z80.Reset()

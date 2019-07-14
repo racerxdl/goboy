@@ -5,7 +5,6 @@ import (
 	"github.com/quan-to/slog"
 	"github.com/racerxdl/goboy/gameboy"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 )
@@ -22,6 +21,7 @@ type Core struct {
 	Timer     *Timer
 	Keys      *GBKeys
 	SoundCard *SoundCard
+	Serial    *Serial
 
 	running        bool
 	paused         bool
@@ -32,6 +32,8 @@ type Core struct {
 	stopped        bool
 	step           bool
 	speedMul       float64
+	baseClock      time.Duration
+	colorMode      bool
 
 	l sync.Mutex
 }
@@ -39,11 +41,13 @@ type Core struct {
 type DebugData struct {
 	PC, SP, A, B, C, D, E, F, H, L, HL       string
 	AB, BB, CB, DB, EB, FB, LB, HB           string
-	BC, DE                                   string
+	BC, DE, EI, EIB, IF, IFB                 string
 	PCX, SPX                                 string
+	IME                                      string
 	GPUSCROLLX, GPUSCROLLY, GPUWINX, GPUWINY string
 	GPUMODECLOCKS, GPULINE                   string
 	HALTED                                   string
+	RamBank                                  string
 }
 
 func MakeCore() *Core {
@@ -53,12 +57,15 @@ func MakeCore() *Core {
 		stopped:   false,
 		paused:    true,
 		speedMul:  1,
+		baseClock: Period,
+		colorMode: false,
 	}
 	c.Memory = MakeMemory(c)
 	c.GPU = MakeGPU(c)
 	c.Timer = MakeTimer(c)
 	c.Keys = MakeGBKeys(c)
 	c.SoundCard = MakeSoundCard(c)
+	c.Serial = MakeSerial(c)
 	c.Reset()
 	return c
 }
@@ -66,6 +73,8 @@ func MakeCore() *Core {
 func (c *Core) Start() {
 	c.l.Lock()
 	if !c.running {
+		c.colorMode = c.Memory.catridge.GBC()
+		c.GPU.SetCGBMode(c.colorMode)
 		c.running = true
 		c.lastUpdate = time.Now()
 		go c.loop()
@@ -111,7 +120,7 @@ func (c *Core) GetCurrentPage() (uint16, []byte) {
 	a := (c.Registers.PC / 256) * 256
 	buff := make([]byte, 256)
 	for i := 0; i < 256; i++ {
-		buff[i] = c.Memory.ReadByteNoSideEffect(a + uint16(i))
+		buff[i] = c.Memory.ReadByteForPC(a + uint16(i))
 	}
 
 	return a, buff
@@ -127,7 +136,7 @@ func (c *Core) GetStack() (uint16, []byte) {
 
 	buff := make([]byte, e-s)
 	for i := 0; i < e-s; i++ {
-		buff[i] = c.Memory.ReadByteNoSideEffect(uint16(s + i))
+		buff[i] = c.Memory.ReadByteForPC(uint16(s + i))
 	}
 
 	return uint16(s), buff
@@ -135,32 +144,37 @@ func (c *Core) GetStack() (uint16, []byte) {
 
 func (c *Core) GetDebugData() DebugData {
 	return DebugData{
-		PCX: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.PC)),
-		SPX: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.SP)),
+		PCX: fmt.Sprintf("%04X", c.Registers.PC),
+		SPX: fmt.Sprintf("%04X", c.Registers.SP),
 		PC:  fmt.Sprintf("%05d", c.Registers.PC),
 		SP:  fmt.Sprintf("%05d", c.Registers.SP),
 
-		A: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.A)),
-		B: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.B)),
-		C: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.C)),
-		D: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.D)),
-		E: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.E)),
-		H: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.H)),
-		L: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.L)),
-		F: strings.ToUpper(fmt.Sprintf("%02x", c.Registers.F)),
+		A:  fmt.Sprintf("%02X", c.Registers.A),
+		B:  fmt.Sprintf("%02X", c.Registers.B),
+		C:  fmt.Sprintf("%02X", c.Registers.C),
+		D:  fmt.Sprintf("%02X", c.Registers.D),
+		E:  fmt.Sprintf("%02X", c.Registers.E),
+		H:  fmt.Sprintf("%02X", c.Registers.H),
+		L:  fmt.Sprintf("%02X", c.Registers.L),
+		F:  fmt.Sprintf("%02X", c.Registers.F),
+		EI: fmt.Sprintf("%02X", c.Registers.EnabledInterrupts),
+		IF: fmt.Sprintf("%02X", c.Registers.InterruptsFired),
 
-		AB: fmt.Sprintf("%08b", c.Registers.A),
-		BB: fmt.Sprintf("%08b", c.Registers.B),
-		CB: fmt.Sprintf("%08b", c.Registers.C),
-		DB: fmt.Sprintf("%08b", c.Registers.D),
-		EB: fmt.Sprintf("%08b", c.Registers.E),
-		HB: fmt.Sprintf("%08b", c.Registers.H),
-		LB: fmt.Sprintf("%08b", c.Registers.L),
-		FB: fmt.Sprintf("%08b", c.Registers.F),
+		AB:  fmt.Sprintf("%08b", c.Registers.A),
+		BB:  fmt.Sprintf("%08b", c.Registers.B),
+		CB:  fmt.Sprintf("%08b", c.Registers.C),
+		DB:  fmt.Sprintf("%08b", c.Registers.D),
+		EB:  fmt.Sprintf("%08b", c.Registers.E),
+		HB:  fmt.Sprintf("%08b", c.Registers.H),
+		LB:  fmt.Sprintf("%08b", c.Registers.L),
+		FB:  fmt.Sprintf("%08b", c.Registers.F),
+		EIB: fmt.Sprintf("%08b", c.Registers.EnabledInterrupts),
+		IFB: fmt.Sprintf("%08b", c.Registers.InterruptsFired),
 
-		HL: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.HL())),
-		BC: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.BC())),
-		DE: strings.ToUpper(fmt.Sprintf("%04x", c.Registers.DE())),
+		HL:  fmt.Sprintf("%04X", c.Registers.HL()),
+		BC:  fmt.Sprintf("%04X", c.Registers.BC()),
+		DE:  fmt.Sprintf("%04X", c.Registers.DE()),
+		IME: fmt.Sprintf("%5v", c.Registers.InterruptEnable),
 
 		GPUSCROLLX:    fmt.Sprintf("%4d", c.GPU.scrollX),
 		GPUSCROLLY:    fmt.Sprintf("%4d", c.GPU.scrollY),
@@ -169,7 +183,8 @@ func (c *Core) GetDebugData() DebugData {
 		GPUMODECLOCKS: fmt.Sprintf("%4d", c.GPU.modeClocks),
 		GPULINE:       fmt.Sprintf("%4d", c.GPU.line),
 
-		HALTED: fmt.Sprintf("%v", c.halted),
+		HALTED:  fmt.Sprintf("%v", c.halted),
+		RamBank: fmt.Sprintf("%d", c.Memory.ramBank),
 	}
 }
 
@@ -179,83 +194,103 @@ func (c *Core) IsPaused() bool {
 
 func (c *Core) cycle() {
 	c.l.Lock()
-	// Normal Cycle
-	c.Registers.CycleCount++
 
 	totalClockM := 0
 	totalClockT := 0
 
-	if c.halted {
-		totalClockM += 1
-		totalClockT += 4
-	} else {
-		op := c.Memory.ReadByte(c.Registers.PC)
-		c.Registers.PC++
-		GBInstructions[op](c)
-
-		totalClockM += c.Registers.LastClockM
-		totalClockT += c.Registers.LastClockT
-	}
-
-	// Check Interrupts
-	if c.Registers.InterruptEnable && (c.Registers.EnabledInterrupts&c.Registers.TriggerInterrupts) > 0 {
-		c.halted = false
-		c.Registers.InterruptEnable = false
-		interruptsFired := c.Registers.EnabledInterrupts & c.Registers.TriggerInterrupts
-
-		switch {
-		case (interruptsFired & gameboy.IntVblank) > 0:
-			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntVblank)
-			gbRSTXX(c, AddrIntVblank) // V-Blank
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & gameboy.IntLcdstat) > 0:
-			cpuLog.Debug("(INT) [LCDSTAT]")
-			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntLcdstat)
-			gbRSTXX(c, AddrIntLcdstat) // LCD Stat
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & gameboy.IntTimer) > 0:
-			cpuLog.Debug("(INT) [TIMER]")
-			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntTimer)
-			gbRSTXX(c, AddrIntTimer) // Timer
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & gameboy.IntSerial) > 0:
-			cpuLog.Debug("(INT) [SERIAL]")
-			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntSerial)
-			gbRSTXX(c, AddrIntSerial) // Serial
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		case (interruptsFired & gameboy.IntJoypad) > 0:
-			c.Registers.TriggerInterrupts &= ^uint8(gameboy.IntJoypad)
-			gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		default:
-			c.Registers.InterruptEnable = true
-		}
-	}
-
-	c.clockM += totalClockM
-	c.clockT += totalClockT
+	x := time.Now()
+	// Normal Cycle
+	c.Registers.CycleCount++
 
 	if !c.stopped {
+		if c.halted {
+			totalClockM += 1
+			totalClockT += 4
+		} else {
+			op := c.Memory.ReadByteForPC(c.Registers.PC)
+			c.Registers.PC++
+			GBInstructions[op](c)
+
+			totalClockM += c.Registers.LastClockM
+			totalClockT += c.Registers.LastClockT
+		}
+
+		// Check Interrupts
+		if c.Registers.InterruptEnable && (c.Registers.EnabledInterrupts&c.Registers.InterruptsFired) > 0 {
+			curHalt := c.halted
+			c.halted = false
+			c.Registers.InterruptEnable = false
+			interruptsFired := c.Registers.EnabledInterrupts & c.Registers.InterruptsFired
+
+			switch {
+			case (interruptsFired & gameboy.IntVblank) > 0:
+				c.Registers.InterruptsFired &= ^uint8(gameboy.IntVblank)
+				gbRSTXX(c, AddrIntVblank) // V-Blank
+				totalClockM += c.Registers.LastClockM
+				totalClockT += c.Registers.LastClockT
+			case (interruptsFired & gameboy.IntLcdstat) > 0:
+				cpuLog.Debug("(INT) [LCDSTAT]")
+				c.Registers.InterruptsFired &= ^uint8(gameboy.IntLcdstat)
+				gbRSTXX(c, AddrIntLcdstat) // LCD Stat
+				totalClockM += c.Registers.LastClockM
+				totalClockT += c.Registers.LastClockT
+			case (interruptsFired & gameboy.IntTimer) > 0:
+				cpuLog.Debug("(INT) [TIMER]")
+				c.Registers.InterruptsFired &= ^uint8(gameboy.IntTimer)
+				gbRSTXX(c, AddrIntTimer) // Timer
+				totalClockM += c.Registers.LastClockM
+				totalClockT += c.Registers.LastClockT
+			case (interruptsFired & gameboy.IntSerial) > 0:
+				cpuLog.Debug("(INT) [SERIAL]")
+				c.Registers.InterruptsFired &= ^uint8(gameboy.IntSerial)
+				gbRSTXX(c, AddrIntSerial) // Serial
+				totalClockM += c.Registers.LastClockM
+				totalClockT += c.Registers.LastClockT
+			case (interruptsFired & gameboy.IntJoypad) > 0:
+				c.Registers.InterruptsFired &= ^uint8(gameboy.IntJoypad)
+				gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
+				totalClockM += c.Registers.LastClockM
+				totalClockT += c.Registers.LastClockT
+			default:
+				c.Registers.InterruptEnable = true
+				c.halted = curHalt
+			}
+		}
+
+		c.clockM += totalClockM
+		c.clockT += totalClockT
+
+		// Sound Flow
+		c.SoundCard.Cycle(totalClockM)
+
 		// GPU Flow
-		c.GPU.Cycle()
+		c.GPU.Cycle(totalClockM)
 
 		// Timer Flow
-		c.Timer.Increment(totalClockT)
+		c.Timer.Increment(totalClockM)
+
+		// Serial Flow
+		c.Serial.Cycle(totalClockM)
 	}
 
 	c.l.Unlock()
 
-	cycleDuration := 2 * time.Duration(int64(totalClockM)) * time.Duration(float64(Period)/c.speedMul)
+	cycleDuration := time.Duration(int64(totalClockT)) * time.Duration(float64(c.baseClock)/c.speedMul)
 
-	x := time.Now()
 	// Sleep is not precise enough, so we will do a busy loop
 	for time.Since(x) < cycleDuration {
 		runtime.Gosched()
+	}
+
+	if c.stopped && c.Memory.inPrepareMode {
+		if !c.Memory.doubleSpeed {
+			cpuLog.Info("Switching to Double Speed Mode")
+			c.Memory.doubleSpeed = true
+			c.baseClock = ColorModePeriod
+			c.paused = true
+		}
+		c.stopped = false
+		c.Memory.inPrepareMode = false
 	}
 }
 

@@ -23,6 +23,9 @@
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 
+                if "{{.Arg1}}" == "F" {
+                    valB &= 0xF0
+                }
                 
                 if (RegBefore.SP + 2) != (RegAfter.SP) {
                     t.Errorf("Expected RegBefore.SP + 2 to be %v but got %v", RegBefore.SP + 2, RegAfter.SP)

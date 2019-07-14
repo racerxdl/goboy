@@ -73,6 +73,6 @@ func (k *GBKeys) Update(win *pixelgl.Window) {
 	k.SetKeysBit(3, !win.Pressed(pixelgl.KeyEnter))
 
 	if lastK != k.keys || lastD != k.direction {
-		k.cpu.Registers.TriggerInterrupts |= gameboy.IntJoypad
+		k.cpu.Registers.InterruptsFired |= gameboy.IntJoypad
 	}
 }

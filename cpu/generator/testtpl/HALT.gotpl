@@ -13,7 +13,11 @@
                 GBInstructions[0x{{.OpCodeX}}](cpu)
                 RegAfter := cpu.Registers.Clone()
 
-                if !cpu.halted {
+                if !RegBefore.InterruptEnable && cpu.halted {
+                    t.Errorf("Expected cpu not to be halted when interrupts are disabled")
+                }
+
+                if !cpu.halted && RegBefore.InterruptEnable {
                     t.Errorf("Expected cpu to be halted")
                 }
 
