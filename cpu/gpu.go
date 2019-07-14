@@ -673,7 +673,7 @@ func (g *GPU) renderScanline() {
 						if cp != 0x00 &&
 							obj.X+x >= 0 &&
 							obj.X+x < 160 &&
-							(!obj.Prio || g.currentRow[x] == 0x00) {
+							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0]) {
 							g.lcdBuffer.Pix[bufferOffset] = c
 						}
 						bufferOffset++

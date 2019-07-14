@@ -31,16 +31,8 @@ func MakeMBC1() *MBC1 {
 }
 
 func (m *MBC1) Reset() {
-	for i := 0; i < len(m.romBanks); i++ {
-		for z := 0; z < len(m.romBanks[i]); z++ {
-			m.romBanks[i][z] = 0x00
-		}
-	}
-	for i := 0; i < len(m.ramBanks); i++ {
-		for z := 0; z < len(m.ramBanks[i]); z++ {
-			m.ramBanks[i][z] = 0x00
-		}
-	}
+	m.activeRomBank = 1
+	m.activeRamBank = 0
 }
 
 func (m *MBC1) Randomize() {

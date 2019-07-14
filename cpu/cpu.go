@@ -57,7 +57,7 @@ func MakeCore() *Core {
 		stopped:   false,
 		paused:    true,
 		speedMul:  1,
-		baseClock: Period,
+		baseClock: ColorModePeriod,
 		colorMode: false,
 	}
 	c.Memory = MakeMemory(c)
@@ -229,19 +229,19 @@ func (c *Core) cycle() {
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
 			case (interruptsFired & gameboy.IntLcdstat) > 0:
-				cpuLog.Debug("(INT) [LCDSTAT]")
+				//cpuLog.Debug("(INT) [LCDSTAT]")
 				c.Registers.InterruptsFired &= ^uint8(gameboy.IntLcdstat)
 				gbRSTXX(c, AddrIntLcdstat) // LCD Stat
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
 			case (interruptsFired & gameboy.IntTimer) > 0:
-				cpuLog.Debug("(INT) [TIMER]")
+				//cpuLog.Debug("(INT) [TIMER]")
 				c.Registers.InterruptsFired &= ^uint8(gameboy.IntTimer)
 				gbRSTXX(c, AddrIntTimer) // Timer
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
 			case (interruptsFired & gameboy.IntSerial) > 0:
-				cpuLog.Debug("(INT) [SERIAL]")
+				//cpuLog.Debug("(INT) [SERIAL]")
 				c.Registers.InterruptsFired &= ^uint8(gameboy.IntSerial)
 				gbRSTXX(c, AddrIntSerial) // Serial
 				totalClockM += c.Registers.LastClockM
@@ -267,7 +267,7 @@ func (c *Core) cycle() {
 		c.GPU.Cycle(totalClockM)
 
 		// Timer Flow
-		c.Timer.Increment(totalClockM)
+		c.Timer.Increment(totalClockT)
 
 		// Serial Flow
 		c.Serial.Cycle(totalClockM)

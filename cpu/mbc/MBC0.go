@@ -20,12 +20,7 @@ func MakeMBC0() *MBC0 {
 }
 
 func (m *MBC0) Reset() {
-	for i := 0; i < 0x8000; i++ {
-		m.romData[i] = 0x00
-	}
-	for i := 0; i < 0x2000; i++ {
-		m.ramData[i] = 0x00
-	}
+
 }
 
 func (m *MBC0) Randomize() {

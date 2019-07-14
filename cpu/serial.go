@@ -1,7 +1,6 @@
 package cpu
 
 import (
-	"github.com/racerxdl/goboy/gameboy"
 	"time"
 )
 
@@ -58,7 +57,7 @@ func (s *Serial) Read(addr uint16) byte {
 }
 
 func (s *Serial) Cycle(clocks int) {
-	if !s.startTransfer {
+	if !s.startTransfer || s.externalClock {
 		return
 	}
 	/*
@@ -90,7 +89,7 @@ func (s *Serial) Cycle(clocks int) {
 
 	if s.cycledBits == 8 {
 		s.startTransfer = false
-		s.cpu.Registers.InterruptsFired |= gameboy.IntSerial
+		//s.cpu.Registers.InterruptsFired |= gameboy.IntSerial
 		s.cycledBits = 0
 	}
 }

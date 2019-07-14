@@ -68,7 +68,7 @@ func (m *Memory) LoadCatridgeRAMData() {
 func (m *Memory) Reset() {
 	m.catridge.Reset()
 
-	for i := 0; i < 0x2000; i++ {
+	for i := 0; i < 0x8000; i++ {
 		m.workRam[i] = 0x00
 	}
 
@@ -163,7 +163,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		case 0x50:
 			cpuLog.Info("Disabling Internal BIOS")
 			m.inBIOS = false
-			m.cpu.Registers.A = 0x11 // CGB
+			//m.cpu.Registers.A = 0x11 // CGB
 		case 0x40, 0x60:
 			m.cpu.GPU.Write(addr, val)
 		}
