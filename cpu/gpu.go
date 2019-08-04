@@ -271,6 +271,11 @@ func (g *GPU) Read(addr uint16) byte {
 		return uint8(g.winY)
 	case 0xFF4B:
 		return uint8(g.winX + 7)
+	case 0xFF4F:
+		if g.cpu.colorMode {
+			return uint8((g.vramBank & 1) | 0xFE)
+		}
+		return 0x00
 	default:
 		return g.registers[addr-0xFF40]
 	}
@@ -385,6 +390,10 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		g.winY = int(val)
 	case 0xFF4B:
 		g.winX = int(val) - 7
+	case 0xFF4F:
+		if g.cpu.colorMode {
+			g.vramBank = uint16(val & 1)
+		}
 	}
 }
 

@@ -82,7 +82,7 @@ func (m *Memory) Reset() {
 func (m *Memory) Randomize() {
 	m.catridge.Randomize()
 
-	for i := 0; i < 0x2000; i++ {
+	for i := 0; i < 0x8000; i++ {
 		m.workRam[i] = byte(rand.Int31n(255))
 	}
 
@@ -115,9 +115,9 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 	case addr >= 0xC000 && addr <= 0xCFFF: // Work Ram Bank 0
 		m.workRam[addr-0xC000] = val
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
-		m.workRam[(addr-0xC000-0x2000)+uint16(m.ramBank)*0x2000] = val
+		m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000] = val
 	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
-		m.workRam[(addr-0xC000-0x2000)&0x1FFF] = val
+		m.workRam[addr-0xE000] = val
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		m.cpu.GPU.Write(addr, val)
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable ... yet ...
@@ -144,10 +144,16 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 			}
 		case 0xFF70:
 			if m.catridge.GBC() {
-				m.ramBank = int(val & 0x3)
-				if m.ramBank == 0 {
-					m.ramBank = 1
+				bank := int(val & 0x3)
+				if bank == 0 {
+					bank = 1
 				}
+
+				if bank != m.ramBank {
+					m.ramBank = bank
+					// memLog.Debug("Changed ram bank to %d", m.ramBank)
+				}
+
 				return
 			}
 		}
@@ -163,7 +169,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		case 0x50:
 			cpuLog.Info("Disabling Internal BIOS")
 			m.inBIOS = false
-			//m.cpu.Registers.A = 0x11 // CGB
+			m.cpu.Registers.A = 0x11 // CGB
 		case 0x40, 0x60:
 			m.cpu.GPU.Write(addr, val)
 		}
@@ -207,15 +213,13 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 		return m.cpu.GPU.Read(addr)
 	case addr >= 0xA000 && addr <= 0xBFFF:
 		return m.catridge.Read(addr)
-	case addr >= 0xC000 && addr <= 0xEFFF:
-		return m.workRam[addr&0x1FFF]
 
 	case addr >= 0xC000 && addr <= 0xCFFF: // Work Ram Bank 0
 		return m.workRam[addr-0xC000]
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
-		return m.workRam[addr-0xC000-0x2000+uint16(m.ramBank)*0x2000]
+		return m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000]
 	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
-		return m.workRam[addr-0xC000-0x2000]
+		return m.workRam[addr-0xE000]
 
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		return m.cpu.GPU.Read(addr)
