@@ -39,12 +39,24 @@ type GPU struct {
 	vramBank                     uint16
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
-	bgPallete                    [4]color.RGBA
-	obj0Pallete                  [4]color.RGBA
-	obj1Pallete                  [4]color.RGBA
-	highLightedXY                pixel.Vec
-	highLightBG                  bool
-	cgbMode                      bool
+
+	bgPallete [8][4]color.RGBA
+	// Non CGB
+	obj0Pallete [4]color.RGBA
+	obj1Pallete [4]color.RGBA
+
+	// CGB
+	bgCurrentPalleteIndex  int
+	bgAutoIncrementPindex  bool
+	bgPalleteMemory        [64]byte
+	objCurrentPalleteIndex int
+	objAutoIncrementPindex bool
+	objPalleteMemory       [64]byte
+	objPallete             [8][4]color.RGBA
+
+	highLightedXY pixel.Vec
+	highLightBG   bool
+	cgbMode       bool
 }
 
 func (g *GPU) GetLCDBuffer() *pixel.PictureData {
@@ -97,11 +109,13 @@ func (g *GPU) SetCGBMode(c bool) {
 
 func MakeGPU(cpu *Core) *GPU {
 	gpu := &GPU{
-		cpu:           cpu,
-		tileBuffer:    pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
-		highLightedXY: pixel.V(-1, -1),
-		highLightBG:   true,
-		vramBank:      0,
+		cpu:                   cpu,
+		tileBuffer:            pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
+		highLightedXY:         pixel.V(-1, -1),
+		highLightBG:           true,
+		vramBank:              0,
+		bgCurrentPalleteIndex: 0,
+		bgAutoIncrementPindex: false,
 	}
 
 	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
@@ -184,9 +198,21 @@ func (g *GPU) Reset() {
 	g.bgMapBase = 0x1800
 	g.winMapBase = 0x1800
 
-	copy(g.bgPallete[:], defaultBgPallete)
+	for i := 0; i < 8; i++ {
+		copy(g.bgPallete[i][:], defaultBgPallete)
+		copy(g.objPallete[i][:], defaultObjPallete)
+	}
+
 	copy(g.obj0Pallete[:], defaultObj0Pallete)
 	copy(g.obj1Pallete[:], defaultObj1Pallete)
+
+	for i := 0; i < 64; i++ {
+		g.bgPalleteMemory[i] = 0
+		g.objPalleteMemory[i] = 0
+	}
+
+	g.updateBGPalletes()
+	g.updateOBJPalletes()
 }
 
 func (g *GPU) state() uint8 {
@@ -276,6 +302,26 @@ func (g *GPU) Read(addr uint16) byte {
 			return uint8((g.vramBank & 1) | 0xFE)
 		}
 		return 0x00
+	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
+		if g.cpu.colorMode {
+			return uint8(g.bgCurrentPalleteIndex)
+		}
+		return 0x00
+	case 0xFF69: // BCPD/BGPD - CGB Mode Only - Background Palette Data
+		if g.cpu.colorMode {
+			return g.bgPalleteMemory[g.bgCurrentPalleteIndex]
+		}
+		return 0x00
+	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
+		if g.cpu.colorMode {
+			return uint8(g.objCurrentPalleteIndex)
+		}
+		return 0x00
+	case 0xFF6B: // OCPD/OBPD - CGB Mode Only - Sprite Palette Data
+		if g.cpu.colorMode {
+			return g.objPalleteMemory[g.objCurrentPalleteIndex]
+		}
+		return 0x00
 	default:
 		return g.registers[addr-0xFF40]
 	}
@@ -342,48 +388,54 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.updateOAM(uint16(0xFE00+i), v)
 		}
 		g.sortOAM()
-	case 0xFF47:
-		for i := uint(0); i < 4; i++ {
-			var b = (uint(val) >> (i * 2)) & 3
-			switch b {
-			case 0:
-				g.bgPallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
-			case 1:
-				g.bgPallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
-			case 2:
-				g.bgPallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
-			case 3:
-				g.bgPallete[i] = color.RGBA{A: 255}
+	case 0xFF47: // Only on Non-CGB
+		if !g.cpu.colorMode {
+			for i := uint(0); i < 4; i++ {
+				var b = (uint(val) >> (i * 2)) & 3
+				switch b {
+				case 0:
+					g.bgPallete[0][i] = color.RGBA{R: 255, G: 255, B: 255, A: 255}
+				case 1:
+					g.bgPallete[0][i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
+				case 2:
+					g.bgPallete[0][i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
+				case 3:
+					g.bgPallete[0][i] = color.RGBA{A: 255}
+				}
 			}
-		}
 
-		g.refreshTileData(-1)
-	case 0xFF48:
-		for i := uint(0); i < 4; i++ {
-			var b = (uint(val) >> (i * 2)) & 3
-			switch b {
-			case 0:
-				g.obj0Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
-			case 1:
-				g.obj0Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
-			case 2:
-				g.obj0Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
-			case 3:
-				g.obj0Pallete[i] = color.RGBA{A: 255}
+			g.refreshTileData(-1)
+		}
+	case 0xFF48: // Only on Non-CGB
+		if !g.cpu.colorMode {
+			for i := uint(0); i < 4; i++ {
+				var b = (uint(val) >> (i * 2)) & 3
+				switch b {
+				case 0:
+					g.obj0Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
+				case 1:
+					g.obj0Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
+				case 2:
+					g.obj0Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
+				case 3:
+					g.obj0Pallete[i] = color.RGBA{A: 255}
+				}
 			}
 		}
-	case 0xFF49:
-		for i := uint(0); i < 4; i++ {
-			var b = (uint(val) >> (i * 2)) & 3
-			switch b {
-			case 0:
-				g.obj1Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
-			case 1:
-				g.obj1Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
-			case 2:
-				g.obj1Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
-			case 3:
-				g.obj1Pallete[i] = color.RGBA{A: 255}
+	case 0xFF49: // Only on Non-CGB
+		if !g.cpu.colorMode {
+			for i := uint(0); i < 4; i++ {
+				var b = (uint(val) >> (i * 2)) & 3
+				switch b {
+				case 0:
+					g.obj1Pallete[i] = color.RGBA{R: 255, G: 255, B: 255, A: 0}
+				case 1:
+					g.obj1Pallete[i] = color.RGBA{R: 192, G: 192, B: 192, A: 255}
+				case 2:
+					g.obj1Pallete[i] = color.RGBA{R: 96, G: 96, B: 96, A: 255}
+				case 3:
+					g.obj1Pallete[i] = color.RGBA{A: 255}
+				}
 			}
 		}
 	case 0xFF4A:
@@ -393,6 +445,64 @@ func (g *GPU) Write(addr uint16, val uint8) {
 	case 0xFF4F:
 		if g.cpu.colorMode {
 			g.vramBank = uint16(val & 1)
+		}
+	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
+		if g.cpu.colorMode {
+			g.bgCurrentPalleteIndex = int(val & 0x3F)
+			g.bgAutoIncrementPindex = val&0x80 > 0
+		}
+	case 0xFF69: // BCPD/BGPD - CGB Mode Only - Background Palette Data
+		if g.cpu.colorMode {
+			g.bgPalleteMemory[g.bgCurrentPalleteIndex] = val
+			if g.bgAutoIncrementPindex {
+				g.bgCurrentPalleteIndex++
+				g.bgCurrentPalleteIndex %= 0x3F
+			}
+			g.updateBGPalletes()
+		}
+	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
+		if g.cpu.colorMode {
+			g.objCurrentPalleteIndex = int(val & 0x3F)
+			g.objAutoIncrementPindex = val&0x80 > 0
+		}
+	case 0xFF6B: // OCPD/OBPD - CGB Mode Only - Sprite Palette Data
+		if g.cpu.colorMode {
+			g.objPalleteMemory[g.objCurrentPalleteIndex] = val
+			if g.objAutoIncrementPindex {
+				g.objCurrentPalleteIndex++
+				g.objCurrentPalleteIndex %= 0x3F
+			}
+			g.updateOBJPalletes()
+		}
+	}
+}
+
+func (g *GPU) updateBGPalletes() {
+	for i := 0; i < 8; i++ {
+		for c := 0; c < 3; c++ {
+			idx := (i * 8) + (c * 2)
+			colorData := uint16(g.bgPalleteMemory[idx]) + (uint16(g.bgPalleteMemory[idx+1]) << 8)
+			g.bgPallete[i][c] = color.RGBA{
+				R: colorMap[colorData&0x1F],
+				G: colorMap[(colorData>>5)&0x1F],
+				B: colorMap[(colorData>>10)&0x1F],
+				A: 255,
+			}
+		}
+	}
+}
+
+func (g *GPU) updateOBJPalletes() {
+	for i := 0; i < 8; i++ {
+		for c := 0; c < 3; c++ {
+			idx := (i * 8) + (c * 2)
+			colorData := uint16(g.objPalleteMemory[idx]) + (uint16(g.objPalleteMemory[idx+1]) << 8)
+			g.objPallete[i][c] = color.RGBA{
+				R: colorMap[colorData&0x1F],
+				G: colorMap[(colorData>>5)&0x1F],
+				B: colorMap[(colorData>>10)&0x1F],
+				A: 255,
+			}
 		}
 	}
 }
@@ -421,6 +531,10 @@ func (g *GPU) updateOAM(addr uint16, val uint8) {
 			g.objs[obj].XFlip = (val & 0x20) != 0
 			g.objs[obj].YFlip = (val & 0x40) != 0
 			g.objs[obj].Prio = (val & 0x80) != 0
+			if g.CGBMode() {
+				g.objs[obj].Palette = int(val & 7)
+				g.objs[obj].VRamBank = int(val & 8)
+			}
 		}
 	}
 }
@@ -454,7 +568,7 @@ func (g *GPU) refreshTileData(tileNum int) {
 					px := (i%16)*9 + x
 					py := (i/16)*9 + y
 					p := py*g.tileBuffer.Stride + px
-					g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
+					g.tileBuffer.Pix[p] = defaultBgPallete[v.TileData[y][x]]
 				}
 			}
 		}
@@ -512,7 +626,7 @@ func (g *GPU) refreshTileData(tileNum int) {
 				py := (i/16)*9 + y
 				p := py*g.tileBuffer.Stride + px
 
-				g.tileBuffer.Pix[p] = g.bgPallete[v.TileData[y][x]]
+				g.tileBuffer.Pix[p] = defaultBgPallete[v.TileData[y][x]]
 			}
 		}
 	}
@@ -538,19 +652,37 @@ func (g *GPU) renderScanline() {
 			y := bgY
 			tileOffset := bgTileOffset
 			vramOffset := bgVramOffset
-
-			tile := int(g.cpu.Memory.ReadByte(uint16(vramOffset + tileOffset)))
+			tile := int(g.vram[vramOffset+tileOffset-VRamBase])
 
 			if g.bgTileBase != 0x0000 && tile < 128 {
 				tile += 256
 			}
 
-			tileRow := g.tileSet[tile].TileData[y]
+			attr := tileAttr(0)
+
+			if g.CGBMode() {
+				attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
+			}
+
+			drawY := y
+			if g.CGBMode() && attr.VerticalFlip {
+				drawY = 7 - drawY
+			}
+			tileRow := g.tileSet[tile].TileData[drawY]
 
 			for i := 0; i < 160; i++ {
+				p := g.bgPallete[0]
+				drawX := x
+				if g.CGBMode() {
+					p = g.bgPallete[attr.BackgroundPallete]
+					if attr.HorizontalFlip {
+						drawX = 7 - drawX
+					}
+				}
+
 				if x >= 0 {
-					c := g.bgPallete[tileRow[x]]
-					g.currentRow[i] = tileRow[x]
+					c := p[tileRow[drawX]]
+					g.currentRow[i] = tileRow[drawX]
 					g.lcdBuffer.Pix[bufferOffset] = c
 				}
 				bufferOffset++
@@ -566,7 +698,16 @@ func (g *GPU) renderScanline() {
 					tile += 256
 				}
 
-				tileRow = g.tileSet[tile].TileData[y]
+				if g.CGBMode() {
+					attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
+				}
+
+				drawY = y
+				if g.CGBMode() && attr.VerticalFlip {
+					drawY = 7 - drawY
+				}
+
+				tileRow = g.tileSet[tile].TileData[drawY]
 			}
 		}
 		// endregion
@@ -589,20 +730,37 @@ func (g *GPU) renderScanline() {
 			tileOffset := wTileOffset
 			vramOffset := winVramOffset
 
-			tile := int(g.cpu.Memory.ReadByte(uint16(vramOffset + tileOffset)))
+			tile := int(g.vram[vramOffset+tileOffset-VRamBase])
 
 			if g.bgTileBase != 0x0000 && tile < 128 {
 				tile += 256
 			}
 
+			attr := tileAttr(0)
+
+			if g.CGBMode() {
+				attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
+			}
+
 			if int(g.line)-g.winY >= 0 {
-				tileRow := g.tileSet[tile].TileData[y]
+				drawY := y
+				if g.CGBMode() && attr.VerticalFlip {
+					drawY = 7 - drawY
+				}
+				tileRow := g.tileSet[tile].TileData[drawY]
 
 				for i := 0; i < 160; i++ {
-					c := g.bgPallete[0]
-					//g.currentRow[i] = tileRow[0]
+					drawX := x
+					p := g.bgPallete[0]
+					if g.CGBMode() {
+						p = g.bgPallete[attr.BackgroundPallete]
+						if attr.HorizontalFlip {
+							drawX = 7 - drawX
+						}
+					}
+					c := p[0]
 					if x >= 0 {
-						c = g.bgPallete[tileRow[x]]
+						c = p[tileRow[drawX]]
 						g.currentRow[i] = tileRow[x]
 					}
 					g.lcdBuffer.Pix[bufferOffset] = c
@@ -618,8 +776,15 @@ func (g *GPU) renderScanline() {
 					if g.bgTileBase != 0x0000 && tile < 128 {
 						tile += 256
 					}
+					if g.CGBMode() {
+						attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
+					}
+					drawY = y
+					if g.CGBMode() && attr.VerticalFlip {
+						drawY = 7 - drawY
+					}
 
-					tileRow = g.tileSet[tile].TileData[y]
+					tileRow = g.tileSet[tile].TileData[drawY]
 				}
 			}
 		}
@@ -669,6 +834,10 @@ func (g *GPU) renderScanline() {
 						pallete = g.obj1Pallete
 					}
 
+					if g.CGBMode() {
+						pallete = g.objPallete[obj.Palette]
+					}
+
 					bufferOffset := (iline * g.lcdBuffer.Stride) + obj.X
 					var c color.RGBA
 					for x := 0; x < 8; x++ {
@@ -682,7 +851,7 @@ func (g *GPU) renderScanline() {
 						if cp != 0x00 &&
 							obj.X+x >= 0 &&
 							obj.X+x < 160 &&
-							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0]) {
+							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]) {
 							g.lcdBuffer.Pix[bufferOffset] = c
 						}
 						bufferOffset++
@@ -702,24 +871,57 @@ func (g *GPU) UpdateVRAM() {
 
 		// Background
 		tileNum := (px / 8) + ((py / 8) * 32)
-		v := int(g.Read(uint16(VRamBase + int(g.bgMapBase) + tileNum)))
+		v := int(g.vram[int(g.bgMapBase)+tileNum])
 		if g.bgTileBase != 0x0000 && v < 128 {
 			v += 256
 		}
 		tile := g.tileSet[v]
 		x := px % 8
 		y := py % 8
-		g.bgBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
+
+		attr := tileAttr(0)
+
+		if g.CGBMode() {
+			attr = tileAttr(g.vram[int(g.bgMapBase)+tileNum+0x2000])
+		}
+
+		if g.CGBMode() {
+			if attr.VerticalFlip {
+				y = 7 - y
+			}
+			if attr.HorizontalFlip {
+				x = 7 - x
+			}
+			g.bgBuffer.Pix[i] = g.bgPallete[attr.BackgroundPallete][tile.TileData[y][x]]
+		} else {
+			g.bgBuffer.Pix[i] = g.bgPallete[0][tile.TileData[y][x]]
+		}
 
 		// Window
-		v = int(g.Read(uint16(VRamBase + int(g.winMapBase) + tileNum)))
+		v = int(g.vram[int(g.winMapBase)+tileNum])
 		if g.bgTileBase != 0x0000 && v < 128 {
 			v += 256
 		}
 		tile = g.tileSet[v]
 		x = px % 8
 		y = py % 8
-		g.winBuffer.Pix[i] = g.bgPallete[tile.TileData[y][x]]
+
+		if g.CGBMode() {
+			attr = tileAttr(g.vram[int(g.bgMapBase)+tileNum+0x2000])
+		}
+
+		if g.CGBMode() {
+			if attr.VerticalFlip {
+				y = 7 - y
+			}
+			if attr.HorizontalFlip {
+				x = 7 - x
+			}
+			g.winBuffer.Pix[i] = g.bgPallete[attr.BackgroundPallete][tile.TileData[y][x]]
+		} else {
+			g.winBuffer.Pix[i] = g.bgPallete[0][tile.TileData[y][x]]
+		}
+
 	}
 }
 
@@ -731,6 +933,7 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 	}
 
 	tile := (relAddr >> 4) & 511
+
 	y := (relAddr >> 1) & 7
 
 	b0 := g.Read(addr)

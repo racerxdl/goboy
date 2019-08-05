@@ -73,8 +73,6 @@ func MakeCore() *Core {
 func (c *Core) Start() {
 	c.l.Lock()
 	if !c.running {
-		c.colorMode = c.Memory.catridge.GBC()
-		c.GPU.SetCGBMode(c.colorMode)
 		c.running = true
 		c.lastUpdate = time.Now()
 		go c.loop()
