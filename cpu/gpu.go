@@ -298,27 +298,27 @@ func (g *GPU) Read(addr uint16) byte {
 	case 0xFF4B:
 		return uint8(g.winX + 7)
 	case 0xFF4F:
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			return uint8((g.vramBank & 1) | 0xFE)
 		}
 		return 0x00
 	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			return uint8(g.bgCurrentPalleteIndex)
 		}
 		return 0x00
 	case 0xFF69: // BCPD/BGPD - CGB Mode Only - Background Palette Data
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			return g.bgPalleteMemory[g.bgCurrentPalleteIndex]
 		}
 		return 0x00
 	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			return uint8(g.objCurrentPalleteIndex)
 		}
 		return 0x00
 	case 0xFF6B: // OCPD/OBPD - CGB Mode Only - Sprite Palette Data
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			return g.objPalleteMemory[g.objCurrentPalleteIndex]
 		}
 		return 0x00
@@ -389,7 +389,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		}
 		g.sortOAM()
 	case 0xFF47: // Only on Non-CGB
-		if !g.cpu.colorMode {
+		if !g.CGBMode() {
 			for i := uint(0); i < 4; i++ {
 				var b = (uint(val) >> (i * 2)) & 3
 				switch b {
@@ -407,7 +407,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.refreshTileData(-1)
 		}
 	case 0xFF48: // Only on Non-CGB
-		if !g.cpu.colorMode {
+		if !g.CGBMode() {
 			for i := uint(0); i < 4; i++ {
 				var b = (uint(val) >> (i * 2)) & 3
 				switch b {
@@ -423,7 +423,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			}
 		}
 	case 0xFF49: // Only on Non-CGB
-		if !g.cpu.colorMode {
+		if !g.CGBMode() {
 			for i := uint(0); i < 4; i++ {
 				var b = (uint(val) >> (i * 2)) & 3
 				switch b {
@@ -443,34 +443,34 @@ func (g *GPU) Write(addr uint16, val uint8) {
 	case 0xFF4B:
 		g.winX = int(val) - 7
 	case 0xFF4F:
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			g.vramBank = uint16(val & 1)
 		}
 	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			g.bgCurrentPalleteIndex = int(val & 0x3F)
 			g.bgAutoIncrementPindex = val&0x80 > 0
 		}
 	case 0xFF69: // BCPD/BGPD - CGB Mode Only - Background Palette Data
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			g.bgPalleteMemory[g.bgCurrentPalleteIndex] = val
 			if g.bgAutoIncrementPindex {
 				g.bgCurrentPalleteIndex++
-				g.bgCurrentPalleteIndex %= 0x3F
+				g.bgCurrentPalleteIndex %= 0x40
 			}
 			g.updateBGPalletes()
 		}
 	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			g.objCurrentPalleteIndex = int(val & 0x3F)
 			g.objAutoIncrementPindex = val&0x80 > 0
 		}
 	case 0xFF6B: // OCPD/OBPD - CGB Mode Only - Sprite Palette Data
-		if g.cpu.colorMode {
+		if g.CGBMode() {
 			g.objPalleteMemory[g.objCurrentPalleteIndex] = val
 			if g.objAutoIncrementPindex {
 				g.objCurrentPalleteIndex++
-				g.objCurrentPalleteIndex %= 0x3F
+				g.objCurrentPalleteIndex %= 0x40
 			}
 			g.updateOBJPalletes()
 		}
@@ -523,6 +523,7 @@ func (g *GPU) updateOAM(addr uint16, val uint8) {
 				g.objs[obj].Tile = val
 			}
 		case 3:
+			g.objs[obj].VRamBank = 0
 			if val&0x10 != 0 {
 				g.objs[obj].Palette = 1
 			} else {
@@ -1009,7 +1010,9 @@ func (g *GPU) Cycle(clocks int) {
 			g.renderScanline()
 			g.mode = gameboy.HBlank
 
-			// TODO: DMA on CGB
+			if g.CGBMode() {
+				// TODO: DMA on CGB
+			}
 
 			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
 				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat

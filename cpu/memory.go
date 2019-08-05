@@ -169,9 +169,11 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		case 0x50:
 			cpuLog.Info("Disabling Internal BIOS")
 			m.inBIOS = false
+			// region GBC
 			m.cpu.colorMode = m.catridge.GBC()
 			m.cpu.GPU.SetCGBMode(m.cpu.colorMode)
 			m.cpu.Registers.A = 0x11 // CGB
+			// endregion
 		case 0x40, 0x60:
 			m.cpu.GPU.Write(addr, val)
 		}

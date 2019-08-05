@@ -285,7 +285,7 @@ func (c *Core) cycle() {
 			cpuLog.Info("Switching to Double Speed Mode")
 			c.Memory.doubleSpeed = true
 			c.baseClock = ColorModePeriod
-			c.paused = true
+			//c.paused = true
 		}
 		c.stopped = false
 		c.Memory.inPrepareMode = false
