@@ -54,6 +54,9 @@ func (m *MBC3) LoadRom(data []byte) {
 
 	for len(data) > 0 {
 		copy(m.romBanks[n][:], data)
+		if len(data) < 0x4000 {
+			break
+		}
 		data = data[0x4000:]
 		n++
 	}

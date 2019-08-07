@@ -2,12 +2,16 @@ package cpu
 
 import (
 	"github.com/faiface/pixel"
+	"github.com/quan-to/slog"
 	"github.com/racerxdl/goboy/gameboy"
 	"github.com/racerxdl/goboy/pixhelp"
+	"golang.org/x/image/colornames"
 	"image"
 	"image/color"
 	"sort"
 )
+
+var gpulog = slog.Scope("GPU")
 
 type GPU struct {
 	mode                         gameboy.GPUMode
@@ -35,10 +39,12 @@ type GPU struct {
 	winBuffer                    *pixel.PictureData
 	lcdBuffer                    *pixel.PictureData
 	syncLcdBuffer                *pixel.PictureData
+	palleteBuffer                *pixel.PictureData
 	vram                         []byte
 	vramBank                     uint16
 	objs                         []gpuObject
 	prioObjs                     []gpuObject
+	bgPriority                   [160 * 144]bool
 
 	bgPallete [8][4]color.RGBA
 	// Non CGB
@@ -54,6 +60,12 @@ type GPU struct {
 	objPalleteMemory       [64]byte
 	objPallete             [8][4]color.RGBA
 
+	// CGB HDMA
+	dmaSource uint16
+	dmaTarget uint16
+	dmaLength uint16
+	dmaRun    bool
+
 	highLightedXY pixel.Vec
 	highLightBG   bool
 	cgbMode       bool
@@ -61,6 +73,10 @@ type GPU struct {
 
 func (g *GPU) GetLCDBuffer() *pixel.PictureData {
 	return g.syncLcdBuffer
+}
+
+func (g *GPU) GetPalleteBuffer() *pixel.PictureData {
+	return g.palleteBuffer
 }
 
 func (g *GPU) GetBGRam() *pixel.PictureData {
@@ -116,6 +132,8 @@ func MakeGPU(cpu *Core) *GPU {
 		vramBank:              0,
 		bgCurrentPalleteIndex: 0,
 		bgAutoIncrementPindex: false,
+		dmaRun:                false,
+		palleteBuffer:         pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 160, 160))),
 	}
 
 	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
@@ -302,6 +320,37 @@ func (g *GPU) Read(addr uint16) byte {
 			return uint8((g.vramBank & 1) | 0xFE)
 		}
 		return 0x00
+
+	case 0xFF51: // HDMA1 - CGB Mode Only - New DMA Source, High
+		if g.CGBMode() {
+			return uint8(g.dmaSource >> 8)
+		}
+		return 0x00
+	case 0xFF52: // HDMA2 - CGB Mode Only - New DMA Source, Low
+		if g.CGBMode() {
+			return uint8(g.dmaSource & 0xFF)
+		}
+		return 0x00
+	case 0xFF53: // HDMA3 - CGB Mode Only - New DMA Destination, High
+		if g.CGBMode() {
+			return uint8(g.dmaTarget >> 8)
+		}
+		return 0x00
+	case 0xFF54: // HDMA4 - CGB Mode Only - New DMA Destination, Low
+		if g.CGBMode() {
+			return uint8(g.dmaTarget & 0xFF)
+		}
+		return 0x00
+	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
+		if g.CGBMode() {
+			if g.dmaRun {
+				return 0xFF
+			}
+
+			return 0x7F
+		}
+		return 0xFF
+
 	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
 		if g.CGBMode() {
 			return uint8(g.bgCurrentPalleteIndex)
@@ -446,6 +495,45 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		if g.CGBMode() {
 			g.vramBank = uint16(val & 1)
 		}
+	case 0xFF51: // HDMA1 - CGB Mode Only - New DMA Source, High
+		if g.CGBMode() {
+			g.dmaSource &= 0x00FF // Erase upper 8 bits
+			g.dmaSource |= uint16(val) << 8
+		}
+	case 0xFF52: // HDMA2 - CGB Mode Only - New DMA Source, Low
+		if g.CGBMode() {
+			g.dmaSource &= 0xFF00 // Erase upper 8 bits
+			g.dmaSource |= uint16(val)
+		}
+
+	case 0xFF53: // HDMA3 - CGB Mode Only - New DMA Destination, High
+		if g.CGBMode() {
+			g.dmaTarget &= 0x00FF // Erase upper 8 bits
+			g.dmaTarget |= uint16(val) << 8
+		}
+
+	case 0xFF54: // HDMA4 - CGB Mode Only - New DMA Destination, Low
+		if g.CGBMode() {
+			g.dmaTarget &= 0xFF00 // Erase upper 8 bits
+			g.dmaTarget |= uint16(val)
+		}
+
+	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
+		if g.CGBMode() {
+			hblankDMA := val&0x80 > 0
+			g.dmaLength = (uint16(val)&0x7F)*0x10 + 1
+			if hblankDMA {
+				g.dmaRun = true
+			} else {
+				// Run now
+				gpulog.Debug("Running GDMA from %04x to %04x with %d bytes", g.dmaSource, g.dmaTarget, g.dmaLength)
+				for i := 0; i < int(g.dmaLength); i++ {
+					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
+					g.cpu.Memory.WriteByte(g.dmaTarget+uint16(i), b)
+				}
+			}
+		}
+
 	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
 		if g.CGBMode() {
 			g.bgCurrentPalleteIndex = int(val & 0x3F)
@@ -456,7 +544,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.bgPalleteMemory[g.bgCurrentPalleteIndex] = val
 			if g.bgAutoIncrementPindex {
 				g.bgCurrentPalleteIndex++
-				g.bgCurrentPalleteIndex %= 0x40
+				g.bgCurrentPalleteIndex &= 0x3F
 			}
 			g.updateBGPalletes()
 		}
@@ -470,16 +558,39 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.objPalleteMemory[g.objCurrentPalleteIndex] = val
 			if g.objAutoIncrementPindex {
 				g.objCurrentPalleteIndex++
-				g.objCurrentPalleteIndex %= 0x40
+				g.objCurrentPalleteIndex &= 0x3F
 			}
 			g.updateOBJPalletes()
 		}
 	}
 }
 
+func (g *GPU) updatePalleteBuffer() {
+	pixhelp.ClearPictureData(g.palleteBuffer, color.RGBA{A: 0})
+	// Draw BG Palletes
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 4; j++ {
+			c := g.bgPallete[i][j]
+			x := float64(j * 20)
+			y := float64(i * 20)
+			pixhelp.DrawSquare(g.palleteBuffer, pixel.R(x, y, x+16, y+16), c)
+		}
+	}
+
+	// Draw OBJ Palletes
+	for i := 0; i < 8; i++ {
+		for j := 0; j < 4; j++ {
+			c := g.objPallete[i][j]
+			x := float64(j*20) + 20*4
+			y := float64(i * 20)
+			pixhelp.DrawSquare(g.palleteBuffer, pixel.R(x, y, x+16, y+16), c)
+		}
+	}
+}
+
 func (g *GPU) updateBGPalletes() {
 	for i := 0; i < 8; i++ {
-		for c := 0; c < 3; c++ {
+		for c := 0; c < 4; c++ {
 			idx := (i * 8) + (c * 2)
 			colorData := uint16(g.bgPalleteMemory[idx]) + (uint16(g.bgPalleteMemory[idx+1]) << 8)
 			g.bgPallete[i][c] = color.RGBA{
@@ -490,11 +601,12 @@ func (g *GPU) updateBGPalletes() {
 			}
 		}
 	}
+	g.updatePalleteBuffer()
 }
 
 func (g *GPU) updateOBJPalletes() {
 	for i := 0; i < 8; i++ {
-		for c := 0; c < 3; c++ {
+		for c := 0; c < 4; c++ {
 			idx := (i * 8) + (c * 2)
 			colorData := uint16(g.objPalleteMemory[idx]) + (uint16(g.objPalleteMemory[idx+1]) << 8)
 			g.objPallete[i][c] = color.RGBA{
@@ -505,6 +617,7 @@ func (g *GPU) updateOBJPalletes() {
 			}
 		}
 	}
+	g.updatePalleteBuffer()
 }
 
 func (g *GPU) updateOAM(addr uint16, val uint8) {
@@ -551,7 +664,7 @@ func (g *GPU) sortOAM() {
 		if g.prioObjs[j].Prio && !g.prioObjs[i].Prio {
 			return true
 		}
-		return g.prioObjs[i].X > g.prioObjs[j].X
+		return (g.prioObjs[i].X > g.prioObjs[j].X) && !g.CGBMode()
 	})
 
 }
@@ -634,10 +747,16 @@ func (g *GPU) refreshTileData(tileNum int) {
 }
 
 func (g *GPU) renderScanline() {
+	bufferOffset := int(g.line) * g.lcdBuffer.Stride
+	// Clear scanline first
+	for i := 0; i < 160; i++ {
+		g.lcdBuffer.Pix[bufferOffset+i] = colornames.White
+		g.bgPriority[bufferOffset+i] = false
+	}
 	if g.switchLCD {
 		// region Background Draw
-		if g.switchBg {
-			bufferOffset := int(g.line) * g.lcdBuffer.Stride
+		if g.switchBg || g.CGBMode() {
+			bufferOffset = int(g.line) * g.lcdBuffer.Stride
 
 			// region Background Offset Compute
 			bgVramOffset := VRamBase
@@ -685,6 +804,7 @@ func (g *GPU) renderScanline() {
 					c := p[tileRow[drawX]]
 					g.currentRow[i] = tileRow[drawX]
 					g.lcdBuffer.Pix[bufferOffset] = c
+					g.bgPriority[bufferOffset] = attr.BGtoOamPriority
 				}
 				bufferOffset++
 				x++
@@ -849,12 +969,19 @@ func (g *GPU) renderScanline() {
 
 						c = pallete[cp]
 
+						drawPrio := !obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]
+
+						if g.CGBMode() {
+							drawPrio = !g.bgPriority[bufferOffset] && !obj.Prio
+						}
+
 						if cp != 0x00 &&
 							obj.X+x >= 0 &&
 							obj.X+x < 160 &&
-							(!obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]) {
+							drawPrio {
 							g.lcdBuffer.Pix[bufferOffset] = c
 						}
+
 						bufferOffset++
 					}
 					spriteCount++
@@ -1010,8 +1137,13 @@ func (g *GPU) Cycle(clocks int) {
 			g.renderScanline()
 			g.mode = gameboy.HBlank
 
-			if g.CGBMode() {
-				// TODO: DMA on CGB
+			if g.CGBMode() && g.dmaRun {
+				gpulog.Debug("Running HDMA from %04x to %04x with %d bytes", g.dmaSource, g.dmaTarget, g.dmaLength)
+				for i := 0; i < int(g.dmaLength); i++ {
+					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
+					g.cpu.Memory.WriteByte(g.dmaTarget+uint16(i), b)
+				}
+				g.dmaRun = false
 			}
 
 			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {

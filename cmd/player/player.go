@@ -117,7 +117,7 @@ func RefreshDisasm() {
 	offset, page := z80.GetCurrentPage()
 	dis := cpu.Disasm(int(offset), page)
 
-	if len(dis) > maxDisasmLines {
+	if len(dis) >= maxDisasmLines {
 		o := 0
 
 		for i, v := range dis { // Find where PC is in disasm
@@ -127,7 +127,7 @@ func RefreshDisasm() {
 			}
 		}
 
-		for o > maxDisasmLines { // Move disasm lines up until PC is visible
+		for o >= maxDisasmLines { // Move disasm lines up until PC is visible
 			dis = dis[maxDisasmLines:]
 			o -= maxDisasmLines
 		}
@@ -193,7 +193,8 @@ func run() {
 	//game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Flasher_v1.19/ZELDA-DX.GB")
-	game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
+	//game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
+	game, err := ioutil.ReadFile("/home/lucas/gbc/pksilver.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/instr_timing/instr_timing.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/interrupt_time/interrupt_time.gb")
@@ -246,6 +247,10 @@ func run() {
 	tileBufferText.Color = colornames.Black
 	tileBufferText.WriteString("Tile Buffer")
 
+	palBufferText := text.New(pixel.V(0, 0), atlas)
+	palBufferText.Color = colornames.Black
+	palBufferText.WriteString("BG PAL    OBJ PAL")
+
 	r := win.Bounds()
 	w := r.Max.X
 	h := r.Max.Y
@@ -258,6 +263,7 @@ func run() {
 	hh := true
 
 	for !win.Closed() {
+		pal := z80.GPU.GetPalleteBuffer()
 		vframe := z80.Memory.GetVideoFrame()
 		vram := z80.GPU.GetBGRam()
 		if !hh {
@@ -292,6 +298,11 @@ func run() {
 		pixel.NewSprite(tilebuff, tilebuff.Bounds()).
 			Draw(win, MoveAndScaleTo(tilebuff, 350, 30, 1))
 		tileBufferText.Draw(win, pixel.IM.Moved(pixel.V(w-900, h-20)))
+		// endregion
+		// region Palete
+		pixel.NewSprite(pal, pal.Bounds()).
+			Draw(win, MoveAndScaleTo(pal, 350, 350, 1))
+		palBufferText.Draw(win, pixel.IM.Moved(pixel.V(w-910, h-340)))
 		// endregion
 
 		debugger.Clear()
