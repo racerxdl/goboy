@@ -20,16 +20,16 @@ type MBC5 struct {
 
 func MakeMBC5() *MBC5 {
 	return &MBC5{
-		romBanks:      make([][0x4000]byte, 1024),
+		romBanks:      make([][0x4000]byte, 512),
 		ramBanks:      make([][0x2000]byte, 16),
-		activeRomBank: 1,
+		activeRomBank: 0,
 		activeRamBank: 0,
 		ramEnabled:    false,
 	}
 }
 
 func (m *MBC5) Reset() {
-	m.activeRomBank = 1
+	m.activeRomBank = 0
 	m.activeRamBank = 0
 }
 
@@ -103,14 +103,17 @@ func (m *MBC5) Write(addr uint16, val uint8) {
 		m.ramEnabled = val&0xF == 0xA
 		//mbc5log.Debug("Changed Ram Enable to %v", m.ramEnabled)
 	case addr >= 0x2000 && addr < 0x3000: // ROM Bank Low Bits
+		//m.activeRomBank &= 0x100
 		m.activeRomBank = int(val)
 		//mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x3000 && addr < 0x4000: // ROM Bank High Bits
 		m.activeRomBank &= 0xFF
-		m.activeRomBank |= int(val&1) << 8
+		if val&1 > 0 {
+			m.activeRomBank |= 0x100
+		}
 		//mbc5log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
-		m.activeRamBank = int(val & 0x3)
+		m.activeRamBank = int(val & 0xF)
 		//mbc5log.Debug("Changed Ram Bank to %d", m.activeRamBank)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {

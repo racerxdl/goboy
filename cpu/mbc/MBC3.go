@@ -16,7 +16,8 @@ type MBC3 struct {
 	activeRomBank int
 	activeRamBank int
 	ramEnabled    bool
-	ramRomMode    bool
+	currentRTC    int
+	rtcData       [5]byte
 }
 
 func MakeMBC3() *MBC3 {
@@ -25,8 +26,8 @@ func MakeMBC3() *MBC3 {
 		ramBanks:      make([][0x2000]byte, 4),
 		activeRomBank: 1,
 		activeRamBank: 0,
-		ramEnabled:    false,
-		ramRomMode:    false,
+		ramEnabled:    true,
+		currentRTC:    -1,
 	}
 }
 
@@ -93,9 +94,11 @@ func (m *MBC3) Read(addr uint16) uint8 {
 		return m.romBanks[m.activeRomBank][addr&0x3FFF]
 	case addr >= 0xA000 && addr <= 0xBFFF:
 		if m.ramEnabled {
-			return m.ramBanks[m.activeRamBank][addr-0xA000]
-		} else {
-			return 0xFF
+			if m.currentRTC > -1 {
+				return m.rtcData[m.currentRTC]
+			} else {
+				return m.ramBanks[m.activeRamBank][addr&0x1FFF]
+			}
 		}
 	}
 
@@ -105,8 +108,11 @@ func (m *MBC3) Read(addr uint16) uint8 {
 func (m *MBC3) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
-		m.ramEnabled = val&0xF == 0xA
-		//mbc3log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		if val&0xF == 0xA != m.ramEnabled {
+			m.ramEnabled = val&0xF == 0xA
+			m.currentRTC = -1
+			mbc3log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		}
 	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
 		if val == 0 {
 			val = 1
@@ -114,14 +120,22 @@ func (m *MBC3) Write(addr uint16, val uint8) {
 		m.activeRomBank = int(val & 0x7F)
 		//mbc3log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
-		m.activeRamBank = int(val & 0x3)
-		//mbc3log.Debug("Changed Ram Bank to %d", m.activeRamBank)
+		if val < 4 {
+			m.activeRamBank = int(val)
+			//mbc3log.Debug("Changed Ram Bank to %d", m.activeRamBank)
+			m.currentRTC = -1
+		} else if val >= 0x8 && val <= 0xC {
+			m.currentRTC = int(val - 0x8)
+		}
 	case addr >= 0x6000 && addr <= 0x7FFF:
-		m.ramRomMode = val > 0
-		//mbc3log.Debug("Changed Rom/Ram Mode %v", m.ramRomMode)
+		// Latch Clock Data (Write Only)
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {
-			m.ramBanks[m.activeRamBank][addr-0xA000] = val
+			if m.currentRTC > -1 {
+				m.rtcData[m.currentRTC] = val
+			} else {
+				m.ramBanks[m.activeRamBank][addr&0x1FFF] = val
+			}
 		}
 	}
 }

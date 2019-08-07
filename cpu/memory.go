@@ -52,6 +52,7 @@ func (m *Memory) SaveCatridgeRAMData() {
 	if time.Since(m.lastRamSave) > time.Second*5 {
 		_ = ioutil.WriteFile(m.saveFilename, m.catridge.DumpRam(), os.ModePerm)
 		m.lastRamSave = time.Now()
+		memLog.Debug("Saving Catridge RAM")
 	}
 }
 
@@ -249,7 +250,7 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 					v |= 1
 				}
 				if m.InDoubleSpeedMode() {
-					v |= 7
+					v |= 0x80
 				}
 				return v
 			}
