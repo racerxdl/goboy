@@ -16,6 +16,7 @@ var memLog = slog.Scope("Memory")
 type Memory struct {
 	workRam       []byte
 	highRam       []byte
+	iomem         []byte
 	ramBank       int
 	catridge      Catridge
 	saveFilename  string
@@ -31,6 +32,7 @@ func MakeMemory(cpu *Core) *Memory {
 	m := &Memory{
 		workRam:       make([]byte, 0x8000),
 		highRam:       make([]byte, 0x7F),
+		iomem:         make([]byte, 0xFF),
 		cpu:           cpu,
 		ramBank:       1,
 		catridge:      mbc.MakeMBC0(), // Load Default Catridge
@@ -50,9 +52,12 @@ func (m *Memory) SetSaveFile(filename string) {
 
 func (m *Memory) SaveCatridgeRAMData() {
 	if time.Since(m.lastRamSave) > time.Second*5 {
-		_ = ioutil.WriteFile(m.saveFilename, m.catridge.DumpRam(), os.ModePerm)
 		m.lastRamSave = time.Now()
-		memLog.Debug("Saving Catridge RAM")
+		go func() {
+			time.Sleep(time.Second * 1)
+			_ = ioutil.WriteFile(m.saveFilename, m.catridge.DumpRam(), os.ModePerm)
+			memLog.Debug("Saving Catridge RAM")
+		}() // Defer few seconds the save
 	}
 }
 
@@ -118,6 +123,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
 		m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000] = val
 	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
+		//memLog.Debug("Writing bytes to Mirror Bank %04x: %02x", addr, val)
 		m.workRam[addr-0xE000] = val
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		m.cpu.GPU.Write(addr, val)
@@ -137,6 +143,9 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		case 0xFF0F:
 			m.cpu.Registers.InterruptsFired = val
 			return
+		case 0xFF41:
+			m.iomem[0x41] = val | 0x80
+			return
 		case 0xFF4D: // Prepare speed
 			if m.catridge.GBC() {
 				m.inPrepareMode = val&1 > 0
@@ -145,14 +154,14 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 			}
 		case 0xFF70:
 			if m.catridge.GBC() {
-				bank := int(val & 0x3)
+				bank := int(val) & 0x7
 				if bank == 0 {
 					bank = 1
 				}
 
 				if bank != m.ramBank {
 					m.ramBank = bank
-					// memLog.Debug("Changed ram bank to %d", m.ramBank)
+					//memLog.Debug("Changed ram bank to %d", m.ramBank)
 				}
 
 				return
@@ -163,11 +172,10 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 
 		switch baseAddr & 0x00F0 {
 		case 0x00:
-		case 0x10, 0x20:
+		case 0x10, 0x20, 0x30:
 			m.cpu.SoundCard.Write(addr, val)
-		case 0x30:
-			// TODO
 		case 0x50:
+			cpuLog.Debug("Writing to BIOS disable: %02x", val)
 			if m.inBIOS {
 				cpuLog.Info("Disabling Internal BIOS")
 				m.inBIOS = false
@@ -175,6 +183,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 				m.cpu.colorMode = m.catridge.GBC()
 				m.cpu.GPU.SetCGBMode(m.cpu.colorMode)
 				m.cpu.Registers.A = 0x11 // CGB
+				m.cpu.Registers.PC = 0x100
 				// endregion
 			}
 		case 0x40, 0x60:
@@ -203,13 +212,11 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 	switch {
 	case addr <= 0x3FFF:
 		if m.inBIOS {
-			//if m.catridge.GBC() {
-			//    if int(addr) < len(gbcBios) {
-			//        return gbcBios[addr]
-			//    }
-			//}
-
-			if int(addr) < len(gbBios) {
+			if m.catridge.GBC() {
+				if int(addr) < 0x100 || (addr >= 0x200 && addr <= 0x8FF) {
+					return gbcBios[addr]
+				}
+			} else if int(addr) < len(gbBios) {
 				return gbBios[addr]
 			}
 		}
@@ -225,7 +232,9 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 		return m.workRam[addr-0xC000]
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
 		return m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000]
+
 	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
+		//memLog.Debug("Read bytes from Mirror Bank %04x: %02x", addr, m.workRam[addr-0xE000])
 		return m.workRam[addr-0xE000]
 
 	case addr >= 0xFE00 && addr <= 0xFE9F:
@@ -257,16 +266,19 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 			return 0x00
 		case 0xFF70:
 			if m.catridge.GBC() {
-				return uint8(m.ramBank & 0x3)
+				return uint8(m.ramBank)
 			}
+		}
+
+		if addr >= 0xFF72 && addr <= 0xFF77 {
+			return 0x00
 		}
 
 		switch addr & 0x00F0 {
 		case 0x00:
 			return 0x00
-		case 0x10, 0x20:
+		case 0x10, 0x20, 0x30:
 			return m.cpu.SoundCard.Read(addr)
-		case 0x30:
 			return 0x00
 		case 0x40:
 			return m.cpu.GPU.Read(addr)
@@ -341,6 +353,8 @@ func (m *Memory) LoadRom(data []byte) {
 	}
 
 	m.catridge.LoadRom(data)
+	m.cpu.colorMode = m.catridge.GBC()
+	m.cpu.GPU.SetCGBMode(m.cpu.colorMode)
 
 	memLog.Debug("Loaded %s", m.RomName())
 	memLog.Debug("MBC Type: %s", mbcType)
