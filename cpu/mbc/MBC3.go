@@ -16,8 +16,9 @@ type MBC3 struct {
 	activeRomBank int
 	activeRamBank int
 	ramEnabled    bool
-	currentRTC    int
-	rtcData       [5]byte
+	RTC           [0x10]byte
+	latchedRTC    [0x10]byte
+	rtcIsLatched  bool
 }
 
 func MakeMBC3() *MBC3 {
@@ -27,7 +28,7 @@ func MakeMBC3() *MBC3 {
 		activeRomBank: 1,
 		activeRamBank: 0,
 		ramEnabled:    true,
-		currentRTC:    -1,
+		rtcIsLatched:  false,
 	}
 }
 
@@ -93,12 +94,14 @@ func (m *MBC3) Read(addr uint16) uint8 {
 	case addr >= 0x4000 && addr <= 0x7FFF:
 		return m.romBanks[m.activeRomBank][addr&0x3FFF]
 	case addr >= 0xA000 && addr <= 0xBFFF:
-		if m.ramEnabled {
-			if m.currentRTC > -1 {
-				return m.rtcData[m.currentRTC]
-			} else {
-				return m.ramBanks[m.activeRamBank][addr&0x1FFF]
+		if m.activeRamBank >= 0x4 {
+			// RTC
+			if m.rtcIsLatched {
+				return m.latchedRTC[m.activeRamBank]
 			}
+			return m.RTC[m.activeRamBank]
+		} else {
+			return m.ramBanks[m.activeRamBank][addr&0x1FFF]
 		}
 	}
 
@@ -108,31 +111,27 @@ func (m *MBC3) Read(addr uint16) uint8 {
 func (m *MBC3) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
-		if val&0xF == 0xA != m.ramEnabled {
-			m.ramEnabled = val&0xF == 0xA
-			m.currentRTC = -1
-			mbc3log.Debug("Changed Ram Enable to %v", m.ramEnabled)
-		}
+		m.ramEnabled = val&0xA > 0
 	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
-		if val == 0 {
-			val = 1
-		}
 		m.activeRomBank = int(val & 0x7F)
+		if m.activeRomBank == 0 {
+			m.activeRomBank = 1
+		}
 		//mbc3log.Debug("Changed Rom Bank to %d", m.activeRomBank)
 	case addr >= 0x4000 && addr < 0x5FFF:
-		if val < 4 {
-			m.activeRamBank = int(val)
-			//mbc3log.Debug("Changed Ram Bank to %d", m.activeRamBank)
-			m.currentRTC = -1
-		} else if val >= 0x8 && val <= 0xC {
-			m.currentRTC = int(val - 0x8)
-		}
+		m.activeRamBank = int(val)
 	case addr >= 0x6000 && addr <= 0x7FFF:
 		// Latch Clock Data (Write Only)
+		if val == 1 {
+			m.rtcIsLatched = false
+		} else {
+			m.rtcIsLatched = true
+			copy(m.RTC[:], m.latchedRTC[:])
+		}
 	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
 		if m.ramEnabled {
-			if m.currentRTC > -1 {
-				m.rtcData[m.currentRTC] = val
+			if m.activeRamBank >= 0x4 {
+				m.RTC[m.activeRamBank] = val
 			} else {
 				m.ramBanks[m.activeRamBank][addr&0x1FFF] = val
 			}
