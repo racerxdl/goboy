@@ -118,7 +118,7 @@ func (c *Core) GetCurrentPage() (uint16, []byte) {
 	a := (c.Registers.PC / 256) * 256
 	buff := make([]byte, 256)
 	for i := 0; i < 256; i++ {
-		buff[i] = c.Memory.ReadByteForPC(a + uint16(i))
+		buff[i] = c.Memory.ReadByte(a + uint16(i))
 	}
 
 	return a, buff
@@ -134,7 +134,7 @@ func (c *Core) GetStack() (uint16, []byte) {
 
 	buff := make([]byte, e-s)
 	for i := 0; i < e-s; i++ {
-		buff[i] = c.Memory.ReadByteForPC(uint16(s + i))
+		buff[i] = c.Memory.ReadByte(uint16(s + i))
 	}
 
 	return uint16(s), buff
@@ -205,7 +205,7 @@ func (c *Core) cycle() {
 			totalClockM += 1
 			totalClockT += 4
 		} else {
-			op := c.Memory.ReadByteForPC(c.Registers.PC)
+			op := c.Memory.ReadByte(c.Registers.PC)
 			c.Registers.PC++
 			GBInstructions[op](c)
 

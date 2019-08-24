@@ -317,7 +317,7 @@ func gbADDHL(cpu *Core) {
 }
 // gbADDn Adds byte from [PC] to A
 func gbADDn(cpu *Core) {
-    z := cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+    z := cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
     sum := uint16(cpu.Registers.A) + uint16(z)
 
@@ -349,7 +349,7 @@ func gbADDHLSP(cpu *Core) {
 
 // gbADDSPn Reads a signed byte from [PC] and adds to SP
 func gbADDSPn(cpu *Core) {
-	a := int(int8(cpu.Memory.ReadByteForPC(cpu.Registers.PC)))
+	a := int(int8(cpu.Memory.ReadByte(cpu.Registers.PC)))
     cpu.Registers.PC++
 
     cpu.Registers.SetZero(false)
@@ -389,7 +389,7 @@ func gbADCHL(cpu *Core) {
 // gbADCn Sets A to A + [PC] + FlagCarry
 func gbADCn(cpu *Core) {
     a := int(cpu.Registers.A)
-    b := int(cpu.Memory.ReadByteForPC(cpu.Registers.PC))
+    b := int(cpu.Memory.ReadByte(cpu.Registers.PC))
     cpu.Registers.PC++
 
     f := 0
@@ -477,7 +477,7 @@ func gbSUBHL(cpu *Core) {
 }
 // gbSUBn Subtracts byte from [PC] to A
 func gbSUBn(cpu *Core) {
-    z := cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+    z := cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
     sum := int(cpu.Registers.A) - int(z)
 
@@ -518,7 +518,7 @@ func gbSBCHL(cpu *Core) {
 // gbSBCn Sets A to A - [PC] - FlagCarry
 func gbSBCn(cpu *Core) {
     a := int(cpu.Registers.A)
-    b := int(cpu.Memory.ReadByteForPC(cpu.Registers.PC))
+    b := int(cpu.Memory.ReadByte(cpu.Registers.PC))
     cpu.Registers.PC++
 
     f := 0
@@ -568,7 +568,7 @@ func gbCPHL(cpu *Core) {
 
 // gbCPn Compares byte from [PC] to A
 func gbCPn(cpu *Core) {
-    b := cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+    b := cpu.Memory.ReadByte(cpu.Registers.PC)
     cpu.Registers.PC++
 
     cpu.Registers.SetCarry(cpu.Registers.A < b)
@@ -657,7 +657,7 @@ func gbANDHL(cpu *Core) {
 
 // gbANDn Sets A to A & [PC]
 func gbANDn(cpu *Core) {
-	cpu.Registers.A &= cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+	cpu.Registers.A &= cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
 
 	cpu.Registers.SetCarry(false)
@@ -684,7 +684,7 @@ func gbORHL(cpu *Core) {
 
 // gbORn Sets A to A | [PC]
 func gbORn(cpu *Core) {
-	cpu.Registers.A |= cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+	cpu.Registers.A |= cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
 
 	cpu.Registers.SetCarry(false)
@@ -711,7 +711,7 @@ func gbXORHL(cpu *Core) {
 
 // gbXORn Sets A to A ^ [PC]
 func gbXORn(cpu *Core) {
-	cpu.Registers.A ^= cpu.Memory.ReadByteForPC(cpu.Registers.PC)
+	cpu.Registers.A ^= cpu.Memory.ReadByte(cpu.Registers.PC)
 	cpu.Registers.PC++
 
 	cpu.Registers.SetCarry(false)

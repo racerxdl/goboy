@@ -59,6 +59,7 @@ type GPU struct {
 	objAutoIncrementPindex bool
 	objPalleteMemory       [64]byte
 	objPallete             [8][4]color.RGBA
+	palleteDirty           bool
 
 	// CGB HDMA
 	dmaSource uint16
@@ -133,6 +134,7 @@ func MakeGPU(cpu *Core) *GPU {
 		bgCurrentPalleteIndex: 0,
 		bgAutoIncrementPindex: false,
 		dmaRun:                false,
+		palleteDirty:          true,
 		palleteBuffer:         pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 160, 160))),
 	}
 
@@ -546,7 +548,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 				g.bgCurrentPalleteIndex++
 				g.bgCurrentPalleteIndex &= 0x3F
 			}
-			g.updateBGPalletes()
+			g.palleteDirty = true
 		}
 	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
 		if g.CGBMode() {
@@ -560,7 +562,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 				g.objCurrentPalleteIndex++
 				g.objCurrentPalleteIndex &= 0x3F
 			}
-			g.updateOBJPalletes()
+			g.palleteDirty = true
 		}
 	}
 }
@@ -834,7 +836,7 @@ func (g *GPU) renderScanline() {
 		// endregion
 		// region Window Draw
 		if g.switchWin {
-			bufferOffset := int(g.line) * g.lcdBuffer.Stride
+			bufferOffset = int(g.line) * g.lcdBuffer.Stride
 
 			// region Window Offset Compute
 			winVramOffset := VRamBase
@@ -959,7 +961,7 @@ func (g *GPU) renderScanline() {
 						pallete = g.objPallete[obj.Palette]
 					}
 
-					bufferOffset := (iline * g.lcdBuffer.Stride) + obj.X
+					bufferOffset = (iline * g.lcdBuffer.Stride) + obj.X
 					var c color.RGBA
 					for x := 0; x < 8; x++ {
 						cp := tileRow[x]
@@ -969,10 +971,13 @@ func (g *GPU) renderScanline() {
 
 						c = pallete[cp]
 
-						drawPrio := !obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]
+						drawPrio := false
+						if bufferOffset > 0 && len(g.lcdBuffer.Pix) > bufferOffset && len(g.bgPriority) > bufferOffset {
+							drawPrio = !obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]
 
-						if g.CGBMode() {
-							drawPrio = !g.bgPriority[bufferOffset] && !obj.Prio
+							if g.CGBMode() {
+								drawPrio = !g.bgPriority[bufferOffset] && !obj.Prio
+							}
 						}
 
 						if cp != 0x00 &&
@@ -1125,6 +1130,11 @@ func (g *GPU) Cycle(clocks int) {
 					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			}
+		}
+		if g.palleteDirty {
+			g.updateBGPalletes()
+			g.updateOBJPalletes()
+			g.palleteDirty = false
 		}
 	case gameboy.OamRead:
 		if g.modeClocks >= oamCycles {

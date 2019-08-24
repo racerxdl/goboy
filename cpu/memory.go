@@ -196,30 +196,29 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 	}
 }
 
-func (m *Memory) ReadByte(addr uint16) byte {
-	return m.readByte(addr, false)
-}
-
-func (m *Memory) ReadByteForPC(addr uint16) byte {
-	return m.readByte(addr, true)
-}
-
 func (m *Memory) Read(addr uint16) byte {
 	return m.ReadByte(addr)
 }
 
-func (m *Memory) readByte(addr uint16, readForPC bool) byte {
+func (m *Memory) ReadByte(addr uint16) byte {
 	switch {
-	case addr <= 0x3FFF:
+	case addr <= 0xFF:
 		if m.inBIOS {
 			if m.catridge.GBC() {
-				if int(addr) < 0x100 || (addr >= 0x200 && addr <= 0x8FF) {
-					return gbcBios[addr]
-				}
-			} else if int(addr) < len(gbBios) {
+				return gbcBios[addr]
+			} else {
 				return gbBios[addr]
 			}
 		}
+		return m.catridge.Read(addr)
+	case addr >= 0x100 && addr <= 0x1FF:
+		return m.catridge.Read(addr) // Always from catridge
+	case addr >= 0x200 && addr <= 0x8FF: // On GBC Mode, thats BIOS
+		if m.inBIOS && m.catridge.GBC() {
+			return gbcBios[addr]
+		}
+		return m.catridge.Read(addr)
+	case addr >= 0x900 && addr <= 0x3FFF:
 		return m.catridge.Read(addr)
 	case addr >= 0x4000 && addr <= 0x7FFF:
 		return m.catridge.Read(addr)
@@ -296,10 +295,6 @@ func (m *Memory) readByte(addr uint16, readForPC bool) byte {
 
 func (m *Memory) ReadWord(addr uint16) uint16 {
 	return uint16(m.ReadByte(addr+1))<<8 + uint16(m.ReadByte(addr))
-}
-
-func (m *Memory) ReadWordForPC(addr uint16) uint16 {
-	return uint16(m.ReadByteForPC(addr+1))<<8 + uint16(m.ReadByteForPC(addr))
 }
 
 func (m *Memory) ReadBytes(addr uint16, length int) []byte {
