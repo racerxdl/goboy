@@ -816,7 +816,7 @@ func (g *GPU) renderScanline() {
 
 				x = 0
 				tileOffset = (tileOffset + 1) % 32
-				tile := int(g.Read(uint16(vramOffset + tileOffset)))
+				tile := int(g.vram[vramOffset+tileOffset-VRamBase])
 				if g.bgTileBase != 0x0000 && tile < 128 {
 					tile += 256
 				}
@@ -895,7 +895,7 @@ func (g *GPU) renderScanline() {
 
 					x = 0
 					tileOffset = (tileOffset + 1) % 32
-					tile := int(g.Read(uint16(vramOffset + tileOffset)))
+					tile := int(g.vram[vramOffset+tileOffset-VRamBase])
 					if g.bgTileBase != 0x0000 && tile < 128 {
 						tile += 256
 					}

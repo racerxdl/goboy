@@ -82,6 +82,10 @@ func (m *Memory) Reset() {
 		m.highRam[i] = 0x00
 	}
 
+	for i := 0; i < 0xFF; i++ {
+		m.iomem[i] = 0x00
+	}
+
 	m.inBIOS = true
 }
 
@@ -213,7 +217,7 @@ func (m *Memory) ReadByte(addr uint16) byte {
 		return m.catridge.Read(addr)
 	case addr >= 0x100 && addr <= 0x1FF:
 		return m.catridge.Read(addr) // Always from catridge
-	case addr >= 0x200 && addr <= 0x8FF: // On GBC Mode, thats BIOS
+	case addr >= 0x200 && addr <= 0x8FF: // On GBC Mode, that's BIOS area as well
 		if m.inBIOS && m.catridge.GBC() {
 			return gbcBios[addr]
 		}
