@@ -1,9 +1,9 @@
 package cpu
 
 import (
-	"github.com/faiface/pixel"
 	"github.com/quan-to/slog"
 	"github.com/racerxdl/goboy/gameboy"
+	"github.com/racerxdl/goboy/localimg"
 	"github.com/racerxdl/goboy/pixhelp"
 	"golang.org/x/image/colornames"
 	"image"
@@ -32,14 +32,14 @@ type GPU struct {
 	bgMapBase                    uint16
 	winMapBase                   uint16
 	oam                          []byte
-	tileBuffer                   *pixel.PictureData
+	tileBuffer                   *localimg.PictureData
 	registers                    []byte
 	tileSet                      []gpuTile
-	bgBuffer                     *pixel.PictureData
-	winBuffer                    *pixel.PictureData
-	lcdBuffer                    *pixel.PictureData
-	syncLcdBuffer                *pixel.PictureData
-	palleteBuffer                *pixel.PictureData
+	bgBuffer                     *localimg.PictureData
+	winBuffer                    *localimg.PictureData
+	lcdBuffer                    *localimg.PictureData
+	syncLcdBuffer                *localimg.PictureData
+	palleteBuffer                *localimg.PictureData
 	vram                         []byte
 	vramBank                     uint16
 	objs                         []gpuObject
@@ -67,27 +67,27 @@ type GPU struct {
 	dmaLength uint16
 	dmaRun    bool
 
-	highLightedXY pixel.Vec
+	highLightedXY localimg.Vec
 	highLightBG   bool
 	cgbMode       bool
 }
 
-func (g *GPU) GetLCDBuffer() *pixel.PictureData {
+func (g *GPU) GetLCDBuffer() *localimg.PictureData {
 	return g.syncLcdBuffer
 }
 
-func (g *GPU) GetPalleteBuffer() *pixel.PictureData {
+func (g *GPU) GetPalleteBuffer() *localimg.PictureData {
 	return g.palleteBuffer
 }
 
-func (g *GPU) GetBGRam() *pixel.PictureData {
+func (g *GPU) GetBGRam() *localimg.PictureData {
 	return g.bgBuffer
 }
-func (g *GPU) GetWinRam() *pixel.PictureData {
+func (g *GPU) GetWinRam() *localimg.PictureData {
 	return g.winBuffer
 }
 
-func (g *GPU) GetTileBuffer() *pixel.PictureData {
+func (g *GPU) GetTileBuffer() *localimg.PictureData {
 	return g.tileBuffer
 }
 
@@ -112,7 +112,7 @@ func (g *GPU) CGBMode() bool {
 }
 
 func (g *GPU) SetHighlightTile(x, y float64) {
-	g.highLightedXY = pixel.V(x, y)
+	g.highLightedXY = localimg.V(x, y)
 	g.refreshTileData(-1)
 }
 
@@ -127,15 +127,15 @@ func (g *GPU) SetCGBMode(c bool) {
 func MakeGPU(cpu *Core) *GPU {
 	gpu := &GPU{
 		cpu:                   cpu,
-		tileBuffer:            pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
-		highLightedXY:         pixel.V(-1, -1),
+		tileBuffer:            localimg.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 144, 288))),
+		highLightedXY:         localimg.V(-1, -1),
 		highLightBG:           true,
 		vramBank:              0,
 		bgCurrentPalleteIndex: 0,
 		bgAutoIncrementPindex: false,
 		dmaRun:                false,
 		palleteDirty:          true,
-		palleteBuffer:         pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 160, 160))),
+		palleteBuffer:         localimg.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 160, 160))),
 	}
 
 	for i := 0; i < len(gpu.tileBuffer.Pix); i++ {
@@ -169,8 +169,8 @@ func (g *GPU) Reset() {
 	g.mode = gameboy.OamRead
 
 	img := image.NewRGBA(image.Rect(0, 0, 160, 144))
-	g.lcdBuffer = pixel.PictureDataFromImage(img)
-	g.syncLcdBuffer = pixel.PictureDataFromImage(img)
+	g.lcdBuffer = localimg.PictureDataFromImage(img)
+	g.syncLcdBuffer = localimg.PictureDataFromImage(img)
 	pixhelp.ClearPictureData(g.lcdBuffer, color.White)
 	pixhelp.ClearPictureData(g.syncLcdBuffer, color.White)
 
@@ -183,9 +183,9 @@ func (g *GPU) Reset() {
 		g.vram[i] = 0x00
 	}
 
-	g.bgBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
+	g.bgBuffer = localimg.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
 	pixhelp.ClearPictureData(g.bgBuffer, color.Black)
-	g.winBuffer = pixel.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
+	g.winBuffer = localimg.PictureDataFromImage(image.NewRGBA(image.Rect(0, 0, 256, 256)))
 	pixhelp.ClearPictureData(g.winBuffer, color.Black)
 	g.oam = make([]byte, 256)
 
@@ -575,7 +575,7 @@ func (g *GPU) updatePalleteBuffer() {
 			c := g.bgPallete[i][j]
 			x := float64(j * 20)
 			y := float64(i * 20)
-			pixhelp.DrawSquare(g.palleteBuffer, pixel.R(x, y, x+16, y+16), c)
+			pixhelp.DrawSquare(g.palleteBuffer, localimg.R(x, y, x+16, y+16), c)
 		}
 	}
 
@@ -585,7 +585,7 @@ func (g *GPU) updatePalleteBuffer() {
 			c := g.objPallete[i][j]
 			x := float64(j*20) + 20*4
 			y := float64(i * 20)
-			pixhelp.DrawSquare(g.palleteBuffer, pixel.R(x, y, x+16, y+16), c)
+			pixhelp.DrawSquare(g.palleteBuffer, localimg.R(x, y, x+16, y+16), c)
 		}
 	}
 }

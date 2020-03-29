@@ -1,11 +1,11 @@
 package pixhelp
 
 import (
-	"github.com/faiface/pixel"
+	"github.com/racerxdl/goboy/localimg"
 	"image/color"
 )
 
-func ClearPictureData(p *pixel.PictureData, c color.Color) {
+func ClearPictureData(p *localimg.PictureData, c color.Color) {
 	t := p.Bounds()
 	t.Size()
 	ts := t.Min
@@ -23,7 +23,7 @@ func ToRGBA(c color.Color) color.RGBA {
 	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
 }
 
-func DrawSquare(p *pixel.PictureData, rect pixel.Rect, c color.Color) {
+func DrawSquare(p *localimg.PictureData, rect localimg.Rect, c color.Color) {
 	nc := ToRGBA(c)
 	b := p.Bounds()
 

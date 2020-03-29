@@ -1,10 +1,10 @@
 package cpu
 
 import (
-	"github.com/faiface/pixel"
 	"github.com/quan-to/slog"
 	"github.com/racerxdl/goboy/cpu/mbc"
 	"github.com/racerxdl/goboy/gameboy"
+	"github.com/racerxdl/goboy/localimg"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -101,11 +101,7 @@ func (m *Memory) Randomize() {
 	}
 }
 
-func (m *Memory) GetVideoSprite() *pixel.Sprite {
-	return pixel.NewSprite(m.cpu.GPU.GetLCDBuffer(), m.cpu.GPU.GetLCDBuffer().Bounds())
-}
-
-func (m *Memory) GetVideoFrame() *pixel.PictureData {
+func (m *Memory) GetVideoFrame() *localimg.PictureData {
 	return m.cpu.GPU.GetLCDBuffer()
 }
 

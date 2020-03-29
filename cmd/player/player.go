@@ -6,6 +6,7 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
+	"github.com/racerxdl/goboy/conv"
 	"github.com/racerxdl/goboy/cpu"
 	"golang.org/x/image/colornames"
 	"golang.org/x/image/font/basicfont"
@@ -262,14 +263,16 @@ func run() {
 
 	hh := true
 
+	ib := conv.MakePixelGLButtonConverter(win)
+
 	for !win.Closed() {
-		pal := z80.GPU.GetPalleteBuffer()
-		vframe := z80.Memory.GetVideoFrame()
-		vram := z80.GPU.GetBGRam()
+		pal := conv.LocalImgToPixelPicture(z80.GPU.GetPalleteBuffer())
+		vframe := conv.LocalImgToPixelPicture(z80.Memory.GetVideoFrame())
+		vram := conv.LocalImgToPixelPicture(z80.GPU.GetBGRam())
 		if !hh {
-			vram = z80.GPU.GetWinRam()
+			vram = conv.LocalImgToPixelPicture(z80.GPU.GetWinRam())
 		}
-		tilebuff := z80.GPU.GetTileBuffer()
+		tilebuff := conv.LocalImgToPixelPicture(z80.GPU.GetTileBuffer())
 
 		mp := win.MousePosition()
 
@@ -363,7 +366,7 @@ func run() {
 			RefreshStack()
 		}
 
-		z80.Keys.Update(win)
+		z80.Keys.Update(ib)
 		z80.GPU.UpdateVRAM()
 
 		win.Update()

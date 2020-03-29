@@ -1,8 +1,8 @@
 package cpu
 
 import (
-	"github.com/faiface/pixel/pixelgl"
 	"github.com/racerxdl/goboy/gameboy"
+	"github.com/racerxdl/goboy/localimg"
 )
 
 type GBKeys struct {
@@ -58,19 +58,19 @@ func (k *GBKeys) SetKeysBit(bit int, val bool) {
 	k.keys &= 0xF
 }
 
-func (k *GBKeys) Update(win *pixelgl.Window) {
+func (k *GBKeys) Update(win localimg.IButton) {
 	lastK := k.keys
 	lastD := k.direction
 
-	k.SetDirectionBit(0, !win.Pressed(pixelgl.KeyRight))
-	k.SetDirectionBit(1, !win.Pressed(pixelgl.KeyLeft))
-	k.SetDirectionBit(2, !win.Pressed(pixelgl.KeyUp))
-	k.SetDirectionBit(3, !win.Pressed(pixelgl.KeyDown))
+	k.SetDirectionBit(0, !win.Pressed(localimg.KeyRight))
+	k.SetDirectionBit(1, !win.Pressed(localimg.KeyLeft))
+	k.SetDirectionBit(2, !win.Pressed(localimg.KeyUp))
+	k.SetDirectionBit(3, !win.Pressed(localimg.KeyDown))
 
-	k.SetKeysBit(0, !win.Pressed(pixelgl.KeyZ))
-	k.SetKeysBit(1, !win.Pressed(pixelgl.KeyX))
-	k.SetKeysBit(2, !win.Pressed(pixelgl.KeySpace))
-	k.SetKeysBit(3, !win.Pressed(pixelgl.KeyEnter))
+	k.SetKeysBit(0, !win.Pressed(localimg.KeyZ))
+	k.SetKeysBit(1, !win.Pressed(localimg.KeyX))
+	k.SetKeysBit(2, !win.Pressed(localimg.KeySpace))
+	k.SetKeysBit(3, !win.Pressed(localimg.KeyEnter))
 
 	if lastK != k.keys || lastD != k.direction {
 		k.cpu.Registers.InterruptsFired |= gameboy.IntJoypad
