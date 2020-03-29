@@ -189,12 +189,12 @@ func RefreshDisasm() {
 
 func run() {
 	//game, err := ioutil.ReadFile("./opus5.gb")
-	//game, err := ioutil.ReadFile("./tetris.gb")
+	game, err := ioutil.ReadFile("./tetris.gb")
 	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Flasher_v1.19/ZELDA-DX.GB")
-	game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
+	//game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/gbc/OS-PGOLD.GBC")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/instr_timing/instr_timing.gb")

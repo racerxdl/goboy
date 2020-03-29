@@ -9,6 +9,7 @@ require (
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7 // indirect
 	github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1 // indirect
 	github.com/go-gl/mathgl v0.0.0-20190416160123-c4601bc793c7 // indirect
+	github.com/jteeuwen/go-bindata v3.0.7+incompatible // indirect
 	github.com/llgcode/draw2d v0.0.0-20200110163050-b96d8208fcfc
 	github.com/markfarnan/go-canvas v0.0.0-20200205132300-933a7c1291b8
 	github.com/pkg/errors v0.8.1 // indirect

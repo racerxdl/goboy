@@ -69,7 +69,7 @@ type SoundCard struct {
 func MakeSoundCard(cpu *Core) *SoundCard {
 	return &SoundCard{
 		cpu:  cpu,
-		regs: make([]byte, 0x3F),
+		regs: make([]byte, 0x40),
 	}
 }
 

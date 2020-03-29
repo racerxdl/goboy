@@ -1,10 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="wasm_exec.js"></script>
     <meta charset="UTF-8">
-    <title>$Title$</title>
+    <title>Javascripto GoBoy</title>
+    <script>
+        const go = new Go();
+        WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+            go.run(result.instance);
+        });
+    </script>
 </head>
 <body>
-$END$
+
+    <canvas width="180" height="164" id="screen">
+        Canvas Not Supported
+    </canvas>
+    <pre id="debug">
+
+    </pre>
 </body>
 </html>
