@@ -97,7 +97,7 @@ func (m *MBC5) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM		// RAM enable
 		m.ramEnabled = val&0xA == 0xA
-		//mbc5log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		//mbc5log.Debug("Changed Ram Enable to %v", m.ramWriteEnabled)
 	case addr >= 0x2000 && addr < 0x3000: // ROM Bank Low Bits
 		//m.activeRomBank &= 0x100
 		m.activeRomBank = (m.activeRomBank & 0x100) | int(val)

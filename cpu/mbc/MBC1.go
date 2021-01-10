@@ -103,7 +103,7 @@ func (m *MBC1) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
 		m.ramEnabled = val&0xF == 0xA
-		//mbc1log.Debug("Changed Ram Enable to %v", m.ramEnabled)
+		//mbc1log.Debug("Changed Ram Enable to %v", m.ramWriteEnabled)
 	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
 		if val == 0 {
 			val = 1

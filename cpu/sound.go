@@ -69,7 +69,7 @@ type SoundCard struct {
 func MakeSoundCard(cpu *Core) *SoundCard {
 	return &SoundCard{
 		cpu:  cpu,
-		regs: make([]byte, 0x3F),
+		regs: make([]byte, 0xFF),
 	}
 }
 
@@ -258,7 +258,7 @@ func (s *SoundCard) Read(addr uint16) byte {
 	case NR24:
 		return v | 0xBF
 	case NR30:
-		return v | 0x7F
+		return v // v | 0x7F
 	case NR32:
 		return v | 0x9F
 	case NR34:
@@ -274,7 +274,7 @@ func (s *SoundCard) Read(addr uint16) byte {
 	case NR51:
 		return v
 	case NR52:
-		return v | 0x70
+		return 0 // v | 0x70
 	default: // NR13, NR20, NR23, NR31, NR33, NR40, NR41
 		return 0xFF
 	}

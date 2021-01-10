@@ -115,7 +115,7 @@ func (m *Memory) InDoubleSpeedMode() bool {
 
 func (m *Memory) WriteByte(addr uint16, val byte) {
 	switch {
-	case addr < 0x3FFF && addr <= 0x7FFF: // Catridge Bank N
+	case addr <= 0x7FFF: // Catridge
 		m.catridge.Write(addr, val)
 	case addr >= 0x8000 && addr <= 0x9FFF: // Video RAM
 		m.cpu.GPU.Write(addr, val)
@@ -174,11 +174,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 
 		baseAddr := addr - 0xFF00
 
-		switch baseAddr & 0x00F0 {
-		case 0x00:
-		case 0x10, 0x20, 0x30:
-			m.cpu.SoundCard.Write(addr, val)
-		case 0x50:
+		if baseAddr == 0x50 {
 			cpuLog.Debug("Writing to BIOS disable: %02x", val)
 			if m.inBIOS {
 				cpuLog.Info("Disabling Internal BIOS")
@@ -190,7 +186,14 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 				m.cpu.Registers.PC = 0x100
 				// endregion
 			}
-		case 0x40, 0x60:
+			return
+		}
+
+		switch baseAddr & 0x00F0 {
+		case 0x00:
+		case 0x10, 0x20, 0x30:
+			m.cpu.SoundCard.Write(addr, val)
+		case 0x40, 0x50, 0x60:
 			m.cpu.GPU.Write(addr, val)
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:
@@ -267,6 +270,26 @@ func (m *Memory) ReadByte(addr uint16) byte {
 				return v
 			}
 			return 0x00
+		case 0xFF68:
+			if m.catridge.GBC() {
+				return m.iomem[0x68] | 0x40
+			}
+			return 0xC0
+		case 0xFF6A:
+			if m.catridge.GBC() {
+				return m.iomem[0x6A] | 0x40
+			}
+			return 0xC0
+		case 0xFF69:
+			if m.catridge.GBC() {
+				return m.iomem[0x69]
+			}
+			return 0xFF
+		case 0xFF6B:
+			if m.catridge.GBC() {
+				return m.iomem[0x6B]
+			}
+			return 0xFF
 		case 0xFF70:
 			if m.catridge.GBC() {
 				return uint8(m.ramBank)
@@ -282,10 +305,9 @@ func (m *Memory) ReadByte(addr uint16) byte {
 			return 0x00
 		case 0x10, 0x20, 0x30:
 			return m.cpu.SoundCard.Read(addr)
-			return 0x00
-		case 0x40:
+		case 0x40, 0x50:
 			return m.cpu.GPU.Read(addr)
-		case 0x50, 0x60, 0x70:
+		case 0x60, 0x70:
 			return 0xFF
 		}
 	case addr >= 0xFF80 && addr <= 0xFFFE:

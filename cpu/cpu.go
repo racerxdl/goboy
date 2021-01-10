@@ -290,6 +290,10 @@ func (c *Core) cycle() {
 		c.stopped = false
 		c.Memory.inPrepareMode = false
 	}
+
+	//if c.Registers.PC == 0xDEC1 {
+	//	c.Pause()
+	//}
 }
 
 func (c *Core) Reset() {

@@ -501,37 +501,41 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		if g.CGBMode() {
 			g.dmaSource &= 0x00FF // Erase upper 8 bits
 			g.dmaSource |= uint16(val) << 8
+			g.dmaSource &= 0xFFF0
 		}
 	case 0xFF52: // HDMA2 - CGB Mode Only - New DMA Source, Low
 		if g.CGBMode() {
 			g.dmaSource &= 0xFF00 // Erase upper 8 bits
 			g.dmaSource |= uint16(val)
+			g.dmaSource &= 0xFFF0
 		}
 
 	case 0xFF53: // HDMA3 - CGB Mode Only - New DMA Destination, High
 		if g.CGBMode() {
 			g.dmaTarget &= 0x00FF // Erase upper 8 bits
 			g.dmaTarget |= uint16(val) << 8
+			g.dmaTarget &= 0x0FF0
 		}
 
 	case 0xFF54: // HDMA4 - CGB Mode Only - New DMA Destination, Low
 		if g.CGBMode() {
 			g.dmaTarget &= 0xFF00 // Erase upper 8 bits
 			g.dmaTarget |= uint16(val)
+			g.dmaTarget &= 0x0FF0
 		}
 
 	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
 		if g.CGBMode() {
 			hblankDMA := val&0x80 > 0
-			g.dmaLength = (uint16(val)&0x7F)*0x10 + 1
+			g.dmaLength = (uint16(val)&0x7F)*0x10 + 0x10
 			if hblankDMA {
 				g.dmaRun = true
 			} else {
 				// Run now
-				gpulog.Debug("Running GDMA from %04x to %04x with %d bytes", g.dmaSource, g.dmaTarget, g.dmaLength)
+				gpulog.Debug("Running GDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, g.dmaLength)
 				for i := 0; i < int(g.dmaLength); i++ {
 					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.cpu.Memory.WriteByte(g.dmaTarget+uint16(i), b)
+					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
 				}
 			}
 		}
@@ -1146,19 +1150,26 @@ func (g *GPU) Cycle(clocks int) {
 			g.modeClocks = 0
 			g.renderScanline()
 			g.mode = gameboy.HBlank
-
 			if g.CGBMode() && g.dmaRun {
-				gpulog.Debug("Running HDMA from %04x to %04x with %d bytes", g.dmaSource, g.dmaTarget, g.dmaLength)
-				for i := 0; i < int(g.dmaLength); i++ {
-					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.cpu.Memory.WriteByte(g.dmaTarget+uint16(i), b)
+				copyLength := 16
+				if g.dmaLength < 16 {
+					copyLength = int(g.dmaLength)
 				}
-				g.dmaRun = false
+				gpulog.Debug("Running HDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, copyLength)
+				for i := 0; i < copyLength; i++ {
+					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
+					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
+				}
+				g.dmaSource += uint16(copyLength)
+				g.dmaTarget += uint16(copyLength)
+				g.dmaLength -= uint16(copyLength)
+				if g.dmaLength == 0 {
+					g.dmaRun = false
+				}
 			}
-
-			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
-				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
-			}
+		}
+		if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
+			g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 		}
 	}
 }

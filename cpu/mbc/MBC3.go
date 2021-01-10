@@ -11,24 +11,24 @@ var mbc3log = slog.Scope("MBC3")
 
 // No MBC
 type MBC3 struct {
-	romBanks      [][0x4000]byte
-	ramBanks      [][0x2000]byte
-	activeRomBank int
-	activeRamBank int
-	ramEnabled    bool
-	RTC           [0x10]byte
-	latchedRTC    [0x10]byte
-	rtcIsLatched  bool
+	romBanks        [][0x4000]byte
+	ramBanks        [][0x2000]byte
+	activeRomBank   int
+	activeRamBank   int
+	ramWriteEnabled bool
+	RTC             [0x10]byte
+	latchedRTC      [0x10]byte
+	rtcIsLatched    bool
 }
 
 func MakeMBC3() *MBC3 {
 	return &MBC3{
-		romBanks:      make([][0x4000]byte, 128),
-		ramBanks:      make([][0x2000]byte, 4),
-		activeRomBank: 1,
-		activeRamBank: 0,
-		ramEnabled:    true,
-		rtcIsLatched:  false,
+		romBanks:        make([][0x4000]byte, 128),
+		ramBanks:        make([][0x2000]byte, 4),
+		activeRomBank:   1,
+		activeRamBank:   0,
+		ramWriteEnabled: false,
+		rtcIsLatched:    false,
 	}
 }
 
@@ -97,9 +97,9 @@ func (m *MBC3) Read(addr uint16) uint8 {
 		if m.activeRamBank >= 0x4 {
 			// RTC
 			if m.rtcIsLatched {
-				return m.latchedRTC[m.activeRamBank]
+				return m.latchedRTC[m.activeRamBank&len(m.latchedRTC)]
 			}
-			return m.RTC[m.activeRamBank]
+			return m.RTC[m.activeRamBank&len(m.latchedRTC)]
 		} else {
 			return m.ramBanks[m.activeRamBank][addr&0x1FFF]
 		}
@@ -111,16 +111,22 @@ func (m *MBC3) Read(addr uint16) uint8 {
 func (m *MBC3) Write(addr uint16, val uint8) {
 	switch {
 	case addr < 0x2000: // Enable RAM
-		m.ramEnabled = val&0xA > 0
+		m.ramWriteEnabled = val&0xA > 0
 	case addr >= 0x2000 && addr < 0x4000: // Select ROM Bank
+		if int(val&0x7F) != m.activeRomBank {
+			//mbc3log.Debug("Switching from bank %d to %d", m.activeRomBank, int(val&0x7F))
+		}
 		m.activeRomBank = int(val & 0x7F)
 		if m.activeRomBank == 0 {
 			m.activeRomBank = 1
 		}
 		//mbc3log.Debug("Changed Rom Bank to %d", m.activeRomBank)
-	case addr >= 0x4000 && addr < 0x5FFF:
+	case addr >= 0x4000 && addr < 0x6000:
 		m.activeRamBank = int(val)
-	case addr >= 0x6000 && addr <= 0x7FFF:
+	case addr >= 0x6000 && addr < 0x8000:
+		if m.activeRomBank >= 52 && m.activeRomBank <= 53 { // Chinese Flash Cartridge
+			m.romBanks[m.activeRomBank][addr&0x3FFF] = val
+		}
 		// Latch Clock Data (Write Only)
 		if val == 1 {
 			m.rtcIsLatched = false
@@ -128,10 +134,10 @@ func (m *MBC3) Write(addr uint16, val uint8) {
 			m.rtcIsLatched = true
 			copy(m.RTC[:], m.latchedRTC[:])
 		}
-	case addr >= 0xA000 && addr <= 0xBFFF: // Catridge RAM
-		if m.ramEnabled {
+	case addr >= 0xA000 && addr < 0xC000: // Catridge RAM
+		if m.ramWriteEnabled {
 			if m.activeRamBank >= 0x4 {
-				m.RTC[m.activeRamBank] = val
+				m.RTC[m.activeRamBank&len(m.RTC)] = val
 			} else {
 				m.ramBanks[m.activeRamBank][addr&0x1FFF] = val
 			}
