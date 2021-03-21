@@ -160,3 +160,7 @@ func (m *MBC1) DumpRam() []byte {
 func (m *MBC1) GBC() bool {
 	return m.romBanks[0][0x143] == 0x80 || m.romBanks[0][0x143] == 0xC0
 }
+
+func (m *MBC1) RomBank() int {
+	return m.activeRomBank
+}

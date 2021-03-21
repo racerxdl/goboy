@@ -26,4 +26,5 @@ type Catridge interface {
 	Randomize()
 	DumpRam() []byte
 	LoadRam([]byte)
+	RomBank() int
 }

@@ -175,3 +175,7 @@ func (m *MBC3) DumpRam() []byte {
 func (m *MBC3) GBC() bool {
 	return m.romBanks[0][0x143] == 0x80 || m.romBanks[0][0x143] == 0xC0
 }
+
+func (m *MBC3) RomBank() int {
+	return m.activeRomBank
+}

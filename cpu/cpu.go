@@ -48,6 +48,7 @@ type DebugData struct {
 	GPUMODECLOCKS, GPULINE                   string
 	HALTED                                   string
 	RamBank                                  string
+	RomBank                                  string
 }
 
 func MakeCore() *Core {
@@ -183,6 +184,7 @@ func (c *Core) GetDebugData() DebugData {
 
 		HALTED:  fmt.Sprintf("%v", c.halted),
 		RamBank: fmt.Sprintf("%d", c.Memory.ramBank),
+		RomBank: fmt.Sprintf("%d", c.Memory.catridge.RomBank()),
 	}
 }
 

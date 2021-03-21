@@ -92,3 +92,7 @@ func (m *MBC0) DumpRam() []byte {
 func (m *MBC0) GBC() bool {
 	return m.romData[0x143] == 0x80
 }
+
+func (m *MBC0) RomBank() int {
+	return 1
+}
