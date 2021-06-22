@@ -1,3 +1,5 @@
+github.com/damonqin/portaudio v0.0.0-20200525200034-b9c11b178c7b h1:Up8F3pLCrQk1j01Z6O5dylbJR4YqUuKHXNqGCSjMZSc=
+github.com/damonqin/portaudio v0.0.0-20200525200034-b9c11b178c7b/go.mod h1:MmVu7HrQOraRupcnIfon/6CMk1bIEkE5jJ2F+LihF48=
 github.com/faiface/glhf v0.0.0-20181018222622-82a6317ac380 h1:FvZ0mIGh6b3kOITxUnxS3tLZMh7yEoHo75v3/AgUqg0=
 github.com/faiface/glhf v0.0.0-20181018222622-82a6317ac380/go.mod h1:zqnPFFIuYFFxl7uH2gYByJwIVKG7fRqlqQCbzAnHs9g=
 github.com/faiface/mainthread v0.0.0-20171120011319-8b78f0a41ae3 h1:baVdMKlASEHrj19iqjARrPbaRisD7EuZEVJj6ZMLl1Q=

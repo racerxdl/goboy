@@ -192,93 +192,106 @@ func (c *Core) IsPaused() bool {
 	return c.paused
 }
 
+const instructionsInterp = 1
+
+var lastPrint = time.Now()
+
 func (c *Core) cycle() {
 	c.l.Lock()
 
-	totalClockM := 0
-	totalClockT := 0
-
 	x := time.Now()
+	waitingClockT := c.clockT
+
 	// Normal Cycle
-	c.Registers.CycleCount++
+	for cc := 0; cc < instructionsInterp; cc++ {
+		totalClockM := 0
+		totalClockT := 0
+		c.Registers.CycleCount++
+		if !c.stopped {
+			if c.halted {
+				totalClockM += 1
+				totalClockT += 4
+			} else {
+				op := c.Memory.ReadByte(c.Registers.PC)
+				c.Registers.PC++
+				GBInstructions[op](c)
 
-	if !c.stopped {
-		if c.halted {
-			totalClockM += 1
-			totalClockT += 4
-		} else {
-			op := c.Memory.ReadByte(c.Registers.PC)
-			c.Registers.PC++
-			GBInstructions[op](c)
-
-			totalClockM += c.Registers.LastClockM
-			totalClockT += c.Registers.LastClockT
-		}
-
-		// Check Interrupts
-		if c.Registers.InterruptEnable && (c.Registers.EnabledInterrupts&c.Registers.InterruptsFired) > 0 {
-			curHalt := c.halted
-			c.halted = false
-			c.Registers.InterruptEnable = false
-			interruptsFired := c.Registers.EnabledInterrupts & c.Registers.InterruptsFired
-
-			switch {
-			case (interruptsFired & gameboy.IntVblank) > 0:
-				c.Registers.InterruptsFired &= ^uint8(gameboy.IntVblank)
-				gbRSTXX(c, AddrIntVblank) // V-Blank
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
-			case (interruptsFired & gameboy.IntLcdstat) > 0:
-				//cpuLog.Debug("(INT) [LCDSTAT]")
-				c.Registers.InterruptsFired &= ^uint8(gameboy.IntLcdstat)
-				gbRSTXX(c, AddrIntLcdstat) // LCD Stat
-				totalClockM += c.Registers.LastClockM
-				totalClockT += c.Registers.LastClockT
-			case (interruptsFired & gameboy.IntTimer) > 0:
-				//cpuLog.Debug("(INT) [TIMER]")
-				c.Registers.InterruptsFired &= ^uint8(gameboy.IntTimer)
-				gbRSTXX(c, AddrIntTimer) // Timer
-				totalClockM += c.Registers.LastClockM
-				totalClockT += c.Registers.LastClockT
-			case (interruptsFired & gameboy.IntSerial) > 0:
-				//cpuLog.Debug("(INT) [SERIAL]")
-				c.Registers.InterruptsFired &= ^uint8(gameboy.IntSerial)
-				gbRSTXX(c, AddrIntSerial) // Serial
-				totalClockM += c.Registers.LastClockM
-				totalClockT += c.Registers.LastClockT
-			case (interruptsFired & gameboy.IntJoypad) > 0:
-				c.Registers.InterruptsFired &= ^uint8(gameboy.IntJoypad)
-				gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
-				totalClockM += c.Registers.LastClockM
-				totalClockT += c.Registers.LastClockT
-			default:
-				c.Registers.InterruptEnable = true
-				c.halted = curHalt
 			}
+
+			// Check Interrupts
+			if c.Registers.InterruptEnable && (c.Registers.EnabledInterrupts&c.Registers.InterruptsFired) > 0 {
+				curHalt := c.halted
+				c.halted = false
+				c.Registers.InterruptEnable = false
+				interruptsFired := c.Registers.EnabledInterrupts & c.Registers.InterruptsFired
+
+				switch {
+				case (interruptsFired & gameboy.IntVblank) > 0:
+					c.Registers.InterruptsFired &= ^uint8(gameboy.IntVblank)
+					gbRSTXX(c, AddrIntVblank) // V-Blank
+					totalClockM += c.Registers.LastClockM
+					totalClockT += c.Registers.LastClockT
+				case (interruptsFired & gameboy.IntLcdstat) > 0:
+					//cpuLog.Debug("(INT) [LCDSTAT]")
+					c.Registers.InterruptsFired &= ^uint8(gameboy.IntLcdstat)
+					gbRSTXX(c, AddrIntLcdstat) // LCD Stat
+					totalClockM += c.Registers.LastClockM
+					totalClockT += c.Registers.LastClockT
+				case (interruptsFired & gameboy.IntTimer) > 0:
+					//cpuLog.Debug("(INT) [TIMER]")
+					c.Registers.InterruptsFired &= ^uint8(gameboy.IntTimer)
+					gbRSTXX(c, AddrIntTimer) // Timer
+					totalClockM += c.Registers.LastClockM
+					totalClockT += c.Registers.LastClockT
+				case (interruptsFired & gameboy.IntSerial) > 0:
+					//cpuLog.Debug("(INT) [SERIAL]")
+					c.Registers.InterruptsFired &= ^uint8(gameboy.IntSerial)
+					gbRSTXX(c, AddrIntSerial) // Serial
+					totalClockM += c.Registers.LastClockM
+					totalClockT += c.Registers.LastClockT
+				case (interruptsFired & gameboy.IntJoypad) > 0:
+					c.Registers.InterruptsFired &= ^uint8(gameboy.IntJoypad)
+					gbRSTXX(c, AddrIntJoypad) // Joypad Interrupt
+					totalClockM += c.Registers.LastClockM
+					totalClockT += c.Registers.LastClockT
+				default:
+					c.Registers.InterruptEnable = true
+					c.halted = curHalt
+				}
+			}
+
+			c.clockM += totalClockM
+			c.clockT += totalClockT
+
+			// Sound Flow
+			c.SoundCard.Cycle(totalClockM)
+
+			// GPU Flow
+			c.GPU.Cycle(totalClockM)
+
+			// Timer Flow
+			c.Timer.Increment(totalClockT)
+
+			// Serial Flow
+			c.Serial.Cycle(totalClockM)
+
 		}
-
-		c.clockM += totalClockM
-		c.clockT += totalClockT
-
-		// Sound Flow
-		c.SoundCard.Cycle(totalClockM)
-
-		// GPU Flow
-		c.GPU.Cycle(totalClockM)
-
-		// Timer Flow
-		c.Timer.Increment(totalClockT)
-
-		// Serial Flow
-		c.Serial.Cycle(totalClockM)
 	}
-
+	waitingClockT = c.clockT - waitingClockT
 	c.l.Unlock()
 
-	cycleDuration := time.Duration(int64(totalClockT)) * time.Duration(float64(c.baseClock)/c.speedMul)
-
+	cycleDuration := time.Duration(int64(waitingClockT)) * time.Duration(float64(c.baseClock)/c.speedMul)
+	if time.Since(lastPrint) > time.Second/4 {
+		fmt.Println("Cycle Duration", cycleDuration, waitingClockT, c.baseClock)
+		lastPrint = time.Now()
+	}
+	//if time.Since(x) - cycleDuration > time.Millisecond * 10 {
+	//	time.Sleep(time.Millisecond)
+	//}
 	// Sleep is not precise enough, so we will do a busy loop
-	for time.Since(x) < cycleDuration {
+	for time.Since(x) < time.Duration(float64(cycleDuration)*1.5) {
 		runtime.Gosched()
 	}
 
@@ -292,10 +305,6 @@ func (c *Core) cycle() {
 		c.stopped = false
 		c.Memory.inPrepareMode = false
 	}
-
-	//if c.Registers.PC == 0xDEC1 {
-	//	c.Pause()
-	//}
 }
 
 func (c *Core) Reset() {

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/damonqin/portaudio"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
@@ -44,7 +45,8 @@ var debugTemplate = template.Must(template.New("debugger").Parse(`
 |      |                  ZSHC----  |
 |  F   |    {{.F}} | -------- {{.FB}}  |
 \-----------------------------------/
-
+       Rom Bank: {{.RomBank}}
+       Ram Bank: {{.RamBank}}
        Halted: {{.HALTED}}
 
                GPU DATA
@@ -104,7 +106,7 @@ func RefreshStack() {
 		addr := offset + uint16(i)
 		stackText.Color = colornames.Black
 
-		v := uint16(page[i+1]<<8) + uint16(page[i])
+		v := uint16(page[i+1])<<8 + uint16(page[i])
 
 		if addr == z80.Registers.SP {
 			stackText.Color = colornames.Blue
@@ -187,14 +189,31 @@ func RefreshDisasm() {
 }
 
 func run() {
+	portaudio.Initialize()
+	defer portaudio.Terminate()
+
+	z80.SoundCard.SetSampleRate(96000)
+	stream, err := portaudio.OpenDefaultStream(0, 2, 96000, 0, z80.SoundCard.ProcessAudio)
+	if err != nil {
+		panic(err)
+	}
+	defer stream.Close()
+
+	stream.Start()
+	defer stream.Stop()
+
 	//game, err := ioutil.ReadFile("./opus5.gb")
 	//game, err := ioutil.ReadFile("./tetris.gb")
 	//game, err := ioutil.ReadFile("./cpu_instrs.gb")
-	//game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
+	game, err := ioutil.ReadFile("/home/lucas/Pokemon - Blue Version (UE) [S][!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
+	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Interface_v1.22/weirdumps/POKEMON BLUE.gb")
+	//game, err := ioutil.ReadFile("./sound.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Flasher_v1.19/ZELDA-DX.GB")
-	game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
+	//game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/gbc/OS-PGOLD.GBC")
+	//game, err := ioutil.ReadFile("/home/lucas/gbc/pkcristal.gbc")
+	//game, err := ioutil.ReadFile("/home/lucas/gbc/pktcg.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/cpu_instrs/individual/02-interrupts.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/instr_timing/instr_timing.gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/gb-test-roms/interrupt_time/interrupt_time.gb")
