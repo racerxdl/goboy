@@ -7,27 +7,29 @@ import (
 )
 
 const (
-	NR10 uint16 = 0xff10
-	NR11        = 0xff11
-	NR12        = 0xff12
-	NR13        = 0xff13
-	NR14        = 0xff14
-	NR21        = 0xff16
-	NR22        = 0xff17
-	NR23        = 0xff18
-	NR24        = 0xff19
-	NR30        = 0xff1a
-	NR31        = 0xff1b
-	NR32        = 0xff1c
-	NR33        = 0xff1d
-	NR34        = 0xff1e
-	NR41        = 0xff20
-	NR42        = 0xff21
-	NR43        = 0xff22
-	NR44        = 0xff23
-	NR50        = 0xff24
-	NR51        = 0xff25
-	NR52        = 0xff26
+	NR10     uint16 = 0xff10
+	NR11            = 0xff11
+	NR12            = 0xff12
+	NR13            = 0xff13
+	NR14            = 0xff14
+	NR21            = 0xff16
+	NR22            = 0xff17
+	NR23            = 0xff18
+	NR24            = 0xff19
+	NR30            = 0xff1a
+	NR31            = 0xff1b
+	NR32            = 0xff1c
+	NR33            = 0xff1d
+	NR34            = 0xff1e
+	NR41            = 0xff20
+	NR42            = 0xff21
+	NR43            = 0xff22
+	NR44            = 0xff23
+	NR50            = 0xff24
+	NR51            = 0xff25
+	NR52            = 0xff26
+	WAVSTART        = 0xff30
+	WAVEND          = 0xff3f
 )
 
 var duty1 = []uint8{0, 1, 1, 1, 1, 1, 1, 1}
@@ -69,23 +71,29 @@ type SoundCard struct {
 	numberEnvelopeSweep2 uint8
 	frequency2           uint16
 	stopExpire2          bool
-	wavTable             []uint8
 	channel2On           bool
+
+	wavTable         []uint8
+	channel3On       bool
+	sound3Enable     bool
+	soundLength3     uint8
+	soundLength3calc float32
+	frequency3       uint16
+	sound3volume     uint8
+	stopExpire3      bool
 
 	sampleRate   float64
 	samplePeriod time.Duration
-	//phaseTest float64
-	buffer     []float32
-	cycleAcc   int64
-	lastUpdate time.Time
+	buffer       []float32
+	cycleAcc     int64
+	lastUpdate   time.Time
 
 	f1timerSampleCount int64
 	lastSweep1Freq     int
 	lastSweep1Sample   int64
 
 	f2timerSampleCount int64
-	lastSweep2Freq     int
-	lastSweep2Sample   int64
+	f3timerSampleCount int64
 
 	sound1Left  bool
 	sound1Right bool
@@ -106,6 +114,7 @@ func MakeSoundCard(cpu *Core) *SoundCard {
 		sampleRate:   48000,
 		samplePeriod: time.Second / 48000,
 		lastUpdate:   time.Now(),
+		wavTable:     make([]uint8, 32),
 	}
 }
 
@@ -123,16 +132,28 @@ func (s *SoundCard) ProcessAudio(out [][]float32) {
 		out[0][i] = 0
 		out[1][i] = 0
 		if s.sound1Left {
-			out[0][i] += s.GetFrequency1Sample()
+			out[0][i] += s.GetFrequency1Sample() / 4
 		}
 		if s.sound1Right {
-			out[1][i] += s.GetFrequency1Sample()
+			out[1][i] += s.GetFrequency1Sample() / 4
 		}
 		if s.sound2Left {
-			out[0][i] += s.GetFrequency2Sample()
+			out[0][i] += s.GetFrequency2Sample() / 4
 		}
 		if s.sound2Right {
-			out[1][i] += s.GetFrequency2Sample()
+			out[1][i] += s.GetFrequency2Sample() / 4
+		}
+		if s.sound3Left {
+			out[0][i] += s.GetFrequency3Sample() / 4
+		}
+		if s.sound3Right {
+			out[1][i] += s.GetFrequency3Sample() / 4
+		}
+		if s.sound4Left {
+			out[0][i] += s.GetFrequency4Sample() / 4
+		}
+		if s.sound4Right {
+			out[1][i] += s.GetFrequency4Sample() / 4
 		}
 
 		if out[0][i] > 1 {
@@ -160,7 +181,6 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		if s.sweepTime != 0 {
 			s.lastSweep1Freq = -1
 			s.lastSweep1Sample = 0
-			s.lastSweep2Sample = 0
 		}
 
 		/*
@@ -281,17 +301,42 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		if restartSound {
 			s.channel2On = true
 			s.f2timerSampleCount = 0
-			s.lastSweep2Freq = int(s.frequency2)
-			s.lastSweep2Sample = 0
 		}
 		s.stopExpire2 = val&0x40 > 0
+	/*
+	   Bit 7   - Initial (1=Restart Sound)     (Write Only)
+	   Bit 6   - Counter/consecutive selection (Read/Write)
+	               (1=Stop output when length in NR11 expires)
+	   Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
+	   Frequency = 131072/(2048-x) Hz
+	*/
+	case NR30:
+		s.sound3Enable = val&0x80 > 0
+	case NR31:
+		s.soundLength3 = val
+	case NR32:
 		/*
-		   Bit 7   - Initial (1=Restart Sound)     (Write Only)
-		   Bit 6   - Counter/consecutive selection (Read/Write)
-		               (1=Stop output when length in NR11 expires)
-		   Bit 2-0 - Frequency's higher 3 bits (x) (Write Only)
-		   Frequency = 131072/(2048-x) Hz
+		 Bit 6-5 - Select output level (Read/Write)
+
+		 0: Mute (No sound)
+		 1: 100% Volume (Produce Wave Pattern RAM Data as it is)
+		 2:  50% Volume (Produce Wave Pattern RAM data shifted once to the right)
+		 3:  25% Volume (Produce Wave Pattern RAM data shifted twice to the right)
 		*/
+		s.sound3volume = val & 0x60 >> 5
+	case NR33:
+		s.frequency3 &= 0x700
+		s.frequency3 |= uint16(val)
+	case NR34:
+		s.frequency3 &= 0xFF
+		s.frequency3 |= uint16(val&0x7) << 8
+
+		restartSound := val&0x80 > 0
+		if restartSound {
+			s.channel3On = true
+			s.f3timerSampleCount = 0
+		}
+		s.stopExpire3 = val&0x40 > 0
 	case NR51:
 		/*
 		 Bit 7 - Output sound 4 to SO2 terminal Left
@@ -317,6 +362,14 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		s.globalSoundEnable = val&0x80 > 0
 	}
 
+	if addr >= WAVSTART && addr <= WAVEND {
+		sample0 := (val & 0xF0) >> 4
+		sample1 := val & 0xF
+		i := (addr - WAVSTART) * 2
+		s.wavTable[i+0] = sample0
+		s.wavTable[i+1] = sample1
+	}
+
 	s.refreshRegs()
 }
 
@@ -332,6 +385,7 @@ func (s *SoundCard) refreshRegs() {
 	s.sweepTimeCalc = float32(s.sweepTime) / 128
 	s.soundLength1calc = float32(s.soundLength1) / 256
 	s.soundLength2calc = float32(s.soundLength2) / 256
+	s.soundLength3calc = float32(s.soundLength3) / 256
 }
 
 func (s *SoundCard) GetFrequency1Sample() float32 {
@@ -436,56 +490,12 @@ func (s *SoundCard) GetFrequency1Sample() float32 {
 func (s *SoundCard) GetFrequency2Sample() float32 {
 	if !s.channel2On || !s.globalSoundEnable {
 		s.f2timerSampleCount = 0
-		s.lastSweep2Sample = 0
 		return 0
 	}
 
 	f2period := float64(1e6 / getFreq(int(s.frequency2)))
 	samplePeriodMicros := 1e6 / s.sampleRate
 	s.f2timerSampleCount++
-
-	// Calculate sweep if needed
-	if s.sweepTime != 0 {
-		/*
-		   Bit 6-4 - Sweep Time
-		   Bit 3   - Sweep Increase/Decrease
-		            0: Addition    (frequency increases)
-		            1: Subtraction (frequency decreases)
-		   Bit 2-0 - Number of sweep shift (n: 0-7)
-		   Sweep Time:
-		     000: sweep off - no freq change
-		     001: 7.8 ms  (1/128Hz)
-		     010: 15.6 ms (2/128Hz)
-		     011: 23.4 ms (3/128Hz)
-		     100: 31.3 ms (4/128Hz)
-		     101: 39.1 ms (5/128Hz)
-		     110: 46.9 ms (6/128Hz)
-		     111: 54.7 ms (7/128Hz)
-
-		   The change of frequency (NR13,NR14) at each shift is calculated by the following formula where X(0) is initial freq & X(t-1) is last freq:
-		     X(t) = X(t-1) +/- X(t-1)/2^n
-		*/
-		sweepPeriodMicros := (float64(s.sweepTime) * 1e6) / 128
-		sweepPeriodSamples := int64(sweepPeriodMicros / samplePeriodMicros)
-		if s.f2timerSampleCount-s.lastSweep2Sample > sweepPeriodSamples {
-			// Shift
-			s.lastSweep2Sample = s.f2timerSampleCount
-			shiftFactor := int(math.Pow(2, float64(s.sweepShift)))
-			offset := s.lastSweep2Freq / shiftFactor
-			if s.sweepSub {
-				s.lastSweep2Freq -= offset
-			} else {
-				s.lastSweep2Freq += offset
-			}
-
-			if s.lastSweep2Freq <= 0 || s.lastSweep2Freq >= 2048 {
-				s.channel2On = false
-				s.lastSweep2Freq = 0
-				return 0
-			}
-		}
-		f2period = float64(1e6 / getFreq(s.lastSweep2Freq))
-	}
 
 	f2periodNumSamples := int64(f2period / samplePeriodMicros)
 
@@ -530,6 +540,49 @@ func (s *SoundCard) GetFrequency2Sample() float32 {
 	currentSample := float32(dutyPat[p]) * vol
 
 	return currentSample
+}
+
+func (s *SoundCard) GetFrequency3Sample() float32 {
+	if !(s.channel3On && s.sound3Enable) {
+		return 0 // Wav disabled
+	}
+
+	period := float64(1e6 / getFreq(int(s.frequency3)))
+	samplePeriodMicros := 1e6 / s.sampleRate
+	s.f3timerSampleCount++
+	periodNumSamples := int64(period / samplePeriodMicros)
+
+	sampleLengthMicros := float64(s.soundLength3calc * 1e6)
+	microsSoundPassed := float64(s.f3timerSampleCount) * samplePeriodMicros
+	if s.stopExpire3 && microsSoundPassed > sampleLengthMicros {
+		s.channel3On = false
+		s.f3timerSampleCount = 0
+		return 0
+	}
+
+	samplesPerPoint := int(periodNumSamples) / len(s.wavTable)
+	if samplesPerPoint == 0 {
+		return 0
+	}
+	p := int((s.f3timerSampleCount / int64(samplesPerPoint)) % int64(len(s.wavTable)))
+	tableSample := float32(s.wavTable[p])
+	switch s.sound3volume {
+	case 0:
+		tableSample = 0 // MUTE
+	case 1:
+		// Table sample as is
+	case 2:
+		tableSample /= 2
+	case 3:
+		tableSample /= 4
+	}
+	currentSample := tableSample / 15
+
+	return currentSample
+}
+
+func (s *SoundCard) GetFrequency4Sample() float32 {
+	return 0
 }
 
 func (s *SoundCard) Cycle(clocks int) {
