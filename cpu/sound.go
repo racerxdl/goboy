@@ -82,6 +82,19 @@ type SoundCard struct {
 	sound3volume     uint8
 	stopExpire3      bool
 
+	channel4On           bool
+	sound4LSFR           uint16
+	sound4Enable         bool
+	soundLength4         uint8
+	soundLength4calc     float32
+	stopExpire4          bool
+	initialVolume4       uint8
+	envelopeIncrease4    bool
+	numberEnvelopeSweep4 uint8
+	shiftClockFrequency  uint8
+	countStep15Bit       bool
+	sound4Frequency      uint8
+
 	sampleRate   float64
 	samplePeriod time.Duration
 	buffer       []float32
@@ -94,6 +107,7 @@ type SoundCard struct {
 
 	f2timerSampleCount int64
 	f3timerSampleCount int64
+	f4timerSampleCount int64
 
 	sound1Left  bool
 	sound1Right bool
@@ -178,10 +192,6 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		s.sweepTime = (val & 0x70) >> 4
 		s.sweepSub = (val & 8) > 0
 		s.sweepShift = val & 7
-		if s.sweepTime != 0 {
-			s.lastSweep1Freq = -1
-			s.lastSweep1Sample = 0
-		}
 
 		/*
 		   Bit 6-4 - Sweep Time
@@ -337,6 +347,34 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 			s.f3timerSampleCount = 0
 		}
 		s.stopExpire3 = val&0x40 > 0
+	case NR41:
+		s.soundLength4 = val
+	case NR42:
+		s.initialVolume4 = (val & 0xF0) >> 4
+		s.envelopeIncrease4 = val&8 > 0
+		s.numberEnvelopeSweep4 = val & 7
+	case NR43:
+		/*
+		 Bit 7-4 - Shift Clock Frequency (s)
+		 Bit 3   - Counter Step/Width (0=15 bits, 1=7 bits)
+		 Bit 2-0 - Dividing Ratio of Frequencies (r)
+		 Frequency = 524288 Hz / r / 2^(s+1) ;For r=0 assume r=0.5 instead
+		*/
+		s.shiftClockFrequency = (val & 0xF0) >> 4
+		s.countStep15Bit = (val & 0x4) == 0
+		s.sound4Frequency = val & 3
+	case NR44:
+		/*
+		 Bit 7   - Initial (1=Restart Sound)     (Write Only)
+		 Bit 6   - Counter/consecutive selection (Read/Write)
+		           (1=Stop output when length in NR41 expires)
+		*/
+		restartSound := val&0x80 > 0
+		if restartSound {
+			s.channel4On = true
+			s.f4timerSampleCount = 0
+		}
+		s.stopExpire4 = val&0x40 > 0
 	case NR51:
 		/*
 		 Bit 7 - Output sound 4 to SO2 terminal Left
@@ -379,6 +417,24 @@ func getFreq(val int) float32 {
 		val = 2047
 	}
 	return 4194304 / (4 * 2 * 2 * 2 * (2048 - float32(val))) / 2
+}
+
+func getWavFreq(val int) float32 {
+	if val > 2047 {
+		val = 2047
+	}
+	return 4194304 / (4 * 2 * 2 * 2 * 2 * (2048 - float32(val))) / 2
+}
+
+func getNoiseFreq(r, s int) float32 {
+	//  Frequency = 524288 Hz / r / 2^(s+1) ;For r=0 assume r=0.5 instead
+	rf := float64(r)
+	sf := float64(s)
+
+	if r == 0 {
+		rf = 0.5
+	}
+	return float32(524288 / rf / math.Pow(2, sf + 1))
 }
 
 func (s *SoundCard) refreshRegs() {
@@ -547,7 +603,7 @@ func (s *SoundCard) GetFrequency3Sample() float32 {
 		return 0 // Wav disabled
 	}
 
-	period := float64(1e6 / getFreq(int(s.frequency3)))
+	period := float64(1e6 / getWavFreq(int(s.frequency3)))
 	samplePeriodMicros := 1e6 / s.sampleRate
 	s.f3timerSampleCount++
 	periodNumSamples := int64(period / samplePeriodMicros)
