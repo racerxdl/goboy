@@ -1,3 +1,7 @@
 .idea
 *.sav
 .DS_Store
+*.gbc
+*.gb
+*.bin
+player
