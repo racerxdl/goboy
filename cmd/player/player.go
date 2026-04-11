@@ -209,7 +209,7 @@ func run() {
 	//game, err := ioutil.ReadFile("/home/lucas/Legend of Zelda, The - Link's Awakening (U) (V1.2) [!].gb")
 	//game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Interface_v1.22/weirdumps/POKEMON BLUE.gb")
 	//game, err := ioutil.ReadFile("./sound.gb")
-	game, err := ioutil.ReadFile("/home/lucas/Works/GBxCart-RW/Interface_Programs/GBxCart_RW_Console_Flasher_v1.19/ZELDA-DX.GB")
+	game, err := ioutil.ReadFile("pkmgold.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/zeldaofg.gbc")
 	//game, err := ioutil.ReadFile("/home/lucas/gbc/OS-PGOLD.GBC")
 	//game, err := ioutil.ReadFile("/home/lucas/gbc/pkcristal.gbc")

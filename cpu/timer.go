@@ -42,10 +42,10 @@ func (t *Timer) Cycle() {
 	t.timaReg &= 0xFF
 }
 
-func (t *Timer) Increment(clockM int) {
-	t.subTime += clockM
+func (t *Timer) Increment(clockT int) {
+	t.subTime += clockT
 
-	if t.subTime >= 4 {
+	for t.subTime >= 4 {
 		t.mainTime++
 		t.subTime -= 4
 		t.divTime++

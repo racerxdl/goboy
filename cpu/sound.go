@@ -76,7 +76,7 @@ type SoundCard struct {
 	wavTable         []uint8
 	channel3On       bool
 	sound3Enable     bool
-	soundLength3     uint8
+	soundLength3     uint16
 	soundLength3calc float32
 	frequency3       uint16
 	sound3volume     uint8
@@ -119,6 +119,12 @@ type SoundCard struct {
 	sound4Right bool
 
 	globalSoundEnable bool
+
+	frameSeqPeriod int64
+	frameSeqPhase  uint8
+	envelopeTimer1 uint8
+	envelopeTimer2 uint8
+	envelopeTimer4 uint8
 }
 
 func MakeSoundCard(cpu *Core) *SoundCard {
@@ -174,8 +180,16 @@ func (s *SoundCard) ProcessAudio(out [][]float32) {
 			out[0][i] = 1
 		}
 
+		if out[0][i] < -1 {
+			out[0][i] = -1
+		}
+
 		if out[1][i] > 1 {
 			out[1][i] = 1
+		}
+
+		if out[1][i] < -1 {
+			out[1][i] = -1
 		}
 	}
 
@@ -260,6 +274,7 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 			s.lastSweep1Freq = int(s.frequency1)
 			s.f1timerSampleCount = 0
 			s.lastSweep1Sample = 0
+			s.envelopeTimer1 = 0
 		}
 		/*
 		   Bit 7   - Initial (1=Restart Sound)     (Write Only)
@@ -311,6 +326,7 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		if restartSound {
 			s.channel2On = true
 			s.f2timerSampleCount = 0
+			s.envelopeTimer2 = 0
 		}
 		s.stopExpire2 = val&0x40 > 0
 	/*
@@ -323,7 +339,7 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 	case NR30:
 		s.sound3Enable = val&0x80 > 0
 	case NR31:
-		s.soundLength3 = val
+		s.soundLength3 = 256 - uint16(val)
 	case NR32:
 		/*
 		 Bit 6-5 - Select output level (Read/Write)
@@ -333,7 +349,7 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		 2:  50% Volume (Produce Wave Pattern RAM data shifted once to the right)
 		 3:  25% Volume (Produce Wave Pattern RAM data shifted twice to the right)
 		*/
-		s.sound3volume = val & 0x60 >> 5
+		s.sound3volume = (val & 0x60) >> 5
 	case NR33:
 		s.frequency3 &= 0x700
 		s.frequency3 |= uint16(val)
@@ -348,11 +364,12 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		}
 		s.stopExpire3 = val&0x40 > 0
 	case NR41:
-		s.soundLength4 = val
+		s.soundLength4 = 64 - (val & 0x3F)
 	case NR42:
 		s.initialVolume4 = (val & 0xF0) >> 4
 		s.envelopeIncrease4 = val&8 > 0
 		s.numberEnvelopeSweep4 = val & 7
+		s.sound4Enable = s.initialVolume4 > 0 || s.numberEnvelopeSweep4 > 0
 	case NR43:
 		/*
 		 Bit 7-4 - Shift Clock Frequency (s)
@@ -373,6 +390,8 @@ func (s *SoundCard) Write(addr uint16, val uint8) {
 		if restartSound {
 			s.channel4On = true
 			s.f4timerSampleCount = 0
+			s.sound4LSFR = 0xFFFF
+			s.envelopeTimer4 = 0
 		}
 		s.stopExpire4 = val&0x40 > 0
 	case NR51:
@@ -434,7 +453,7 @@ func getNoiseFreq(r, s int) float32 {
 	if r == 0 {
 		rf = 0.5
 	}
-	return float32(524288 / rf / math.Pow(2, sf + 1))
+	return float32(524288 / rf / math.Pow(2, sf+1))
 }
 
 func (s *SoundCard) refreshRegs() {
@@ -500,37 +519,7 @@ func (s *SoundCard) GetFrequency1Sample() float32 {
 
 	f1periodNumSamples := int64(f1period / samplePeriodMicros)
 
-	sampleLengthMicros := float64(s.soundLength1calc * 1e6)
-	microsSoundPassed := float64(s.f1timerSampleCount) * samplePeriodMicros
-	if s.stopExpire1 && microsSoundPassed > sampleLengthMicros {
-		s.channel1On = false
-		s.f1timerSampleCount = 0
-		return 0
-	}
-
-	vol := float32(s.initialVolume1)
-
-	// Calculate envelope
-	if s.numberEnvelopeSweep1 != 0 {
-		stepLengthMicros := (float32(s.numberEnvelopeSweep1) * 1e6) / 64
-		currentStep := int(float32(microsSoundPassed) / stepLengthMicros)
-		if currentStep > 15 {
-			currentStep = 15
-		}
-		if s.envelopeIncrease1 {
-			vol += float32(currentStep)
-		} else {
-			vol -= float32(currentStep)
-		}
-		if vol > 15 {
-			vol = 15
-		}
-		if vol <= 0 {
-			return 0
-		}
-	}
-
-	vol /= 15
+	vol := float32(s.initialVolume1) / 15
 
 	dutyPat := dutyCycles[s.wavePatternDuty1]
 	samplesPerPoint := int(f1periodNumSamples) / len(dutyPat)
@@ -555,37 +544,7 @@ func (s *SoundCard) GetFrequency2Sample() float32 {
 
 	f2periodNumSamples := int64(f2period / samplePeriodMicros)
 
-	sampleLengthMicros := float64(s.soundLength2calc * 1e6)
-	microsSoundPassed := float64(s.f2timerSampleCount) * samplePeriodMicros
-	if s.stopExpire2 && microsSoundPassed > sampleLengthMicros {
-		s.channel2On = false
-		s.f2timerSampleCount = 0
-		return 0
-	}
-
-	vol := float32(s.initialVolume2)
-
-	// Calculate envelope
-	if s.numberEnvelopeSweep2 != 0 {
-		stepLengthMicros := (float32(s.numberEnvelopeSweep2) * 1e6) / 64
-		currentStep := int(float32(microsSoundPassed) / stepLengthMicros)
-		if currentStep > 15 {
-			currentStep = 15
-		}
-		if s.envelopeIncrease2 {
-			vol += float32(currentStep)
-		} else {
-			vol -= float32(currentStep)
-		}
-		if vol > 15 {
-			vol = 15
-		}
-		if vol <= 0 {
-			return 0
-		}
-	}
-
-	vol /= 15
+	vol := float32(s.initialVolume2) / 15
 
 	dutyPat := dutyCycles[s.wavePatternDuty2]
 	samplesPerPoint := int(f2periodNumSamples) / len(dutyPat)
@@ -607,14 +566,6 @@ func (s *SoundCard) GetFrequency3Sample() float32 {
 	samplePeriodMicros := 1e6 / s.sampleRate
 	s.f3timerSampleCount++
 	periodNumSamples := int64(period / samplePeriodMicros)
-
-	sampleLengthMicros := float64(s.soundLength3calc * 1e6)
-	microsSoundPassed := float64(s.f3timerSampleCount) * samplePeriodMicros
-	if s.stopExpire3 && microsSoundPassed > sampleLengthMicros {
-		s.channel3On = false
-		s.f3timerSampleCount = 0
-		return 0
-	}
 
 	samplesPerPoint := int(periodNumSamples) / len(s.wavTable)
 	if samplesPerPoint == 0 {
@@ -638,11 +589,132 @@ func (s *SoundCard) GetFrequency3Sample() float32 {
 }
 
 func (s *SoundCard) GetFrequency4Sample() float32 {
-	return 0
+	if !s.channel4On || !s.globalSoundEnable || !s.sound4Enable {
+		return 0
+	}
+
+	samplePeriodMicros := 1e6 / s.sampleRate
+	s.f4timerSampleCount++
+
+	noiseFreq := getNoiseFreq(int(s.sound4Frequency), int(s.shiftClockFrequency))
+	noisePeriodMicros := 1e6 / float64(noiseFreq)
+	noisePeriodSamples := int64(noisePeriodMicros / samplePeriodMicros)
+
+	if noisePeriodSamples == 0 {
+		noisePeriodSamples = 1
+	}
+
+	if s.f4timerSampleCount%noisePeriodSamples == 0 {
+		newBit := (s.sound4LSFR & 1) ^ ((s.sound4LSFR >> 1) & 1)
+		s.sound4LSFR >>= 1
+		s.sound4LSFR |= (newBit << 14)
+		if !s.countStep15Bit {
+			s.sound4LSFR = (s.sound4LSFR & 0x7F) | ((s.sound4LSFR & 0x40) << 1)
+		}
+	}
+
+	vol := float32(s.initialVolume4) / 15
+
+	if s.sound4LSFR&1 == 1 {
+		return vol
+	}
+	return -vol
 }
 
 func (s *SoundCard) Cycle(clocks int) {
+	if !s.globalSoundEnable {
+		return
+	}
 
+	s.frameSeqPeriod += int64(clocks)
+
+	for s.frameSeqPeriod >= 8192 {
+		s.frameSeqPeriod -= 8192
+
+		phase := s.frameSeqPhase
+		s.frameSeqPhase++
+		if s.frameSeqPhase > 7 {
+			s.frameSeqPhase = 0
+		}
+
+		if phase == 0 || phase == 2 || phase == 4 || phase == 6 {
+			if s.stopExpire1 && s.soundLength1 > 0 {
+				s.soundLength1--
+				if s.soundLength1 == 0 {
+					s.channel1On = false
+				}
+			}
+			if s.stopExpire2 && s.soundLength2 > 0 {
+				s.soundLength2--
+				if s.soundLength2 == 0 {
+					s.channel2On = false
+				}
+			}
+			if s.stopExpire3 && s.soundLength3 > 0 {
+				s.soundLength3--
+				if s.soundLength3 == 0 {
+					s.channel3On = false
+				}
+			}
+			if s.stopExpire4 && s.soundLength4 > 0 {
+				s.soundLength4--
+				if s.soundLength4 == 0 {
+					s.channel4On = false
+				}
+			}
+		}
+
+		if phase == 7 {
+			s.tickEnvelope1()
+			s.tickEnvelope2()
+			s.tickEnvelope4()
+		}
+	}
+}
+
+func (s *SoundCard) tickEnvelope1() {
+	if s.numberEnvelopeSweep1 == 0 {
+		return
+	}
+	s.envelopeTimer1++
+	if s.envelopeTimer1 >= s.numberEnvelopeSweep1 {
+		s.envelopeTimer1 = 0
+		if s.envelopeIncrease1 && s.initialVolume1 < 15 {
+			s.initialVolume1++
+		} else if !s.envelopeIncrease1 && s.initialVolume1 > 0 {
+			s.initialVolume1--
+		}
+	}
+}
+
+func (s *SoundCard) tickEnvelope2() {
+	if s.numberEnvelopeSweep2 == 0 {
+		return
+	}
+	s.envelopeTimer2++
+	if s.envelopeTimer2 >= s.numberEnvelopeSweep2 {
+		s.envelopeTimer2 = 0
+		if s.envelopeIncrease2 && s.initialVolume2 < 15 {
+			s.initialVolume2++
+		} else if !s.envelopeIncrease2 && s.initialVolume2 > 0 {
+			s.initialVolume2--
+		}
+	}
+}
+
+func (s *SoundCard) tickEnvelope4() {
+	if s.numberEnvelopeSweep4 == 0 {
+		return
+	}
+	s.envelopeTimer4++
+	if s.envelopeTimer4 >= s.numberEnvelopeSweep4 {
+		s.envelopeTimer4 = 0
+		if s.envelopeIncrease4 && s.initialVolume4 < 15 {
+			s.initialVolume4++
+		} else if !s.envelopeIncrease4 && s.initialVolume4 > 0 {
+			s.initialVolume4--
+		}
+	}
 }
 
 func (s *SoundCard) Read(addr uint16) byte {
@@ -708,10 +780,16 @@ func (s *SoundCard) Read(addr uint16) byte {
 		if s.channel2On {
 			v |= 2
 		}
+		if s.channel3On && s.sound3Enable {
+			v |= 4
+		}
+		if s.channel4On {
+			v |= 8
+		}
 		if s.globalSoundEnable {
 			v |= 0x80
 		}
-		return v //| 0x70
+		return v | 0x70
 	default: // NR13, NR20, NR23, NR31, NR33, NR40, NR41
 		return 0xFF
 	}

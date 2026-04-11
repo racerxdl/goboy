@@ -1,6 +1,6 @@
 package gameboy
 
-//region Interrupts
+// region Interrupts
 const (
 	IntVblank  = 0x01
 	IntLcdstat = 0x02
@@ -9,8 +9,8 @@ const (
 	IntJoypad  = 0x10
 )
 
-//endregion
-//region LCDSTAT
+// endregion
+// region LCDSTAT
 const (
 	FlagLycLy      = 0x40
 	FlagOamMode    = 0x20
@@ -18,8 +18,8 @@ const (
 	FlagHblankMode = 0x08
 )
 
-//endregion
-//region Registers
+// endregion
+// region Registers
 const (
 	FlagCarry        = 0x10
 	FlagHalfCarry    = 0x20

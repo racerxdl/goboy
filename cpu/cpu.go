@@ -58,7 +58,7 @@ func MakeCore() *Core {
 		stopped:   false,
 		paused:    true,
 		speedMul:  1,
-		baseClock: ColorModePeriod,
+		baseClock: Period,
 		colorMode: false,
 	}
 	c.Memory = MakeMemory(c)
@@ -192,9 +192,7 @@ func (c *Core) IsPaused() bool {
 	return c.paused
 }
 
-const instructionsInterp = 1
-
-var lastPrint = time.Now()
+const instructionsInterp = 500
 
 func (c *Core) cycle() {
 	c.l.Lock()
@@ -218,6 +216,18 @@ func (c *Core) cycle() {
 
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
+
+				if c.stopped {
+					if c.Memory.inPrepareMode {
+						c.Memory.inPrepareMode = false
+						if !c.Memory.doubleSpeed {
+							c.Memory.doubleSpeed = true
+							c.baseClock = ColorModePeriod
+							cpuLog.Info("Switching to Double Speed Mode")
+						}
+						c.stopped = false
+					}
+				}
 			}
 
 			// Check Interrupts
@@ -283,27 +293,9 @@ func (c *Core) cycle() {
 	c.l.Unlock()
 
 	cycleDuration := time.Duration(int64(waitingClockT)) * time.Duration(float64(c.baseClock)/c.speedMul)
-	if time.Since(lastPrint) > time.Second/4 {
-		fmt.Println("Cycle Duration", cycleDuration, waitingClockT, c.baseClock)
-		lastPrint = time.Now()
-	}
-	//if time.Since(x) - cycleDuration > time.Millisecond * 10 {
-	//	time.Sleep(time.Millisecond)
-	//}
 	// Sleep is not precise enough, so we will do a busy loop
-	for time.Since(x) < time.Duration(float64(cycleDuration)*1.5) {
+	for time.Since(x) < cycleDuration {
 		runtime.Gosched()
-	}
-
-	if c.stopped && c.Memory.inPrepareMode {
-		if !c.Memory.doubleSpeed {
-			cpuLog.Info("Switching to Double Speed Mode")
-			c.Memory.doubleSpeed = true
-			c.baseClock = ColorModePeriod
-			//c.paused = true
-		}
-		c.stopped = false
-		c.Memory.inPrepareMode = false
 	}
 }
 

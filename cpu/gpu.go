@@ -35,6 +35,7 @@ type GPU struct {
 	tileBuffer                   *pixel.PictureData
 	registers                    []byte
 	tileSet                      []gpuTile
+	tileSetBank1                 []gpuTile
 	bgBuffer                     *pixel.PictureData
 	winBuffer                    *pixel.PictureData
 	lcdBuffer                    *pixel.PictureData
@@ -122,6 +123,30 @@ func (g *GPU) SetHighlightBG(highLightBG bool) {
 
 func (g *GPU) SetCGBMode(c bool) {
 	g.cgbMode = c
+	if c {
+		g.refreshTileSetBank1()
+	}
+}
+
+func (g *GPU) refreshTileSetBank1() {
+	for tile := 0; tile < 512; tile++ {
+		for y := 0; y < 8; y++ {
+			addr := uint16(tile*16 + y*2)
+			b0 := g.vram[addr+0x2000]
+			b1 := g.vram[addr+0x2000+1]
+			for x := 0; x < 8; x++ {
+				sx := uint8(1 << (7 - uint(x)))
+				o := uint8(0)
+				if b0&sx != 0 {
+					o += 1
+				}
+				if b1&sx != 0 {
+					o += 2
+				}
+				g.tileSetBank1[tile].TileData[y][x] = o
+			}
+		}
+	}
 }
 
 func MakeGPU(cpu *Core) *GPU {
@@ -177,6 +202,10 @@ func (g *GPU) Reset() {
 	g.tileSet = make([]gpuTile, 512)
 	for i := 0; i < 512; i++ {
 		g.tileSet[i] = makeGPUTile()
+	}
+	g.tileSetBank1 = make([]gpuTile, 512)
+	for i := 0; i < 512; i++ {
+		g.tileSetBank1[i] = makeGPUTile()
 	}
 
 	for i := 0; i < 0x4000; i++ {
@@ -653,7 +682,7 @@ func (g *GPU) updateOAM(addr uint16, val uint8) {
 			g.objs[obj].Prio = (val & 0x80) != 0
 			if g.CGBMode() {
 				g.objs[obj].Palette = int(val & 7)
-				g.objs[obj].VRamBank = int(val & 8)
+				g.objs[obj].VRamBank = int(val&8) >> 3
 			}
 		}
 	}
@@ -794,7 +823,7 @@ func (g *GPU) renderScanline() {
 			if g.CGBMode() && attr.VerticalFlip {
 				drawY = 7 - drawY
 			}
-			tileRow := g.tileSet[tile].TileData[drawY]
+			tileRow := g.getTileSet(attr.TileVRAMBank)[tile].TileData[drawY]
 
 			for i := 0; i < 160; i++ {
 				p := g.bgPallete[0]
@@ -834,23 +863,36 @@ func (g *GPU) renderScanline() {
 					drawY = 7 - drawY
 				}
 
-				tileRow = g.tileSet[tile].TileData[drawY]
+				tileRow = g.getTileSet(attr.TileVRAMBank)[tile].TileData[drawY]
 			}
 		}
 		// endregion
 		// region Window Draw
-		if g.switchWin {
-			bufferOffset = int(g.line) * g.lcdBuffer.Stride
+		if g.switchWin && int(g.line) >= g.winY {
+			windowX := 0
+			if g.winX >= 0 {
+				windowX = g.winX
+			}
+			remainingPixels := 160 - windowX
+			if remainingPixels <= 0 {
+				goto endWindow
+			}
 
-			// region Window Offset Compute
+			bufferOffset = int(g.line)*g.lcdBuffer.Stride + windowX
+
 			winVramOffset := VRamBase
 			winVramOffset += int(g.winMapBase)
 			winVramOffset += (((int(g.line) - g.winY) & 0xFF) / 8) * 32
 
 			wY := (int(g.line) - g.winY) % 8
-			wX := g.winX % 8
-			wTileOffset := (g.winX / 8) % 32
-			// endregion
+			wX := 0
+			if g.winX > 0 {
+				wX = g.winX % 8
+			}
+			wTileOffset := 0
+			if g.winX >= 0 {
+				wTileOffset = (g.winX / 8) % 32
+			}
 
 			x := wX
 			y := wY
@@ -869,52 +911,51 @@ func (g *GPU) renderScanline() {
 				attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
 			}
 
-			if int(g.line)-g.winY >= 0 {
-				drawY := y
+			drawY := y
+			if g.CGBMode() && attr.VerticalFlip {
+				drawY = 7 - drawY
+			}
+			tileRow := g.getTileSet(attr.TileVRAMBank)[tile].TileData[drawY]
+
+			for i := 0; i < remainingPixels; i++ {
+				drawX := x
+				p := g.bgPallete[0]
+				if g.CGBMode() {
+					p = g.bgPallete[attr.BackgroundPallete]
+					if attr.HorizontalFlip {
+						drawX = 7 - drawX
+					}
+				}
+				c := p[0]
+				if x >= 0 {
+					c = p[tileRow[drawX]]
+				}
+				g.lcdBuffer.Pix[bufferOffset] = c
+				g.bgPriority[bufferOffset] = attr.BGtoOamPriority
+				bufferOffset++
+				x++
+				if x != 8 {
+					continue
+				}
+
+				x = 0
+				tileOffset = (tileOffset + 1) % 32
+				tile := int(g.vram[vramOffset+tileOffset-VRamBase])
+				if g.bgTileBase != 0x0000 && tile < 128 {
+					tile += 256
+				}
+				if g.CGBMode() {
+					attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
+				}
+				drawY = y
 				if g.CGBMode() && attr.VerticalFlip {
 					drawY = 7 - drawY
 				}
-				tileRow := g.tileSet[tile].TileData[drawY]
 
-				for i := 0; i < 160; i++ {
-					drawX := x
-					p := g.bgPallete[0]
-					if g.CGBMode() {
-						p = g.bgPallete[attr.BackgroundPallete]
-						if attr.HorizontalFlip {
-							drawX = 7 - drawX
-						}
-					}
-					c := p[0]
-					if x >= 0 {
-						c = p[tileRow[drawX]]
-						g.currentRow[i] = tileRow[x]
-					}
-					g.lcdBuffer.Pix[bufferOffset] = c
-					bufferOffset++
-					x++
-					if x != 8 {
-						continue
-					}
-
-					x = 0
-					tileOffset = (tileOffset + 1) % 32
-					tile := int(g.vram[vramOffset+tileOffset-VRamBase])
-					if g.bgTileBase != 0x0000 && tile < 128 {
-						tile += 256
-					}
-					if g.CGBMode() {
-						attr = tileAttr(g.vram[vramOffset+tileOffset-VRamBase+0x2000])
-					}
-					drawY = y
-					if g.CGBMode() && attr.VerticalFlip {
-						drawY = 7 - drawY
-					}
-
-					tileRow = g.tileSet[tile].TileData[drawY]
-				}
+				tileRow = g.getTileSet(attr.TileVRAMBank)[tile].TileData[drawY]
 			}
 		}
+	endWindow:
 		// endregion
 		// region Object Draw
 		if g.switchObj {
@@ -942,7 +983,7 @@ func (g *GPU) renderScanline() {
 
 				if obj.Y <= iline && (obj.Y+spriteHeight) >= iline {
 					var tileRow []byte
-					tileData := g.tileSet[obj.Tile]
+					tileData := g.getTileSet(obj.VRamBank)[obj.Tile]
 					yp := iline - obj.Y
 
 					if obj.YFlip {
@@ -950,7 +991,7 @@ func (g *GPU) renderScanline() {
 					}
 
 					if yp > 7 {
-						tileData = g.tileSet[obj.Tile+1]
+						tileData = g.getTileSet(obj.VRamBank)[obj.Tile+1]
 						yp -= 8
 					}
 
@@ -980,7 +1021,7 @@ func (g *GPU) renderScanline() {
 							drawPrio = !obj.Prio || g.lcdBuffer.Pix[bufferOffset] == g.bgPallete[0][0]
 
 							if g.CGBMode() {
-								drawPrio = !g.bgPriority[bufferOffset] && !obj.Prio
+								drawPrio = !g.bgPriority[bufferOffset] || obj.Prio
 							}
 						}
 
@@ -1012,15 +1053,15 @@ func (g *GPU) UpdateVRAM() {
 		if g.bgTileBase != 0x0000 && v < 128 {
 			v += 256
 		}
-		tile := g.tileSet[v]
-		x := px % 8
-		y := py % 8
 
 		attr := tileAttr(0)
-
 		if g.CGBMode() {
 			attr = tileAttr(g.vram[int(g.bgMapBase)+tileNum+0x2000])
 		}
+
+		tile := g.getTileSet(attr.TileVRAMBank)[v]
+		x := px % 8
+		y := py % 8
 
 		if g.CGBMode() {
 			if attr.VerticalFlip {
@@ -1039,27 +1080,34 @@ func (g *GPU) UpdateVRAM() {
 		if g.bgTileBase != 0x0000 && v < 128 {
 			v += 256
 		}
-		tile = g.tileSet[v]
+		winAttr := tileAttr(0)
+		if g.CGBMode() {
+			winAttr = tileAttr(g.vram[int(g.winMapBase)+tileNum+0x2000])
+		}
+		tile = g.getTileSet(winAttr.TileVRAMBank)[v]
 		x = px % 8
 		y = py % 8
 
 		if g.CGBMode() {
-			attr = tileAttr(g.vram[int(g.bgMapBase)+tileNum+0x2000])
-		}
-
-		if g.CGBMode() {
-			if attr.VerticalFlip {
+			if winAttr.VerticalFlip {
 				y = 7 - y
 			}
-			if attr.HorizontalFlip {
+			if winAttr.HorizontalFlip {
 				x = 7 - x
 			}
-			g.winBuffer.Pix[i] = g.bgPallete[attr.BackgroundPallete][tile.TileData[y][x]]
+			g.winBuffer.Pix[i] = g.bgPallete[winAttr.BackgroundPallete][tile.TileData[y][x]]
 		} else {
 			g.winBuffer.Pix[i] = g.bgPallete[0][tile.TileData[y][x]]
 		}
 
 	}
+}
+
+func (g *GPU) getTileSet(bank int) []gpuTile {
+	if bank == 1 {
+		return g.tileSetBank1
+	}
+	return g.tileSet
 }
 
 func (g *GPU) updateTile(addr uint16, val uint8) {
@@ -1088,7 +1136,11 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 			o += 2
 		}
 
-		g.tileSet[tile].TileData[y][x] = o
+		ts := g.tileSet
+		if g.vramBank == 1 {
+			ts = g.tileSetBank1
+		}
+		ts[tile].TileData[y][x] = o
 	}
 	g.refreshTileData(int(tile))
 }
@@ -1097,7 +1149,7 @@ func (g *GPU) Cycle(clocks int) {
 	g.modeClocks += clocks
 	switch g.mode {
 	case gameboy.HBlank:
-		if g.modeClocks > horizontalBlankCycles {
+		if g.modeClocks >= horizontalBlankCycles {
 			g.modeClocks = 0
 			g.line++
 
@@ -1120,7 +1172,7 @@ func (g *GPU) Cycle(clocks int) {
 			}
 		}
 	case gameboy.VBlank:
-		if g.modeClocks >= (verticalBlankCycles / 9) {
+		if g.modeClocks >= (verticalBlankCycles / 10) {
 			g.modeClocks = 0
 			g.line++
 			if g.line == g.lineCompare && g.LycLy() {
@@ -1150,6 +1202,9 @@ func (g *GPU) Cycle(clocks int) {
 			g.modeClocks = 0
 			g.renderScanline()
 			g.mode = gameboy.HBlank
+			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
+				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
+			}
 			if g.CGBMode() && g.dmaRun {
 				copyLength := 16
 				if g.dmaLength < 16 {
@@ -1167,9 +1222,6 @@ func (g *GPU) Cycle(clocks int) {
 					g.dmaRun = false
 				}
 			}
-		}
-		if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
-			g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 		}
 	}
 }

@@ -20,7 +20,7 @@ func ClearPictureData(p *pixel.PictureData, c color.Color) {
 
 func ToRGBA(c color.Color) color.RGBA {
 	r, g, b, a := c.RGBA()
-	return color.RGBA{R: uint8(r), G: uint8(g), B: uint8(b), A: uint8(a)}
+	return color.RGBA{R: uint8(r >> 8), G: uint8(g >> 8), B: uint8(b >> 8), A: uint8(a >> 8)}
 }
 
 func DrawSquare(p *pixel.PictureData, rect pixel.Rect, c color.Color) {

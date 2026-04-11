@@ -124,15 +124,14 @@ func (m *MBC3) Write(addr uint16, val uint8) {
 	case addr >= 0x4000 && addr < 0x6000:
 		m.activeRamBank = int(val)
 	case addr >= 0x6000 && addr < 0x8000:
-		if m.activeRomBank >= 52 && m.activeRomBank <= 53 { // Chinese Flash Cartridge
+		if m.activeRomBank >= 52 && m.activeRomBank <= 53 {
 			m.romBanks[m.activeRomBank][addr&0x3FFF] = val
 		}
-		// Latch Clock Data (Write Only)
-		if val == 1 {
-			m.rtcIsLatched = false
-		} else {
+		if val == 0x01 {
 			m.rtcIsLatched = true
-			copy(m.RTC[:], m.latchedRTC[:])
+			copy(m.latchedRTC[:], m.RTC[:])
+		} else if val == 0x00 {
+			m.rtcIsLatched = false
 		}
 	case addr >= 0xA000 && addr < 0xC000: // Catridge RAM
 		if m.ramWriteEnabled {
