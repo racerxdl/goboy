@@ -19,6 +19,7 @@ type MBC3 struct {
 	RTC             [0x10]byte
 	latchedRTC      [0x10]byte
 	rtcIsLatched    bool
+	rtcLatchPrev    byte
 }
 
 func MakeMBC3() *MBC3 {
@@ -94,15 +95,19 @@ func (m *MBC3) Read(addr uint16) uint8 {
 	case addr >= 0x4000 && addr <= 0x7FFF:
 		return m.romBanks[m.activeRomBank][addr&0x3FFF]
 	case addr >= 0xA000 && addr <= 0xBFFF:
-		if m.activeRamBank >= 0x4 {
-			// RTC
-			if m.rtcIsLatched {
-				return m.latchedRTC[m.activeRamBank&len(m.latchedRTC)]
+		if m.activeRamBank >= 0x8 && m.activeRamBank <= 0xC {
+			idx := m.activeRamBank - 0x8
+			if idx >= len(m.latchedRTC) {
+				return 0x00
 			}
-			return m.RTC[m.activeRamBank&len(m.latchedRTC)]
-		} else {
+			if m.rtcIsLatched {
+				return m.latchedRTC[idx]
+			}
+			return m.RTC[idx]
+		} else if m.activeRamBank < len(m.ramBanks) {
 			return m.ramBanks[m.activeRamBank][addr&0x1FFF]
 		}
+		return 0x00
 	}
 
 	return 0x00
@@ -124,20 +129,19 @@ func (m *MBC3) Write(addr uint16, val uint8) {
 	case addr >= 0x4000 && addr < 0x6000:
 		m.activeRamBank = int(val)
 	case addr >= 0x6000 && addr < 0x8000:
-		if m.activeRomBank >= 52 && m.activeRomBank <= 53 {
-			m.romBanks[m.activeRomBank][addr&0x3FFF] = val
-		}
-		if val == 0x01 {
+		if m.rtcLatchPrev == 0x00 && val == 0x01 {
 			m.rtcIsLatched = true
 			copy(m.latchedRTC[:], m.RTC[:])
-		} else if val == 0x00 {
-			m.rtcIsLatched = false
 		}
+		m.rtcLatchPrev = val
 	case addr >= 0xA000 && addr < 0xC000: // Catridge RAM
 		if m.ramWriteEnabled {
-			if m.activeRamBank >= 0x4 {
-				m.RTC[m.activeRamBank&len(m.RTC)] = val
-			} else {
+			if m.activeRamBank >= 0x8 && m.activeRamBank <= 0xC {
+				idx := m.activeRamBank - 0x8
+				if idx < len(m.RTC) {
+					m.RTC[idx] = val
+				}
+			} else if m.activeRamBank < len(m.ramBanks) {
 				m.ramBanks[m.activeRamBank][addr&0x1FFF] = val
 			}
 		}

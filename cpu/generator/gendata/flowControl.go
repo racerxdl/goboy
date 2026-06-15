@@ -288,7 +288,7 @@ func gbDI(cpu *Core) {
 }
 
 func gbEI(cpu *Core) {
-    cpu.Registers.InterruptEnable = true
+    cpu.pendingIME = true
     cpu.Registers.LastClockM = 1
     cpu.Registers.LastClockT = 4
 }
@@ -306,9 +306,11 @@ func gbNOPWARN(cpu *Core, opcode int) {
 }
 
 func gbHALT(cpu *Core) {
-	if cpu.Registers.InterruptEnable {
+	if !cpu.Registers.InterruptEnable && (cpu.Registers.EnabledInterrupts&cpu.Registers.InterruptsFired) > 0 {
+		// CGB: IME=0 and interrupt pending -> don't halt
+	} else {
 		cpu.halted = true
-    }
+	}
     cpu.Registers.LastClockM = 1
     cpu.Registers.LastClockT = 4
 }

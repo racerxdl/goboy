@@ -29,6 +29,7 @@ type Core struct {
 	lastCycleTime  int64
 	clockT, clockM int
 	halted         bool
+	pendingIME     bool
 	stopped        bool
 	step           bool
 	speedMul       float64
@@ -217,6 +218,11 @@ func (c *Core) cycle() {
 				totalClockM += c.Registers.LastClockM
 				totalClockT += c.Registers.LastClockT
 
+				if c.pendingIME {
+					c.Registers.InterruptEnable = true
+					c.pendingIME = false
+				}
+
 				if c.stopped {
 					if c.Memory.inPrepareMode {
 						c.Memory.inPrepareMode = false
@@ -228,6 +234,11 @@ func (c *Core) cycle() {
 						c.stopped = false
 					}
 				}
+			}
+
+			// Resume from HALT when an interrupt is pending, even if IME=0
+			if c.halted && (c.Registers.EnabledInterrupts&c.Registers.InterruptsFired) > 0 {
+				c.halted = false
 			}
 
 			// Check Interrupts

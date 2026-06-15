@@ -13584,8 +13584,8 @@ func TestEI(t *testing.T) {
 		GBInstructions[0xFB](cpu)
 		RegAfter := cpu.Registers.Clone()
 
-		if !RegAfter.InterruptEnable {
-			t.Errorf("Expected Interrupt Enable to be enabled")
+		if !cpu.pendingIME {
+			t.Errorf("Expected pendingIME to be set")
 		}
 
 		// region Test Cycles

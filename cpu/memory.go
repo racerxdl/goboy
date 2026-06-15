@@ -126,9 +126,10 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 		m.workRam[addr-0xC000] = val
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
 		m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000] = val
-	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
-		//memLog.Debug("Writing bytes to Mirror Bank %04x: %02x", addr, val)
+	case addr >= 0xE000 && addr <= 0xEFFF: // Mirror of WRAM Bank 0
 		m.workRam[addr-0xE000] = val
+	case addr >= 0xF000 && addr <= 0xFDFF: // Mirror of WRAM Bank N
+		m.workRam[addr-0xF000+uint16(m.ramBank)*0x1000] = val
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		m.cpu.GPU.Write(addr, val)
 	case addr >= 0xFEA0 && addr <= 0xFEFF: // Not usable ... yet ...
@@ -239,9 +240,10 @@ func (m *Memory) ReadByte(addr uint16) byte {
 	case addr >= 0xD000 && addr <= 0xDFFF: // Work Ram Bank 1 (or N in CGB)
 		return m.workRam[addr-0xD000+uint16(m.ramBank)*0x1000]
 
-	case addr >= 0xE000 && addr <= 0xFDFF: // Mirror Bank 0
-		//memLog.Debug("Read bytes from Mirror Bank %04x: %02x", addr, m.workRam[addr-0xE000])
+	case addr >= 0xE000 && addr <= 0xEFFF: // Mirror of WRAM Bank 0
 		return m.workRam[addr-0xE000]
+	case addr >= 0xF000 && addr <= 0xFDFF: // Mirror of WRAM Bank N
+		return m.workRam[addr-0xF000+uint16(m.ramBank)*0x1000]
 
 	case addr >= 0xFE00 && addr <= 0xFE9F:
 		return m.cpu.GPU.Read(addr)
