@@ -148,7 +148,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 			m.cpu.Registers.InterruptsFired = val
 			return
 		case 0xFF41:
-			m.iomem[0x41] = val | 0x80
+			m.cpu.GPU.Write(addr, val)
 			return
 		case 0xFF4D: // Prepare speed
 			if m.catridge.GBC() {
@@ -272,22 +272,22 @@ func (m *Memory) ReadByte(addr uint16) byte {
 			return 0x00
 		case 0xFF68:
 			if m.catridge.GBC() {
-				return m.iomem[0x68] | 0x40
+				return m.cpu.GPU.Read(addr)
 			}
 			return 0xC0
 		case 0xFF6A:
 			if m.catridge.GBC() {
-				return m.iomem[0x6A] | 0x40
+				return m.cpu.GPU.Read(addr)
 			}
 			return 0xC0
 		case 0xFF69:
 			if m.catridge.GBC() {
-				return m.iomem[0x69]
+				return m.cpu.GPU.Read(addr)
 			}
 			return 0xFF
 		case 0xFF6B:
 			if m.catridge.GBC() {
-				return m.iomem[0x6B]
+				return m.cpu.GPU.Read(addr)
 			}
 			return 0xFF
 		case 0xFF70:

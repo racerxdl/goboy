@@ -417,7 +417,7 @@ func (s *SoundCard) GetFrequency2Sample() float32 {
 }
 
 func (s *SoundCard) GetFrequency3Sample() float32 {
-	if !(s.channel3On && s.sound3Enable) {
+	if !s.channel3On || !s.sound3Enable || !s.globalSoundEnable {
 		return 0
 	}
 

@@ -319,8 +319,6 @@ func (g *GPU) Read(addr uint16) byte {
 	case 0xFF40:
 		return g.state()
 	case 0xFF41:
-		ift := g.interruptsFired
-		g.interruptsFired = 0x00
 		res := uint8(0)
 		if g.mode&0x3 > 0 {
 			res |= 0x01
@@ -330,7 +328,7 @@ func (g *GPU) Read(addr uint16) byte {
 			res |= 0x04
 		}
 
-		res |= ift << 3
+		res |= g.lcdStat & 0x78
 		res |= 0x80
 
 		return res
@@ -375,16 +373,20 @@ func (g *GPU) Read(addr uint16) byte {
 	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
 		if g.CGBMode() {
 			if g.dmaRun {
-				return 0xFF
+				return uint8(((g.dmaLength+15)/16 - 1)) & 0x7F
 			}
 
-			return 0x7F
+			return 0xFF
 		}
 		return 0xFF
 
 	case 0xFF68: // BCPS/BGPI - CGB Mode Only - Background Palette Index
 		if g.CGBMode() {
-			return uint8(g.bgCurrentPalleteIndex)
+			v := uint8(g.bgCurrentPalleteIndex & 0x3F)
+			if g.bgAutoIncrementPindex {
+				v |= 0x80
+			}
+			return v
 		}
 		return 0x00
 	case 0xFF69: // BCPD/BGPD - CGB Mode Only - Background Palette Data
@@ -394,7 +396,11 @@ func (g *GPU) Read(addr uint16) byte {
 		return 0x00
 	case 0xFF6A: // OCPS/OBPI - CGB Mode Only - Sprite Palette Index
 		if g.CGBMode() {
-			return uint8(g.objCurrentPalleteIndex)
+			v := uint8(g.objCurrentPalleteIndex & 0x3F)
+			if g.objAutoIncrementPindex {
+				v |= 0x80
+			}
+			return v
 		}
 		return 0x00
 	case 0xFF6B: // OCPD/OBPD - CGB Mode Only - Sprite Palette Data
@@ -555,6 +561,11 @@ func (g *GPU) Write(addr uint16, val uint8) {
 
 	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
 		if g.CGBMode() {
+			if g.dmaRun && val&0x80 == 0 {
+				g.dmaRun = false
+				return
+			}
+
 			hblankDMA := val&0x80 > 0
 			g.dmaLength = (uint16(val)&0x7F)*0x10 + 0x10
 			if hblankDMA {
@@ -564,8 +575,9 @@ func (g *GPU) Write(addr uint16, val uint8) {
 				gpulog.Debug("Running GDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, g.dmaLength)
 				for i := 0; i < int(g.dmaLength); i++ {
 					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
+					g.dmaWriteVRAM(0x8000+g.dmaTarget+uint16(i), b)
 				}
+				g.dmaLength = 0
 			}
 		}
 
@@ -598,6 +610,13 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.palleteDirty = true
 		}
 	}
+}
+
+func (g *GPU) dmaWriteVRAM(addr uint16, val uint8) {
+	savedBank := g.vramBank
+	g.vramBank = 0
+	g.Write(addr, val)
+	g.vramBank = savedBank
 }
 
 func (g *GPU) updatePalleteBuffer() {
@@ -964,7 +983,7 @@ func (g *GPU) renderScanline() {
 			for i := 0; i < 40; i++ {
 				obj := g.prioObjs[i]
 
-				if spriteCount > 10 {
+				if spriteCount >= 10 {
 					break
 				}
 
@@ -1213,7 +1232,7 @@ func (g *GPU) Cycle(clocks int) {
 				gpulog.Debug("Running HDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, copyLength)
 				for i := 0; i < copyLength; i++ {
 					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
+					g.dmaWriteVRAM(0x8000+g.dmaTarget+uint16(i), b)
 				}
 				g.dmaSource += uint16(copyLength)
 				g.dmaTarget += uint16(copyLength)

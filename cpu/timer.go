@@ -50,7 +50,7 @@ func (t *Timer) Increment(clockT int) {
 		t.subTime -= 4
 		t.divTime++
 
-		if t.divTime == 16 {
+		if t.divTime == 64 {
 			t.divReg++
 			t.divTime = 0
 		}
@@ -59,19 +59,19 @@ func (t *Timer) Increment(clockT int) {
 	if (t.tacReg & 0x04) > 0 {
 		switch t.tacReg & 0x03 {
 		case 0:
-			if t.mainTime >= 64 { // 4k
+			if t.mainTime >= 256 { // 4096 Hz
 				t.Cycle()
 			}
 		case 1:
-			if t.mainTime >= 1 { // 256k
+			if t.mainTime >= 4 { // 262144 Hz
 				t.Cycle()
 			}
 		case 2:
-			if t.mainTime >= 4 { // 64k
+			if t.mainTime >= 16 { // 65536 Hz
 				t.Cycle()
 			}
 		case 3:
-			if t.mainTime >= 16 { // 16k
+			if t.mainTime >= 64 { // 16384 Hz
 				t.Cycle()
 			}
 		}
