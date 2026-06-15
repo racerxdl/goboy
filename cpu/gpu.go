@@ -320,8 +320,8 @@ func (g *GPU) Read(addr uint16) byte {
 		return g.state()
 	case 0xFF41:
 		res := uint8(0)
-		if g.mode&0x3 > 0 {
-			res |= 0x01
+		if g.switchLCD {
+			res |= byte(g.mode & 0x3)
 		}
 
 		if g.line == g.lineCompare {
@@ -455,7 +455,21 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.winMapBase = 0x1800
 		}
 
-		g.switchLCD = (val & 0x80) > 0
+		if val&0x80 > 0 {
+			if !g.switchLCD {
+				g.switchLCD = true
+				g.modeClocks = 0
+				g.line = 0
+				g.mode = gameboy.OamRead
+			}
+		} else {
+			if g.switchLCD {
+				g.switchLCD = false
+				g.modeClocks = 0
+				g.line = 0
+				g.mode = gameboy.HBlank
+			}
+		}
 	case 0xFF41:
 		g.lcdStat = val & 0x78
 	case 0xFF42:
@@ -549,14 +563,14 @@ func (g *GPU) Write(addr uint16, val uint8) {
 		if g.CGBMode() {
 			g.dmaTarget &= 0x00FF // Erase upper 8 bits
 			g.dmaTarget |= uint16(val) << 8
-			g.dmaTarget &= 0x0FF0
+			g.dmaTarget &= 0x1FF0 // Bits 12-4 per Pan Docs
 		}
 
 	case 0xFF54: // HDMA4 - CGB Mode Only - New DMA Destination, Low
 		if g.CGBMode() {
 			g.dmaTarget &= 0xFF00 // Erase upper 8 bits
 			g.dmaTarget |= uint16(val)
-			g.dmaTarget &= 0x0FF0
+			g.dmaTarget &= 0x1FF0 // Bits 12-4 per Pan Docs
 		}
 
 	case 0xFF55: // HDMA5 - CGB Mode Only - New DMA Length/Mode/Start
@@ -575,7 +589,7 @@ func (g *GPU) Write(addr uint16, val uint8) {
 				gpulog.Debug("Running GDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, g.dmaLength)
 				for i := 0; i < int(g.dmaLength); i++ {
 					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.dmaWriteVRAM(0x8000+g.dmaTarget+uint16(i), b)
+					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
 				}
 				g.dmaLength = 0
 			}
@@ -610,13 +624,6 @@ func (g *GPU) Write(addr uint16, val uint8) {
 			g.palleteDirty = true
 		}
 	}
-}
-
-func (g *GPU) dmaWriteVRAM(addr uint16, val uint8) {
-	savedBank := g.vramBank
-	g.vramBank = 0
-	g.Write(addr, val)
-	g.vramBank = savedBank
 }
 
 func (g *GPU) updatePalleteBuffer() {
@@ -1165,6 +1172,13 @@ func (g *GPU) updateTile(addr uint16, val uint8) {
 }
 
 func (g *GPU) Cycle(clocks int) {
+	if !g.switchLCD {
+		g.modeClocks = 0
+		g.line = 0
+		g.mode = gameboy.HBlank
+		return
+	}
+
 	g.modeClocks += clocks
 	switch g.mode {
 	case gameboy.HBlank:
@@ -1176,17 +1190,17 @@ func (g *GPU) Cycle(clocks int) {
 				g.mode = gameboy.VBlank
 
 				g.cpu.Registers.InterruptsFired |= gameboy.IntVblank
-				if g.VBlankMode() && g.cpu.Registers.InterruptEnable {
+				if g.VBlankMode() {
 					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			} else {
 				g.mode = gameboy.OamRead
-				if g.OamMode() && g.cpu.Registers.InterruptEnable {
+				if g.OamMode() {
 					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			}
 
-			if g.line == g.lineCompare && g.LycLy() && g.cpu.Registers.InterruptEnable {
+			if g.line == g.lineCompare && g.LycLy() {
 				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 			}
 		}
@@ -1201,7 +1215,7 @@ func (g *GPU) Cycle(clocks int) {
 				copy(g.syncLcdBuffer.Pix, g.lcdBuffer.Pix)
 				g.mode = gameboy.OamRead
 				g.line = 0
-				if g.OamMode() && g.cpu.Registers.InterruptEnable {
+				if g.OamMode() {
 					g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 				}
 			}
@@ -1221,7 +1235,7 @@ func (g *GPU) Cycle(clocks int) {
 			g.modeClocks = 0
 			g.renderScanline()
 			g.mode = gameboy.HBlank
-			if g.HBlankMode() && g.cpu.Registers.InterruptEnable {
+			if g.HBlankMode() {
 				g.cpu.Registers.InterruptsFired |= gameboy.IntLcdstat
 			}
 			if g.CGBMode() && g.dmaRun {
@@ -1232,7 +1246,7 @@ func (g *GPU) Cycle(clocks int) {
 				gpulog.Debug("Running HDMA from %04x to %04x with %d bytes", g.dmaSource, 0x8000+g.dmaTarget, copyLength)
 				for i := 0; i < copyLength; i++ {
 					b := g.cpu.Memory.Read(g.dmaSource + uint16(i))
-					g.dmaWriteVRAM(0x8000+g.dmaTarget+uint16(i), b)
+					g.cpu.Memory.WriteByte(0x8000+g.dmaTarget+uint16(i), b)
 				}
 				g.dmaSource += uint16(copyLength)
 				g.dmaTarget += uint16(copyLength)

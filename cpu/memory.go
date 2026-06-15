@@ -18,6 +18,7 @@ type Memory struct {
 	highRam       []byte
 	iomem         []byte
 	ramBank       int
+	ramBankReg    uint8
 	catridge      Catridge
 	saveFilename  string
 	lastRamSave   time.Time
@@ -159,6 +160,7 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 			}
 		case 0xFF70:
 			if m.catridge.GBC() {
+				m.ramBankReg = val & 0x7
 				bank := int(val) & 0x7
 				if bank == 0 {
 					bank = 1
@@ -166,7 +168,6 @@ func (m *Memory) WriteByte(addr uint16, val byte) {
 
 				if bank != m.ramBank {
 					m.ramBank = bank
-					//memLog.Debug("Changed ram bank to %d", m.ramBank)
 				}
 
 				return
@@ -294,7 +295,7 @@ func (m *Memory) ReadByte(addr uint16) byte {
 			return 0xFF
 		case 0xFF70:
 			if m.catridge.GBC() {
-				return uint8(m.ramBank)
+				return m.ramBankReg
 			}
 		}
 
